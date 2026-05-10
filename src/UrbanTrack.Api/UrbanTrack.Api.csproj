@@ -10,4 +10,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.9" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SalesTracking.Application\SalesTracking.Application.csproj" />
+  </ItemGroup>
+
 </Project>

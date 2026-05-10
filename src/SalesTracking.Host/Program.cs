@@ -1,9 +1,10 @@
+using SalesTracking.Host.Extensions;
 using UrbanTrack.Api.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.AddServices(builder.Configuration);
 builder.Services.AddControllers().AddApplicationPart(typeof(UrbanTrackApiAssemblyMarker).Assembly);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -74,17 +74,17 @@ namespace UrbanTrack.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
-        public async Task<ActionResult<MessageResponse>> Update(string id, [FromBody] CreateProjectRequest req)
+        [ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<MessageApiResponse>> Update(string id, [FromBody] CreateProjectRequest req)
         {
-            return await Task.FromResult(Ok(new MessageResponse { Message = "Proyecto actualizado (mock)." }));
+            return await Task.FromResult(Ok(new MessageApiResponse { Message = "Proyecto actualizado (mock)." }));
         }
 
         [HttpPatch("{id}/status")]
-        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
-        public async Task<ActionResult<MessageResponse>> ChangeStatus(string id, [FromBody] dynamic body)
+        [ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<MessageApiResponse>> ChangeStatus(string id, [FromBody] dynamic body)
         {
-            return await Task.FromResult(Ok(new MessageResponse { Message = "Estado de proyecto actualizado (mock)." }));
+            return await Task.FromResult(Ok(new MessageApiResponse { Message = "Estado de proyecto actualizado (mock)." }));
         }
 
         [HttpGet("{id}/products")]
@@ -107,17 +107,17 @@ namespace UrbanTrack.Api.Controllers
         }
 
         [HttpPut("{id}/products/{productId}")]
-        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
-        public async Task<ActionResult<MessageResponse>> UpdateProduct(string id, string productId, [FromBody] ProjectProductResponse req)
+        [ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<MessageApiResponse>> UpdateProduct(string id, string productId, [FromBody] ProjectProductResponse req)
         {
-            return await Task.FromResult(Ok(new MessageResponse { Message = "Producto actualizado (mock)." }));
+            return await Task.FromResult(Ok(new MessageApiResponse { Message = "Producto actualizado (mock)." }));
         }
 
         [HttpDelete("{id}/products/{productId}")]
-        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
-        public async Task<ActionResult<MessageResponse>> DeleteProduct(string id, string productId)
+        [ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<MessageApiResponse>> DeleteProduct(string id, string productId)
         {
-            return await Task.FromResult(Ok(new MessageResponse { Message = "Producto eliminado del proyecto (mock)." }));
+            return await Task.FromResult(Ok(new MessageApiResponse { Message = "Producto eliminado del proyecto (mock)." }));
         }
 
         [HttpGet("{id}/attachments")]

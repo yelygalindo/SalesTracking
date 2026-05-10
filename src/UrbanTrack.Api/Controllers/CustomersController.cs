@@ -99,10 +99,10 @@ namespace UrbanTrack.Api.Controllers
         }
 
         [HttpPatch("{id}/status")]
-        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
-        public async Task<ActionResult<MessageResponse>> ChangeStatus(string id, [FromBody] ChangeStatusRequest req)
+        [ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<MessageApiResponse>> ChangeStatus(string id, [FromBody] ChangeStatusRequest req)
         {
-            return await Task.FromResult(Ok(new MessageResponse { Message = $"Estado cambiado a '{req.Status}' (mock)." }));
+            return await Task.FromResult(Ok(new MessageApiResponse { Message = $"Estado cambiado a '{req.Status}' (mock)." }));
         }
 
         [HttpGet("{id}/notes")]
@@ -146,10 +146,10 @@ namespace UrbanTrack.Api.Controllers
         }
 
         [HttpPatch("{id}/reminders/{reminderId}/complete")]
-        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
-        public async Task<ActionResult<MessageResponse>> CompleteReminder(string id, string reminderId)
+        [ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<MessageApiResponse>> CompleteReminder(string id, string reminderId)
         {
-            return await Task.FromResult(Ok(new MessageResponse { Message = "Recordatorio marcado como completado (mock)." }));
+            return await Task.FromResult(Ok(new MessageApiResponse { Message = "Recordatorio marcado como completado (mock)." }));
         }
 
         [HttpGet("{id}/timeline")]

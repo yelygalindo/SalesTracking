@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SalesTracking.Application\SalesTracking.Application.csproj" />
+    <ProjectReference Include="..\SalesTracking.Infraestructure\SalesTracking.Infrastructure.csproj" />
     <ProjectReference Include="..\UrbanTrack.Api\UrbanTrack.Api.csproj" />
   </ItemGroup>
 

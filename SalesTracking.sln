@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{6228AD3C-DA4
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{23D3C2A5-D081-4557-B0DD-65B09C10DF7D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesTracking.Infraestructure", "src\SalesTracking.Infraestructure\SalesTracking.Infraestructure.csproj", "{9923620A-0818-4E92-9E9A-2EEB4895AEAC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesTracking.Infrastructure", "src\SalesTracking.Infraestructure\SalesTracking.Infrastructure.csproj", "{9923620A-0818-4E92-9E9A-2EEB4895AEAC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesTracking.Application", "src\SalesTracking.Application\SalesTracking.Application.csproj", "{A8E24FA4-94F0-465C-BD83-A2B8D08DFBCE}"
 EndProject

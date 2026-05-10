@@ -1,4 +1,8 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using SalesTracking.Application.UseCases.Authentication.Interfaces;
+using SalesTracking.Application.UseCases.Authentication.Services;
+using SalesTracking.Infrastructure.Persistence.Security;
+using SalesTracking.Infrastructure.Persistence.Settings;
+using SalesTracking.Infrastructure.Persistence.Sql.Auth;
 
 namespace SalesTracking.Host.Extensions
 {
@@ -6,38 +10,15 @@ namespace SalesTracking.Host.Extensions
     {
         public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();         
-
+            services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
+            services.Configure<AuthSettings>(configuration.GetSection(AuthSettings.SectionName));
+            services.Configure<DatabaseSettings>(configuration.GetSection(DatabaseSettings.SectionName));
+            
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IAuthRepository, AuthRepository>();
+            services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
+            services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
             return services;
         }
     }
-
-    //public static IApplicationBuilder UseSwaggerConfigurations(this IApplicationBuilder app, IWebHostEnvironment env)
-    //    {
-
-    //        app.UseSwagger(c =>
-    //        {
-    //            c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
-    //            {
-    //                string baseUrl = httpReq.Host.Host.Contains("localhost") ? "/" : "/voltron";
-
-    //                swaggerDoc.Servers = new List<OpenApiServer>
-    //            {
-    //                new OpenApiServer
-    //                {
-    //                    Url = baseUrl
-    //                }
-    //            };
-    //            });
-    //        });
-
-    //        app.UseSwaggerUI(c =>
-    //        {
-    //            c.SwaggerEndpoint("./swagger/v1/swagger.json", "Voltron API V1");
-    //            c.RoutePrefix = string.Empty;
-    //        });
-
-    //        return app;
-    //    }
-    //}
 }

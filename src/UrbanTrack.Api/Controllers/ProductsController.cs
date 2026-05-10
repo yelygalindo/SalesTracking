@@ -48,17 +48,17 @@ namespace UrbanTrack.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
-        public async Task<ActionResult<MessageResponse>> Update(string id, [FromBody] CreateProductRequest req)
+        [ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<MessageApiResponse>> Update(string id, [FromBody] CreateProductRequest req)
         {
-            return await Task.FromResult(Ok(new MessageResponse { Message = "Producto actualizado (mock)." }));
+            return await Task.FromResult(Ok(new MessageApiResponse { Message = "Producto actualizado (mock)." }));
         }
 
         [HttpDelete("{id}")]
-        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
-        public async Task<ActionResult<MessageResponse>> Delete(string id)
+        [ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<MessageApiResponse>> Delete(string id)
         {
-            return await Task.FromResult(Ok(new MessageResponse { Message = "Producto eliminado (mock)." }));
+            return await Task.FromResult(Ok(new MessageApiResponse { Message = "Producto eliminado (mock)." }));
         }
 
         // Units endpoints (inside ProductsController per contract)
@@ -91,17 +91,17 @@ namespace UrbanTrack.Api.Controllers
         }
 
         [HttpPut("/api/units/{id}")]
-        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
-        public async Task<ActionResult<MessageResponse>> UpdateUnit(string id, [FromBody] UnitRequest req)
+        [ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<MessageApiResponse>> UpdateUnit(string id, [FromBody] UnitRequest req)
         {
-            return await Task.FromResult(Ok(new MessageResponse { Message = "Unidad actualizada (mock)." }));
+            return await Task.FromResult(Ok(new MessageApiResponse { Message = "Unidad actualizada (mock)." }));
         }
 
         [HttpDelete("/api/units/{id}")]
-        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
-        public async Task<ActionResult<MessageResponse>> DeleteUnit(string id)
+        [ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<MessageApiResponse>> DeleteUnit(string id)
         {
-            return await Task.FromResult(Ok(new MessageResponse { Message = "Unidad eliminada (mock)." }));
+            return await Task.FromResult(Ok(new MessageApiResponse { Message = "Unidad eliminada (mock)." }));
         }
 
         private List<ProductSummaryResponse> GetMockProducts()

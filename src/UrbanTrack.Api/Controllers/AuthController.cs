@@ -1,162 +1,99 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using SalesTracking.Application.UseCases.Authentication.Models;
 using UrbanTrack.Api.Controllers.Requests.AuthRequests;
+using UrbanTrack.Api.Controllers.Responses.AuthResponses;
+using SalesTracking.Application.UseCases.Authentication.Results;
+using SalesTracking.Application.UseCases.Authentication.Comands;
+using UrbanTrack.Api.Controllers.Responses.Common;
+using SalesTracking.Application.UseCases.Authentication.Interfaces;
 
 namespace UrbanTrack.Api.Controllers
 {
     [ApiController]
-    [Route("api/auth")]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginRequest request)
+        private readonly IAuthService _service;
+
+        public AuthController(IAuthService service)
         {
-            return Ok(new LoginResponse
-            {
-                AccessToken = "mock-jwt-access-token",
-                RefreshToken = "mock-jwt-refresh-token",
-                ExpiresIn = 3600,
-                User = new AuthUserDto
-                {
-                    Id = "user-001",
-                    FullName = "Carlos Rojas",
-                    Email = request.Email,
-                    Role = "Salesperson",
-                    Status = "Active",
-                    Company = new CompanyDto
-                    {
-                        Id = "company-001",
-                        Name = "UrbanTrack Demo Company"
-                    },
-                    Permissions =
-    
-                    [
-                        "customers.read",
-                        "customers.create",
-                        "projects.read",
-                        "projects.create",
-                        "deliveries.read",
-                        "routes.view",
-                        "reports.view"
-                    ]
-                }
-            });
+            _service = service;
+        }
+
+
+        [HttpPost("login")]
+        [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult> Login([FromBody] LoginRequest request)
+        {
+            LoginResult resp = await _service.LoginAsync(request.ToApplication());
+            if (resp == null) return NotFound(new MessageResponse { Message = "Usuario no encontrado." });
+            return Ok(resp.ToResponse());
         }
 
         [HttpPost("logout")]
-        public IActionResult Logout([FromBody] LogoutRequest request)
+        [ProducesResponseType(typeof(LogoutResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<LogoutResponse>> Logout([FromBody] LogoutRequest request)
         {
-            return Ok(new
-            {
-                message = "Session closed successfully."
-            });
+            LogoutResult resp = await _service.LogoutAsync(request.ToApplication());
+            if (resp == null) return NotFound(new MessageResponse { Message = "Usuario no encontrado." });
+            return Ok(resp.ToResponse());
         }
 
         [HttpPost("refresh-token")]
-        public IActionResult RefreshToken([FromBody] RefreshTokenRequest request)
+        [ProducesResponseType(typeof(RefreshTokenResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<RefreshTokenResponse>> RefreshToken([FromBody] RefreshTokenRequest request)
         {
-            return Ok(new
-            {
-                accessToken = "new-mock-jwt-access-token",
-                refreshToken = "new-mock-jwt-refresh-token",
-                expiresIn = 3600
-            });
+            RefreshTokenResult resp = await _service.RefreshTokenAsync(request.ToApplication());
+            if (resp == null) return NotFound(new MessageResponse { Message = "Usuario no encontrado." });
+            return Ok(resp.ToResponse());
         }
 
         [HttpPost("forgot-password")]
-        public IActionResult ForgotPassword([FromBody] ForgotPasswordRequest request)
+        [ProducesResponseType(typeof(ForgotPasswordResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<ForgotPasswordResponse>> ForgotPassword([FromBody] ForgotPasswordRequest request)
         {
-            return Ok(new
-            {
-                message = "If the email exists, password reset instructions were sent."
-            });
+            ForgotPasswordResult resp = await _service.ForgotPasswordAsync(request.ToApplication());
+            if (resp == null) return NotFound(new MessageResponse { Message = "Usuario no encontrado." });
+            return Ok(resp.ToResponse());
         }
 
         [HttpPost("reset-password")]
-        public IActionResult ResetPassword([FromBody] ResetPasswordRequest request)
+        [ProducesResponseType(typeof(ResetPasswordResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<ResetPasswordResponse>> ResetPassword([FromBody] ResetPasswordRequest request)
         {
-            return Ok(new
-            {
-                message = "Password updated successfully."
-            });
+            ResetPasswordResult resp = await _service.ResetPasswordAsync(request.ToApplication());
+            if (resp == null) return NotFound(new MessageResponse { Message = "Usuario no encontrado." });
+            return Ok(resp.ToResponse());
         }
 
-        [HttpGet("me")]
-        public IActionResult Me()
+        [HttpPost("/api/invitations")]
+        [ProducesResponseType(typeof(CreateInvitationResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<CreateInvitationResponse>> CreateInvitation( [FromBody] CreateInvitationRequest request)
         {
-            return Ok(new AuthUserDto
-            {
-                Id = "user-001",
-                FullName = "Carlos Rojas",
-                Email = "carlos@urbantrack.com",
-                Role = "Salesperson",
-                Status = "Active",
-                Company = new CompanyDto
-                {
-                    Id = "company-001",
-                    Name = "UrbanTrack Demo Company"
-                },
-                Permissions =
-    
-                [
-                    "customers.read",
-                    "customers.create",
-                    "projects.read",
-                    "projects.create",
-                    "deliveries.read",
-                    "routes.view",
-                    "reports.view"
-                ]
-            });
+            CreateInvitationResult result =
+                await _service.CreateInvitationAsync(request.ToApplication());
+            return Ok(result.ToResponse());
+
         }
 
         [HttpGet("/api/invitations/{token}")]
-        public IActionResult GetInvitation(string token)
+        [ProducesResponseType(typeof(InvitationResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<InvitationResponse>> GetInvitationByToken(string token)
         {
-            return Ok(new
-            {
-                invitationToken = token,
-                fullName = "María Pérez",
-                email = "maria@urbantrack.com",
-                role = "Administrator",
-                company = new CompanyDto
-                {
-                    Id = "company-001",
-                    Name = "UrbanTrack Demo Company"
-                },
-                expiresAt = DateTime.UtcNow.AddDays(2)
-            });
+            InvitationResult? inv = await _service.GetInvitationByTokenAsync(new GetInvitationByTokenComand(token));
+            if (inv == null) return NotFound(new MessageResponse { Message = "Invitación no encontrada." });
+            return Ok(inv.ToResponse());
         }
 
         [HttpPost("/api/invitations/accept")]
-        public IActionResult AcceptInvitation([FromBody] AcceptInvitationRequest request)
+        [ProducesResponseType(typeof(AcceptInvitationResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<AcceptInvitationResponse>> AcceptInvitation([FromBody] AcceptInvitationInput request)
         {
-            return Ok(new
-            {
-                message = "Account activated successfully.",
-                user = new AuthUserDto
-                {
-                    Id = "user-002",
-                    FullName = "María Pérez",
-                    Email = "maria@urbantrack.com",
-                    Role = "Administrator",
-                    Status = "Active",
-                    Company = new CompanyDto
-                    {
-                        Id = "company-001",
-                        Name = "UrbanTrack Demo Company"
-                    },
-                    Permissions =
-    
-                    [
-                        "users.read",
-                        "users.create",
-                        "customers.read",
-                        "projects.create",
-                        "routes.view_all",
-                        "reports.view"
-                    ]
-                }
-            });
+            AcceptInvitationResult resp = await _service.AcceptInvitationAsync(request.ToApplication());
+            if (resp == null) return NotFound(new MessageResponse { Message = "Usuario no encontrado." });
+            return Ok(resp.ToResponse());
         }
     }
 }
