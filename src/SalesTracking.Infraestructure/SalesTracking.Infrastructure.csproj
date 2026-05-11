@@ -18,4 +18,12 @@
     <ProjectReference Include="..\SalesTracking.Application\SalesTracking.Application.csproj" />
     <ProjectReference Include="..\SalesTracking.Domain\SalesTracking.Domain.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Persistence\Sql\Invitations\Mappers\" />
+    <Folder Include="Persistence\Sql\Products\Mappers\" />
+    <Folder Include="Persistence\Sql\Products\Rows\" />
+    <Folder Include="Persistence\Sql\Projects\Mappers\" />
+    <Folder Include="Persistence\Sql\Projects\Rows\" />
+  </ItemGroup>
 </Project>

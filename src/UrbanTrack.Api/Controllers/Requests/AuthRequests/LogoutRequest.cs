@@ -2,7 +2,7 @@
 {
     public class LogoutRequest
     {
-        public string RefreshToken { get; init; } = string.Empty;
+        public string RefreshToken { get; init; }
         public string? DeviceId { get; init; }
     }
 }

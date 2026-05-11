@@ -1,5 +1,5 @@
 ﻿using BCrypt.Net;
-using SalesTracking.Application.UseCases.Authentication.Interfaces;
+using SalesTracking.Application.Common.Interfaces;
 
 namespace SalesTracking.Infrastructure.Persistence.Security
 {

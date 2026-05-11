@@ -1,8 +1,15 @@
-﻿using SalesTracking.Application.UseCases.Authentication.Interfaces;
+﻿using SalesTracking.Application.Common.Interfaces;
+using SalesTracking.Application.UseCases.Authentication.Interfaces;
 using SalesTracking.Application.UseCases.Authentication.Services;
+using SalesTracking.Application.UseCases.Customers.Interfaces;
+using SalesTracking.Application.UseCases.Customers.Services;
+using SalesTracking.Application.UseCases.Invitations.Interfaces;
+using SalesTracking.Application.UseCases.Invitations.Services;
 using SalesTracking.Infrastructure.Persistence.Security;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.Auth;
+using SalesTracking.Infrastructure.Persistence.Sql.Customers;
+using SalesTracking.Infrastructure.Persistence.Sql.Invitations;
 
 namespace SalesTracking.Host.Extensions
 {
@@ -15,7 +22,13 @@ namespace SalesTracking.Host.Extensions
             services.Configure<DatabaseSettings>(configuration.GetSection(DatabaseSettings.SectionName));
             
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IInvitationService, InvitationService>();
+            services.AddScoped<ICustomerService, CustomerService>();
+
             services.AddScoped<IAuthRepository, AuthRepository>();
+            services.AddScoped<IInvitationRepository, InvitationRepository>();
+            services.AddScoped<ICustomerRepository, CustomerRepository>();
+
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
             return services;

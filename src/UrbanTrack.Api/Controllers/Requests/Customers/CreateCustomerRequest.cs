@@ -1,5 +1,3 @@
-using System;
-
 namespace UrbanTrack.Api.Controllers.Requests.Customers
 {
     public class CreateCustomerRequest
@@ -8,8 +6,10 @@ namespace UrbanTrack.Api.Controllers.Requests.Customers
         public string CompanyName { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
-        public string SellerId { get; set; }
-        public string Status { get; set; } = "active";
-        public DateTime? FoundedAt { get; set; }
+        public string RegisterByExternalId { get; set; }
+        public int StatusId { get; set; } = 1;
+        public string? Address { get; set; }
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
     }
 }

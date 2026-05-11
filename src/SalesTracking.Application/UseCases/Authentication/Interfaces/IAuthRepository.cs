@@ -5,14 +5,11 @@ namespace SalesTracking.Application.UseCases.Authentication.Interfaces
 {
     public interface IAuthRepository
     {
+        Task<AuthTokens?> ValidateCredentialsAsync(string username, string password);
         Task<User?> GetUserByIdAsync(int id);
         Task<bool> RevokeRefreshTokenAsync(string refreshToken);
         Task<AuthTokens?> RefreshTokensAsync(string lastToken);
         Task<PasswordForgot?> SendForgotPasswordAsync(string email);
-        Task<bool> ResetPasswordAsync(string token, string newPassword);
-        Task<Invitation?> GetInvitationByTokenAsync(string token);
-        Task<AcceptInvitation> AcceptInvitationAsync(AcceptInvitationInput request);
-        Task<AuthTokens?> ValidateCredentialsAsync(string username, string password);
-        Task<Invitation?> CreateInvitationAsync(CreateInvitation createInvitation);
+        Task<bool> ResetPasswordAsync(string token, string newPassword);     
     }
 }

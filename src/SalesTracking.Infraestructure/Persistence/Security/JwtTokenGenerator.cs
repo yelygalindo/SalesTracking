@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using SalesTracking.Application.UseCases.Authentication.Interfaces;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Domain.Entities;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using System.IdentityModel.Tokens.Jwt;

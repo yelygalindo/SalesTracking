@@ -1,0 +1,101 @@
+﻿using SalesTracking.Application.UseCases.Customers.Results;
+using UrbanTrack.Api.Controllers.Responses.Common;
+using UrbanTrack.Api.Controllers.Responses.Customers;
+
+namespace UrbanTrack.Api.Controllers.Responses.Mappers
+{
+    internal static class CustomerResponsesMappers
+    {
+        public static CustomerDetailResponse ToResponse(this CustomerDetailResult customerDetailResult)
+        {
+            if (customerDetailResult == null) return null;
+            return new CustomerDetailResponse()
+            {
+                Id = customerDetailResult.Id,
+                ExternalId = customerDetailResult.ExternalId,
+                Name = customerDetailResult.Name,
+                CompanyName = customerDetailResult.CompanyName,
+                Phone = customerDetailResult.Phone,
+                Email = customerDetailResult.Email,
+                Status = customerDetailResult.Status.ToApiValue(),
+                Seller = new SellerResponse()
+                {
+                    Id = customerDetailResult.SellerResult?.Id,
+                    ExternalId = customerDetailResult.SellerResult?.ExternalId,
+                    Name = customerDetailResult.SellerResult?.Name,
+                },
+                Address = customerDetailResult.Address,
+                Latitude = customerDetailResult.Latitude,
+                Longitude = customerDetailResult.Longitude,
+                CreatedAt = customerDetailResult.CreatedAtUtc,
+                Notes = customerDetailResult.Notes.Select(x=>x.ToResponse()),
+            };
+        }
+        
+        public static CustomerStatusResponse ToResponse(this CustomerStatusResult customerStatusResult)
+        {
+            if (customerStatusResult == null) return null;
+            return new CustomerStatusResponse()
+            {
+                Value = customerStatusResult.Value,
+                Label = customerStatusResult.Label
+            };
+        }
+        public static CustomerNoteResponse ToResponse(this CustomerNoteResult customerNoteResult)
+        {
+            if (customerNoteResult == null) return null;
+            return new CustomerNoteResponse()
+            {                
+                ExternalId = customerNoteResult.ExternalId,
+                Text = customerNoteResult.Text,
+                AuthorId = customerNoteResult.AuthorId,
+                AuthorName = customerNoteResult.AuthorName,              
+                CreatedAt = customerNoteResult.CreatedAtUtc,
+            };
+        }
+
+        public static GetCustomersResponse ToResponse(this GetCustomersResult getCustomersResult)
+        {
+            if (getCustomersResult == null) return null;
+            return new GetCustomersResponse()
+            {
+                Customers = getCustomersResult.Items.Select(x => x.ToResponse()).ToList(),
+                Page = getCustomersResult.Page,
+                PageSize = getCustomersResult.PageSize,
+                TotalItems = getCustomersResult.TotalItems,
+                TotalPages = getCustomersResult.TotalPages,
+            };
+        }
+
+        public static CustomerSummaryResponse ToResponse(this CustomerSummaryResult customerSummaryResult)
+        {
+            if (customerSummaryResult == null) return null;
+            return new CustomerSummaryResponse()
+            {
+                Id = customerSummaryResult.Id,
+                ExternalId = customerSummaryResult.ExternalId,
+                Name = customerSummaryResult.Name,
+                CompanyName = customerSummaryResult.CompanyName,
+                Phone = customerSummaryResult.Phone,
+                Email = customerSummaryResult.Email,
+                Status = customerSummaryResult.Status.ToApiValue(),
+                CreatedAt = customerSummaryResult.CreatedAtUtc,
+                Seller = new SellerResponse()
+                {
+                    Id = customerSummaryResult.SellerResult?.Id,
+                    ExternalId = customerSummaryResult.SellerResult?.ExternalId,
+                    Name = customerSummaryResult.SellerResult?.Name,
+                }
+            };
+        }
+
+        public static IdMessageResponse ToResponse(this CreateCustomerResult result)
+        {
+            return new IdMessageResponse
+            {
+                Id = result.Id,
+                Message = result.Message
+            };
+        }
+    }
+}

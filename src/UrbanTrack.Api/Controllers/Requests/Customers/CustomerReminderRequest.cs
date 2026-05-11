@@ -1,5 +1,3 @@
-using System;
-
 namespace UrbanTrack.Api.Controllers.Requests.Customers
 {
     public class CustomerReminderRequest

@@ -1,5 +1,3 @@
-using System;
-
 namespace UrbanTrack.Api.Controllers.Requests.Customers
 {
     public class UpdateCustomerRequest
@@ -9,6 +7,6 @@ namespace UrbanTrack.Api.Controllers.Requests.Customers
         public string Phone { get; set; }
         public string Email { get; set; }
         public string? SellerId { get; set; }
-        public string Status { get; set; }
+        public int StatusId { get; set; }
     }
 }

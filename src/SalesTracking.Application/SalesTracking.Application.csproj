@@ -10,4 +10,27 @@
     <ProjectReference Include="..\SalesTracking.Domain\SalesTracking.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="UseCases\CustomerNotes\Comands\" />
+    <Folder Include="UseCases\CustomerNotes\Interfaces\" />
+    <Folder Include="UseCases\CustomerNotes\Models\" />
+    <Folder Include="UseCases\CustomerNotes\Results\" />
+    <Folder Include="UseCases\CustomerNotes\Services\" />
+    <Folder Include="UseCases\Dashboard\Comands\" />
+    <Folder Include="UseCases\Dashboard\Interfaces\" />
+    <Folder Include="UseCases\Dashboard\Models\" />
+    <Folder Include="UseCases\Dashboard\Results\" />
+    <Folder Include="UseCases\Dashboard\Services\" />
+    <Folder Include="UseCases\Projects\Comands\" />
+    <Folder Include="UseCases\Projects\Interfaces\" />
+    <Folder Include="UseCases\Projects\Models\" />
+    <Folder Include="UseCases\Projects\Results\" />
+    <Folder Include="UseCases\Projects\Services\" />
+    <Folder Include="UseCases\Products\Comands\" />
+    <Folder Include="UseCases\Products\Interfaces\" />
+    <Folder Include="UseCases\Products\Models\" />
+    <Folder Include="UseCases\Products\Results\" />
+    <Folder Include="UseCases\Products\Services\" />
+  </ItemGroup>
+
 </Project>

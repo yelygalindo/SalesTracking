@@ -14,4 +14,9 @@
     <ProjectReference Include="..\SalesTracking.Application\SalesTracking.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\Requests\Deliveries\" />
+    <Folder Include="Controllers\Requests\Products\" />
+  </ItemGroup>
+
 </Project>
