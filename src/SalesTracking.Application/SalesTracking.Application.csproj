@@ -11,11 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="UseCases\CustomerNotes\Comands\" />
-    <Folder Include="UseCases\CustomerNotes\Interfaces\" />
-    <Folder Include="UseCases\CustomerNotes\Models\" />
-    <Folder Include="UseCases\CustomerNotes\Results\" />
-    <Folder Include="UseCases\CustomerNotes\Services\" />
     <Folder Include="UseCases\Dashboard\Comands\" />
     <Folder Include="UseCases\Dashboard\Interfaces\" />
     <Folder Include="UseCases\Dashboard\Models\" />

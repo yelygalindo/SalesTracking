@@ -6,6 +6,7 @@ using SalesTracking.Application.UseCases.Customers.Models;
 using SalesTracking.Application.UseCases.Customers.Results;
 using SalesTracking.Domain.Entities;
 using SalesTracking.Domain.Enums;
+using System.Linq;
 
 namespace SalesTracking.Application.UseCases.Customers.Services
 {
@@ -55,7 +56,7 @@ namespace SalesTracking.Application.UseCases.Customers.Services
             {
                 Items = customers.Items.Select(x => new CustomerSummaryResult
                 {
-                    Id=x.Id,
+                    Id = x.Id,
                     ExternalId = x.ExternalId,
                     Name = x.Name,
                     CompanyName = x.CompanyName,
@@ -86,7 +87,7 @@ namespace SalesTracking.Application.UseCases.Customers.Services
 
             return new CustomerDetailResult
             {
-                Id= customer.Id,
+                Id = customer.Id,
                 ExternalId = customer.ExternalId,
                 Name = customer.Name,
                 CompanyName = customer.CompanyName,
@@ -107,8 +108,7 @@ namespace SalesTracking.Application.UseCases.Customers.Services
                 {
                     ExternalId = n.ExternalId,
                     Text = n.Text,
-                    AuthorId = n.AuthorId,
-                    AuthorName = n.AuthorName,
+                    Author = new AuthorNoteResult(n.Author.Id, n.Author.ExternalId, n.Author.Name),
                     CreatedAtUtc = n.CreatedAtUtc
                 }).ToList()
             };
@@ -199,6 +199,126 @@ namespace SalesTracking.Application.UseCases.Customers.Services
                .ToList();
 
             return Task.FromResult(statuses);
+        }
+
+        public async Task<UpdateCustomerResult> UpdateCustomerAsync(UpdateCustomerCommand command)
+        {
+            if (command == null)
+            {
+                return new UpdateCustomerResult
+                {
+                    Succeeded = false,
+                    Message = "La solicitud no es válida."
+                };
+            }
+
+            if (command.CustomerId <= 0)
+            {
+                return new UpdateCustomerResult
+                {
+                    Succeeded = false,
+                    Message = "El cliente es requerido."
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(command.Name))
+            {
+                return new UpdateCustomerResult
+                {
+                    Succeeded = false,
+                    Message = "El nombre del cliente es requerido."
+                };
+            }
+
+            if (command.Latitude is < -90 or > 90)
+            {
+                return new UpdateCustomerResult
+                {
+                    Succeeded = false,
+                    Message = "La latitud no es válida."
+                };
+            }
+
+            if (command.Longitude is < -180 or > 180)
+            {
+                return new UpdateCustomerResult
+                {
+                    Succeeded = false,
+                    Message = "La longitud no es válida."
+                };
+            }
+
+            var customer = new UpdateCustomer
+            {
+                CustomerId = command.CustomerId,
+                Name = command.Name.Trim(),
+                CompanyName = command.CompanyName?.Trim(),
+                Phone = command.Phone?.Trim(),
+                Email = command.Email?.Trim(),
+                SellerId = command.RegisterByExternalId,
+                Address = command.Address?.Trim(),
+                Latitude = command.Latitude,
+                Longitude = command.Longitude
+            };
+
+            UpdateCustomer updated = await _repo.UpdateCustomerAsync(customer);
+
+            return new UpdateCustomerResult
+            {
+                Succeeded = updated.Succeeded,
+                NotFound = updated.NotFound,
+                Message = updated.Message ?? "Cliente actualizado correctamente."
+            };
+        }
+
+        public async Task<ChangeCustomerStatusResult> ChangeCustomerStatusAsync(ChangeCustomerStatusCommand command)
+        {
+            if (command == null)
+            {
+                return new ChangeCustomerStatusResult
+                {
+                    Succeeded = false,
+                    Message = "La solicitud no es válida."
+                };
+            }
+
+            if (command.CustomerId <= 0)
+            {
+                return new ChangeCustomerStatusResult
+                {
+                    Succeeded = false,
+                    Message = "El cliente es requerido."
+                };
+            }
+
+            if (!Enum.IsDefined(typeof(CustomerStatus), command.StatusId))
+            {
+                return new ChangeCustomerStatusResult
+                {
+                    Succeeded = false,
+                    Message = "Estado de cliente inválido."
+                };
+            }
+
+            CustomerStatus status = (CustomerStatus)command.StatusId;
+
+            bool updated = await _repo.ChangeCustomerStatusAsync(command.CustomerId, status);
+
+            if (!updated)
+            {
+                return new ChangeCustomerStatusResult
+                {
+                    Succeeded = false,
+                    NotFound = true,
+                    Message = "Cliente no encontrado."
+                };
+            }
+
+            return new ChangeCustomerStatusResult
+            {
+                Succeeded = true,
+                Message = $"Estado cambiado a '{status.ToValue()}-{status.ToLabel()}'."
+            };
         }
     }
 }

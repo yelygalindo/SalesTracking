@@ -23,7 +23,7 @@ namespace UrbanTrack.Api.Controllers
 
         //    var filtered = all.Where(p =>
         //        (string.IsNullOrEmpty(status) || p.Status.Equals(status, StringComparison.OrdinalIgnoreCase)) &&
-        //        (string.IsNullOrEmpty(customerId) || p.CustomerId == customerId) &&
+        //        (string.IsNullOrEmpty(customerId) || p.CustomerExternalId == customerId) &&
         //        (string.IsNullOrEmpty(sellerId) || p.SellerId == sellerId)
         //    ).ToList();
 
@@ -50,7 +50,7 @@ namespace UrbanTrack.Api.Controllers
         //    {
         //        Id = project.Id,
         //        Name = project.Name,
-        //        CustomerId = project.CustomerId,
+        //        CustomerExternalId = project.CustomerExternalId,
         //        SellerId = project.SellerId,
         //        Status = project.Status,
         //        StartDate = DateTime.UtcNow.AddDays(-10),
@@ -146,8 +146,8 @@ namespace UrbanTrack.Api.Controllers
         //{
         //    return new List<ProductSummaryResponse>
         //    {
-        //        new ProductSummaryResponse { Id = "p-11", Name = "Centro Comercial Las Palmas", CustomerId = "c-101", SellerId = "u-1", Status = "in_progress", CreatedAt = DateTime.UtcNow.AddMonths(-2) },
-        //        new ProductSummaryResponse { Id = "p-22", Name = "Vivienda Social Alto Verde", CustomerId = "c-205", SellerId = "u-2", Status = "planning", CreatedAt = DateTime.UtcNow.AddMonths(-1) }
+        //        new ProductSummaryResponse { Id = "p-11", Name = "Centro Comercial Las Palmas", CustomerExternalId = "c-101", SellerId = "u-1", Status = "in_progress", CreatedAt = DateTime.UtcNow.AddMonths(-2) },
+        //        new ProductSummaryResponse { Id = "p-22", Name = "Vivienda Social Alto Verde", CustomerExternalId = "c-205", SellerId = "u-2", Status = "planning", CreatedAt = DateTime.UtcNow.AddMonths(-1) }
         //    };
         //}
     }

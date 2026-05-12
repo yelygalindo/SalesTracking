@@ -43,7 +43,7 @@
                                                     OR c.Email LIKE @Search
                                                 );";
 
-        public const string GetCustomerById = @"
+        public const string GetCustomerByExternalId = @"
                                                 SELECT
                                                     c.Id,
                                                     c.ExternalId,
@@ -69,7 +69,9 @@
                                                             n.Id,                                                            
                                                             n.ExternalId,
                                                             n.Text,
-                                                            u.ExternalId AS AuthorId,
+                                                            u.Id AS AuthorId,
+                                                            u.ExternalId AS AuthorExternalId,
+                                                            u.Name AS AuthorNameId,
                                                             n.CreatedAtUtc AS CreatedAt
                                                         FROM CustomerNotes n
                                                         INNER JOIN Users u ON n.AuthorId = u.Id
@@ -133,5 +135,35 @@
                                 @CreatedById,
                                 SYSUTCDATETIME()
                             );";
+
+        public const string GetCustomerById = @"
+                                    SELECT TOP 1
+                                        Id
+                                    FROM Customers
+                                    WHERE Id = @Id
+                                    AND IsDeleted = 0;";
+
+        public const string UpdateCustomer = @"
+                                    UPDATE Customers
+                                    SET
+                                        Name = @Name,
+                                        CompanyName = @CompanyName,
+                                        Phone = @Phone,
+                                        Email = @Email,
+                                        SellerId = @SellerId,
+                                        Address = @Address,
+                                        Latitude = @Latitude,
+                                        Longitude = @Longitude,
+                                        UpdatedAtUtc = SYSUTCDATETIME()
+                                    WHERE Id = @CustomerId
+                                    AND IsDeleted = 0;";
+
+        public const string ChangeCustomerStatus = @"
+                                    UPDATE Customers
+                                    SET
+                                        StatusId = @StatusId,
+                                        UpdatedAtUtc = SYSUTCDATETIME()
+                                    WHERE Id = @CustomerId
+                                    AND IsDeleted = 0;";
     }
 }

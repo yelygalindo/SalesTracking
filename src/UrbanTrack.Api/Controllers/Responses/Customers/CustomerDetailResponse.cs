@@ -1,3 +1,5 @@
+using UrbanTrack.Api.Controllers.Responses.CustomerNotes;
+
 namespace UrbanTrack.Api.Controllers.Responses.Customers
 {
     public class CustomerDetailResponse

@@ -9,5 +9,7 @@ namespace SalesTracking.Application.UseCases.Customers.Interfaces
         Task<CustomerDetailResult?> GetCustomerByIdAsync(GetCustomerByIdCommand command);
         Task<CreateCustomerResult> CreateCustomerAsync(CreateCustomerCommand command);
         Task<IReadOnlyList<CustomerStatusResult>> GetCustomerStatusesAsync();
+        Task<UpdateCustomerResult> UpdateCustomerAsync(UpdateCustomerCommand command);
+        Task<ChangeCustomerStatusResult> ChangeCustomerStatusAsync(ChangeCustomerStatusCommand command);
     }
 }

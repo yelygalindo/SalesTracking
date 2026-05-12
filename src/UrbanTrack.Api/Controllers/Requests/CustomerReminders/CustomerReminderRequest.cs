@@ -1,4 +1,4 @@
-namespace UrbanTrack.Api.Controllers.Requests.Customers
+namespace UrbanTrack.Api.Controllers.Requests.CustomerReminders
 {
     public class CustomerReminderRequest
     {

@@ -1,5 +1,6 @@
 ﻿using SalesTracking.Application.UseCases.Customers.Results;
 using UrbanTrack.Api.Controllers.Responses.Common;
+using UrbanTrack.Api.Controllers.Responses.CustomerNotes;
 using UrbanTrack.Api.Controllers.Responses.Customers;
 
 namespace UrbanTrack.Api.Controllers.Responses.Mappers
@@ -48,8 +49,7 @@ namespace UrbanTrack.Api.Controllers.Responses.Mappers
             {                
                 ExternalId = customerNoteResult.ExternalId,
                 Text = customerNoteResult.Text,
-                AuthorId = customerNoteResult.AuthorId,
-                AuthorName = customerNoteResult.AuthorName,              
+                Author = new AuthorResponse(customerNoteResult.Author.Id, customerNoteResult.Author.ExternalId, customerNoteResult.Author.Name),
                 CreatedAt = customerNoteResult.CreatedAtUtc,
             };
         }

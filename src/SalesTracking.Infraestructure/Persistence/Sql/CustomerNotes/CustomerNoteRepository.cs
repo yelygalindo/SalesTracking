@@ -1,0 +1,122 @@
+﻿using Dapper;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
+using SalesTracking.Application.Common.ExternalIds;
+using SalesTracking.Application.UseCases.CustomerNotes.Interfaces;
+using SalesTracking.Application.UseCases.CustomerNotes.Models;
+using SalesTracking.Domain.Entities;
+using SalesTracking.Infrastructure.Persistence.Settings;
+using SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes.Mappers;
+using SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes.Rows;
+using System.Data;
+
+namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes
+{
+    public class CustomerNoteRepository : ICustomerNoteRepository
+    {
+        private readonly DatabaseSettings _databaseOptions;
+
+        public CustomerNoteRepository(IOptions<DatabaseSettings> databaseOptions)
+        {
+            _databaseOptions = databaseOptions.Value ?? throw new ArgumentNullException(nameof(databaseOptions));
+        }
+
+        private IDbConnection CreateConnection() => new SqlConnection(_databaseOptions.ConnectionString);
+        public async Task<IReadOnlyList<CustomerNote>> GetNotesAsync(string customerExternalId)
+        {
+            using IDbConnection conn = CreateConnection();
+
+            IEnumerable<CustomerNoteRow> notes = await conn.QueryAsync<CustomerNoteRow>(
+                CustomerNoteRepositoryQueries.GetNotesByCustomerExternalId,
+                new { CustomerExternalId = customerExternalId });
+
+            return notes.Select(x => x.ToDomain()).ToList();
+        }
+
+        public async Task<ResponseCreateCustomerNote> AddNoteAsync(CreateCustomerNote note)
+        {
+            using IDbConnection conn = CreateConnection();
+            conn.Open();
+
+            using IDbTransaction transaction = conn.BeginTransaction();
+
+            try
+            {
+                int? customerInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
+                    CustomerNoteRepositoryQueries.GetCustomerInternalIdByExternalId,
+                    new { ExternalId = note.CustomerExternalId },
+                    transaction);
+
+                if (customerInternalId == null)
+                {
+                    transaction.Rollback();
+                    return new ResponseCreateCustomerNote()
+                    {
+                        Succeeded = false,
+                        NotFound = true,
+                        Message = "Cliente no encontrado."
+                    };
+                }
+
+                int? authorInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
+                    CustomerNoteRepositoryQueries.GetUserInternalIdByExternalId,
+                    new { ExternalId = note.AuthorExternalId },
+                    transaction);
+
+                if (authorInternalId == null)
+                {
+                    transaction.Rollback();
+                    return new ResponseCreateCustomerNote()
+                    {
+                        Succeeded = false,
+                        NotFound = true,
+                        Message = "Autor no encontrado o inactivo."
+                    };
+                }
+
+                await conn.ExecuteAsync(
+                    CustomerNoteRepositoryQueries.AddNote,
+                    new
+                    {
+                        note.ExternalId,
+                        CustomerId = customerInternalId.Value,
+                        note.Text,
+                        AuthorId = authorInternalId.Value
+                    },
+                    transaction);
+
+                await conn.ExecuteAsync(
+                    CustomerNoteRepositoryQueries.CreateCustomerTimelineEvent,
+                    new
+                    {
+                        ExternalId = ExternalIdGenerator.New(ExternalIdPrefixes.CustomerTimelineEvent),
+                        CustomerId = customerInternalId.Value,
+                        EventType = "CustomerNoteAdded",
+                        Description = "Nota agregada al cliente.",
+                        CreatedById = authorInternalId.Value
+                    },
+                    transaction);
+
+                transaction.Commit();
+                return new ResponseCreateCustomerNote()
+                {
+                    Succeeded = true,
+                    NotFound = false,
+                    Message = "Nota agregada correctamente.",
+                    CreateCustomerNote = note
+                };
+            }
+            catch
+            {
+                transaction.Rollback();
+                return new ResponseCreateCustomerNote()
+                {
+                    Succeeded = false,
+                    NotFound = false,
+                    Message = "Ocurrió un error al agregar la nota.",
+                    CreateCustomerNote = note
+                };
+            }
+        }
+    }
+}

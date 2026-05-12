@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using UrbanTrack.Api.Controllers.Requests.Customers;
+using UrbanTrack.Api.Controllers.Requests.CustomerReminders;
 using UrbanTrack.Api.Controllers.Responses.Common;
 using UrbanTrack.Api.Controllers.Responses.Customers;
 

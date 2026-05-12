@@ -1,5 +1,6 @@
 ﻿using SalesTracking.Domain.Entities;
 using SalesTracking.Domain.Enums;
+using SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes.Rows;
 using SalesTracking.Infrastructure.Persistence.Sql.Customers.Rows;
 
 namespace SalesTracking.Infrastructure.Persistence.Sql.Customers.Mappers
@@ -46,8 +47,9 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers.Mappers
             return new CustomerNote
             {
                 Id = row.Id,
+                ExternalId = row.ExternalId,
                 Text = row.Text,
-                ExternalAuthorId = row.AuthorId,
+                Author = new Author(row.AuthorId,row.AuthorExternalId,row.AuthorName),
                 CreatedAtUtc = row.CreatedAt
             };
         }

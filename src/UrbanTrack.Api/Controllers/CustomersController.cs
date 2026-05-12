@@ -68,31 +68,42 @@ namespace UrbanTrack.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<MessageResponse>> Update(string id, [FromBody] UpdateCustomerRequest req)
+        public async Task<ActionResult<MessageApiResponse>> Update(int id,[FromBody] UpdateCustomerRequest request)
         {
-            var exists = GetMockCustomers().Any(c => c.Id == 1);
-            if (!exists) return await Task.FromResult(NotFound(new ErrorResponse { Error = "Cliente no encontrado." }));
-            return await Task.FromResult(Ok(new MessageResponse { Message = "Cliente actualizado (mock)." }));
+            UpdateCustomerResult result = await _service.UpdateCustomerAsync(
+                request.ToApplication(id));
+
+            if (!result.Succeeded)
+            {
+                if (result.NotFound)
+                    return NotFound(new ErrorResponse { Error = result.Message });
+
+                return BadRequest(new ErrorResponse { Error = result.Message });
+            }
+
+            return Ok(new MessageApiResponse { Message = result.Message });
         }
 
         [HttpPatch("{id}/status")]
         [ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
-        public async Task<ActionResult<MessageApiResponse>> ChangeStatus(string id, [FromBody] ChangeStatusRequest req)
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<MessageApiResponse>> ChangeStatus(int id,[FromBody] ChangeStatusRequest request)
         {
-            return await Task.FromResult(Ok(new MessageApiResponse { Message = $"Estado cambiado a '{req.Status}' (mock)." }));
-        }       
+            ChangeCustomerStatusResult result = await _service.ChangeCustomerStatusAsync(request.ToApplication(id));
 
-        // Helpers - mocked data
-        private List<CustomerSummaryResponse> GetMockCustomers()
-        {
-            return new List<CustomerSummaryResponse>
+            if (!result.Succeeded)
             {
-                new CustomerSummaryResponse { Name = "Construcciones Rivera", CompanyName = "Rivera S.A.", Phone = "+52 55 1234 5678", Email = "contacto@rivera.mx", Status = "active",  CreatedAt = DateTime.UtcNow.AddMonths(-6) },
-                new CustomerSummaryResponse { Name = "Almacen Obra S.A.", CompanyName = "AlmacenObra", Phone = "+52 55 8765 4321", Email = "ventas@almacenobra.mx", Status = "prospect", CreatedAt = DateTime.UtcNow.AddMonths(-1) },
-                new CustomerSummaryResponse { Name = "Grupo Aislantes", CompanyName = "Aislantes Norte", Phone = "+52 55 2222 3333", Email = "info@aislantes.mx", Status = "active", CreatedAt = DateTime.UtcNow.AddYears(-1) }
-            };
-        }
+                if (result.NotFound)
+                    return NotFound(new ErrorResponse { Error = result.Message });
+
+                return BadRequest(new ErrorResponse { Error = result.Message });
+            }
+
+            return Ok(new MessageApiResponse { Message = result.Message });
+        }        
     }
 }

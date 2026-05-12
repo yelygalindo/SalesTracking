@@ -1,14 +1,13 @@
-namespace UrbanTrack.Api.Controllers.Requests.Customers
+﻿namespace SalesTracking.Application.UseCases.Customers.Comands
 {
-    public class UpdateCustomerRequest
+    public class UpdateCustomerCommand
     {
+        public int CustomerId { get; set; }
         public string Name { get; set; }
         public string? CompanyName { get; set; }
         public string? Phone { get; set; }
         public string? Email { get; set; }
-
         public string? RegisterByExternalId { get; set; }
-
         public string? Address { get; set; }
         public decimal? Latitude { get; set; }
         public decimal? Longitude { get; set; }
