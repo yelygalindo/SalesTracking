@@ -17,6 +17,6 @@ namespace SalesTracking.Domain.Entities
 
         public DateTime CreatedAtUtc { get; set; }
         public Seller? Seller { get; set; }
-        public List<CustomerNote> Notes { get; set; } = new();
+        public List<CustomerNote> Notes { get; set; } = new();      
     }
 }

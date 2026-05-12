@@ -1,39 +1,73 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SalesTracking.Application.UseCases.CustomerReminders.Comands;
+using SalesTracking.Application.UseCases.CustomerReminders.Interfaces;
+using SalesTracking.Application.UseCases.CustomerReminders.Results;
 using UrbanTrack.Api.Controllers.Requests.CustomerReminders;
+using UrbanTrack.Api.Controllers.Requests.Mappers;
 using UrbanTrack.Api.Controllers.Responses.Common;
 using UrbanTrack.Api.Controllers.Responses.Customers;
+using UrbanTrack.Api.Controllers.Responses.Mappers;
 
 namespace UrbanTrack.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/customers/{customerExternalId}/reminders")]
     public class CustomerRemindersController : ControllerBase
     {
-        [HttpGet("{id}/reminders")]
+        private readonly ICustomerReminderService _service;
+
+        public CustomerRemindersController(ICustomerReminderService service)
+        {
+            _service = service;
+        }
+
+        [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<CustomerReminderResponse>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<CustomerReminderResponse>>> GetReminders(string id)
+        public async Task<ActionResult<IEnumerable<CustomerReminderResponse>>> GetReminders(string customerExternalId)
         {
-            var reminders = new List<CustomerReminderResponse>
-            {
-                new CustomerReminderResponse { Id = "r-1", Text = "Visitar obra", ReminderAt = DateTime.UtcNow.AddDays(2), AssignedToId = "u-2", Completed = false }
-            };
-            return await Task.FromResult(Ok(reminders));
+            IReadOnlyList<CustomerReminderResult> reminders = await _service.GetRemindersAsync(
+                new GetCustomerRemindersCommand(customerExternalId));
+
+            return Ok(reminders.Select(x => x.ToResponse()));
         }
 
-        [HttpPost("{id}/reminders")]
+        [HttpPost]
         [ProducesResponseType(typeof(IdMessageResponse), StatusCodes.Status201Created)]
-        public async Task<ActionResult<IdMessageResponse>> CreateReminder(string id, [FromBody] CustomerReminderRequest req)
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IdMessageResponse>> CreateReminder(
+            string customerExternalId,
+            [FromBody] CustomerReminderRequest request)
         {
-            var rid = $"r-{Guid.NewGuid():N}".Substring(0, 8);
-            return await Task.FromResult(Created(string.Empty, new IdMessageResponse { Id = rid, Message = "Recordatorio creado (mock)." }));
+            CreateCustomerReminderResult result = await _service.CreateReminderAsync(
+                request.ToApplication(customerExternalId));
+
+            if (!result.Succeeded)
+            {
+                if (result.NotFound)
+                    return NotFound(new ErrorResponse { Error = result.Message });
+
+                return BadRequest(new ErrorResponse { Error = result.Message });
+            }
+
+            return Created(string.Empty, result.ToResponse());
         }
 
-        [HttpPatch("{id}/reminders/{reminderId}/complete")]
+        [HttpPatch("{reminderExternalId}/complete")]
         [ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
-        public async Task<ActionResult<MessageApiResponse>> CompleteReminder(string id, string reminderId)
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<MessageApiResponse>> CompleteReminder(
+            string customerExternalId,
+            string reminderExternalId)
         {
-            return await Task.FromResult(Ok(new MessageApiResponse { Message = "Recordatorio marcado como completado (mock)." }));
+            CompleteCustomerReminderResult result = await _service.CompleteReminderAsync(
+                new CompleteCustomerReminderCommand(customerExternalId, reminderExternalId));
+
+            if (!result.Succeeded)
+                return NotFound(new ErrorResponse { Error = result.Message });
+
+            return Ok(new MessageApiResponse { Message = result.Message });
         }
     }
 }
