@@ -53,6 +53,24 @@ namespace SalesTracking.Application.UseCases.Projects.Services
                 };
             }
 
+            if (command.Latitude is < -90 or > 90)
+            {
+                return new CreateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "La latitud no es válida."
+                };
+            }
+
+            if (command.Longitude is < -180 or > 180)
+            {
+                return new CreateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "La longitud no es válida."
+                };
+            }
+
             var externalId = ExternalIdGenerator.New(ExternalIdPrefixes.Project);
 
             var project = Project.Create(
@@ -63,7 +81,10 @@ namespace SalesTracking.Application.UseCases.Projects.Services
                 command.SellerId,
                 command.EstimatedAmount,
                 command.StartDateUtc,
-                command.ExpectedCloseDateUtc);
+                command.ExpectedCloseDateUtc,
+                command.Address,
+                command.Latitude,
+                command.Longitude);
 
             return await _projectRepository.CreateAsync(project);
         }       
@@ -136,6 +157,24 @@ namespace SalesTracking.Application.UseCases.Projects.Services
                 };
             }
 
+            if (command.Latitude is < -90 or > 90)
+            {
+                return new UpdateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "La latitud no es válida."
+                };
+            }
+
+            if (command.Longitude is < -180 or > 180)
+            {
+                return new UpdateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "La longitud no es válida."
+                };
+            }
+
             var normalizedCommand = new UpdateProjectCommand
             {
                 ExternalId = command.ExternalId.Trim(),
@@ -145,7 +184,10 @@ namespace SalesTracking.Application.UseCases.Projects.Services
                 SellerExternalId = command.SellerExternalId.Trim(),
                 EstimatedAmount = command.EstimatedAmount,
                 StartDateUtc = command.StartDateUtc,
-                ExpectedCloseDateUtc = command.ExpectedCloseDateUtc
+                ExpectedCloseDateUtc = command.ExpectedCloseDateUtc,
+                Address = command.Address?.Trim(),
+                Latitude = command.Latitude,
+                Longitude = command.Longitude
             };
 
             return await _projectRepository.UpdateAsync(normalizedCommand);

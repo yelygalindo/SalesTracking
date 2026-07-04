@@ -67,7 +67,10 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                     StatusId = (int)project.Status,
                     project.EstimatedAmount,
                     project.StartDateUtc,
-                    project.ExpectedCloseDateUtc
+                    project.ExpectedCloseDateUtc,
+                    project.Address,
+                    project.Latitude,
+                    project.Longitude
                 });
 
             if (string.IsNullOrWhiteSpace(createdId))
@@ -207,7 +210,10 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                     command.SellerExternalId,
                     command.EstimatedAmount,
                     command.StartDateUtc,
-                    command.ExpectedCloseDateUtc
+                    command.ExpectedCloseDateUtc,
+                    command.Address,
+                    command.Latitude,
+                    command.Longitude
                 });
 
             return new UpdateProjectResult

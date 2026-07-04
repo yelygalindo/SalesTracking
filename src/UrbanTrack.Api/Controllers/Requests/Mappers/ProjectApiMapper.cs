@@ -24,7 +24,10 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 request.SellerExternalId,
                 request.EstimatedAmount,
                 request.StartDateUtc,
-                request.ExpectedCloseDateUtc);
+                request.ExpectedCloseDateUtc,
+                request.Address,
+                request.Latitude,
+                request.Longitude);
         }
 
         public static GetProjectsCommand ToApplication(this GetProjectsRequest request)
@@ -50,7 +53,10 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 SellerExternalId = request.SellerExternalId,
                 EstimatedAmount = request.EstimatedAmount,
                 StartDateUtc = request.StartDateUtc,
-                ExpectedCloseDateUtc = request.ExpectedCloseDateUtc
+                ExpectedCloseDateUtc = request.ExpectedCloseDateUtc,
+                Address = request.Address,
+                Latitude = request.Latitude,
+                Longitude = request.Longitude
             };
         }
 
@@ -90,6 +96,9 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 EstimatedAmount = result.EstimatedAmount,
                 StartDateUtc = result.StartDateUtc,
                 ExpectedCloseDateUtc = result.ExpectedCloseDateUtc,
+                Address = result.Address,
+                Latitude = result.Latitude,
+                Longitude = result.Longitude,
                 CreatedAtUtc = result.CreatedAtUtc
             };
         }
@@ -110,6 +119,9 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 EstimatedAmount = result.EstimatedAmount,
                 StartDateUtc = result.StartDateUtc,
                 ExpectedCloseDateUtc = result.ExpectedCloseDateUtc,
+                Address = result.Address,
+                Latitude = result.Latitude,
+                Longitude = result.Longitude,
                 CreatedAtUtc = result.CreatedAtUtc
             };
         }

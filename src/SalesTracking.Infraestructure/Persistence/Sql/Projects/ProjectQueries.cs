@@ -13,6 +13,9 @@ INSERT INTO Projects (
     EstimatedAmount,
     StartDateUtc,
     ExpectedCloseDateUtc,
+    Address,
+    Latitude,
+    Longitude,
     CreatedAtUtc,
     IsDeleted
 )
@@ -27,6 +30,9 @@ SELECT
     @EstimatedAmount,
     @StartDateUtc,
     @ExpectedCloseDateUtc,
+    @Address,
+    @Latitude,
+    @Longitude,
     SYSUTCDATETIME(),
     0
 FROM Customers c
@@ -49,6 +55,9 @@ SELECT
     p.EstimatedAmount,
     p.StartDateUtc,
     p.ExpectedCloseDateUtc,
+    p.Address,
+    p.Latitude,
+    p.Longitude,
     p.CreatedAtUtc,
     COUNT(1) OVER() AS TotalCount
 FROM Projects p
@@ -78,6 +87,9 @@ SELECT
     p.EstimatedAmount,
     p.StartDateUtc,
     p.ExpectedCloseDateUtc,
+    p.Address,
+    p.Latitude,
+    p.Longitude,
     p.CreatedAtUtc
 FROM Projects p
 INNER JOIN Customers c ON c.Id = p.CustomerId
@@ -119,6 +131,9 @@ SET
     p.EstimatedAmount = @EstimatedAmount,
     p.StartDateUtc = @StartDateUtc,
     p.ExpectedCloseDateUtc = @ExpectedCloseDateUtc,
+    p.Address = @Address,
+    p.Latitude = @Latitude,
+    p.Longitude = @Longitude,
     p.UpdatedAtUtc = SYSUTCDATETIME()
 FROM Projects p
 INNER JOIN Customers c ON c.ExternalId = @CustomerExternalId AND c.IsDeleted = 0

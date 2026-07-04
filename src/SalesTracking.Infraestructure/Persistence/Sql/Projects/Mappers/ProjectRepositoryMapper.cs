@@ -21,6 +21,9 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects.Mappers
                 EstimatedAmount = row.EstimatedAmount,
                 StartDateUtc = row.StartDateUtc,
                 ExpectedCloseDateUtc = row.ExpectedCloseDateUtc,
+                Address = row.Address,
+                Latitude = row.Latitude,
+                Longitude = row.Longitude,
                 CreatedAtUtc = row.CreatedAtUtc
             };
         }
@@ -41,6 +44,9 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects.Mappers
                 EstimatedAmount = row.EstimatedAmount,
                 StartDateUtc = row.StartDateUtc,
                 ExpectedCloseDateUtc = row.ExpectedCloseDateUtc,
+                Address = row.Address,
+                Latitude = row.Latitude,
+                Longitude = row.Longitude,
                 CreatedAtUtc = row.CreatedAtUtc
             };
         }

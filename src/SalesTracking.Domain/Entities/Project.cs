@@ -14,6 +14,9 @@ namespace SalesTracking.Domain.Entities
         public decimal? EstimatedAmount { get; private set; }
         public DateTime? StartDateUtc { get; private set; }
         public DateTime? ExpectedCloseDateUtc { get; private set; }
+        public string? Address { get; private set; }
+        public decimal? Latitude { get; private set; }
+        public decimal? Longitude { get; private set; }
 
         private Project(
             string externalId,
@@ -24,7 +27,10 @@ namespace SalesTracking.Domain.Entities
             ProjectStatus status,
             decimal? estimatedAmount,
             DateTime? startDateUtc,
-            DateTime? expectedCloseDateUtc)
+            DateTime? expectedCloseDateUtc,
+            string? address,
+            decimal? latitude,
+            decimal? longitude)
         {
             ExternalId = externalId;
             Name = name;
@@ -35,6 +41,9 @@ namespace SalesTracking.Domain.Entities
             EstimatedAmount = estimatedAmount;
             StartDateUtc = startDateUtc;
             ExpectedCloseDateUtc = expectedCloseDateUtc;
+            Address = address;
+            Latitude = latitude;
+            Longitude = longitude;
         }
 
         public static Project Create(
@@ -45,7 +54,10 @@ namespace SalesTracking.Domain.Entities
             string sellerExternalId,
             decimal? estimatedAmount,
             DateTime? startDateUtc,
-            DateTime? expectedCloseDateUtc)
+            DateTime? expectedCloseDateUtc,
+            string? address,
+            decimal? latitude,
+            decimal? longitude)
         {
             if (string.IsNullOrWhiteSpace(externalId))
                 throw new ArgumentException("External id is required.", nameof(externalId));
@@ -68,7 +80,10 @@ namespace SalesTracking.Domain.Entities
                 ProjectStatus.Active,
                 estimatedAmount,
                 startDateUtc,
-                expectedCloseDateUtc);
+                expectedCloseDateUtc,
+                address?.Trim(),
+                latitude,
+                longitude);
         }
     }
 }

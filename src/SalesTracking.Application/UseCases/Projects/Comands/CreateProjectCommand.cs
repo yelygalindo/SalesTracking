@@ -7,6 +7,9 @@
     string SellerId,
     decimal? EstimatedAmount,
     DateTime? StartDateUtc,
-    DateTime? ExpectedCloseDateUtc
+    DateTime? ExpectedCloseDateUtc,
+    string? Address,
+    decimal? Latitude,
+    decimal? Longitude
 );
 }

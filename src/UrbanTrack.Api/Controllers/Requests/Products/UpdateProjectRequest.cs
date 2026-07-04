@@ -9,5 +9,8 @@ namespace UrbanTrack.Api.Controllers.Requests.Products
         public decimal? EstimatedAmount { get; set; }
         public DateTime? StartDateUtc { get; set; }
         public DateTime? ExpectedCloseDateUtc { get; set; }
+        public string? Address { get; set; }
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
     }
 }
