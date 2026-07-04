@@ -106,5 +106,12 @@ SET StatusId = @StatusId,
     UpdatedAtUtc = SYSUTCDATETIME()
 WHERE IsDeleted = 0
   AND ExternalId = @ExternalId;";
+
+        public const string Delete = @"
+UPDATE Projects
+SET IsDeleted = 1,
+    UpdatedAtUtc = SYSUTCDATETIME()
+WHERE IsDeleted = 0
+  AND ExternalId = @ExternalId;";
     }
 }

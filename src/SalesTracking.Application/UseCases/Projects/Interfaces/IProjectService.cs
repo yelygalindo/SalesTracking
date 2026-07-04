@@ -10,5 +10,6 @@ namespace SalesTracking.Application.UseCases.Projects.Interfaces
         Task<ProjectPagedList> GetAsync(GetProjectsCommand command);
         Task<ProjectDetailResult?> GetByExternalIdAsync(GetProjectByExternalIdCommand command);
         Task<ChangeProjectStatusResult> ChangeStatusAsync(ChangeProjectStatusCommand command);
+        Task<DeleteProjectResult> DeleteAsync(DeleteProjectCommand command);
     }
 }

@@ -153,5 +153,34 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                 Message = "Estado de proyecto actualizado correctamente."
             };
         }
+
+        public async Task<DeleteProjectResult> DeleteAsync(DeleteProjectCommand command)
+        {
+            using var connection = CreateConnection();
+
+            int projectExists = await connection.ExecuteScalarAsync<int>(
+                ProjectQueries.ProjectExistsByExternalId,
+                new { command.ExternalId });
+
+            if (projectExists == 0)
+            {
+                return new DeleteProjectResult
+                {
+                    Succeeded = false,
+                    NotFound = true,
+                    Message = "Proyecto no encontrado."
+                };
+            }
+
+            await connection.ExecuteAsync(
+                ProjectQueries.Delete,
+                new { command.ExternalId });
+
+            return new DeleteProjectResult
+            {
+                Succeeded = true,
+                Message = "Proyecto eliminado correctamente."
+            };
+        }
     }
 }

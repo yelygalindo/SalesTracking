@@ -99,5 +99,24 @@ namespace SalesTracking.Application.UseCases.Projects.Services
 
             return await _projectRepository.ChangeStatusAsync(normalizedCommand);
         }
+
+        public async Task<DeleteProjectResult> DeleteAsync(DeleteProjectCommand command)
+        {
+            if (command == null || string.IsNullOrWhiteSpace(command.ExternalId))
+            {
+                return new DeleteProjectResult
+                {
+                    Succeeded = false,
+                    Message = "El proyecto es requerido."
+                };
+            }
+
+            var normalizedCommand = command with
+            {
+                ExternalId = command.ExternalId.Trim()
+            };
+
+            return await _projectRepository.DeleteAsync(normalizedCommand);
+        }
     }
 }
