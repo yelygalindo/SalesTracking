@@ -11,7 +11,7 @@ using UrbanTrack.Api.Controllers.Responses.Mappers;
 namespace UrbanTrack.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _service;

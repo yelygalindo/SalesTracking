@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 namespace UrbanTrack.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/dashboard")]
     public class DashboardController : ControllerBase
     {
         [HttpGet]

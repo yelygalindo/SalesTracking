@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 namespace UrbanTrack.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/products")]
     public class ProductsController : ControllerBase
     {
         //[HttpGet]

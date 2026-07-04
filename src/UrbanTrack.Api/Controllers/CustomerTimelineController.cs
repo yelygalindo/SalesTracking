@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace UrbanTrack.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/customer-timeline")]
     public class CustomerTimelineController : ControllerBase    
     {
         [HttpGet("{id}/timeline")]

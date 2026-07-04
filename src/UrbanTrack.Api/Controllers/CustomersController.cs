@@ -12,7 +12,7 @@ using UrbanTrack.Api.Controllers.Responses.Mappers;
 namespace UrbanTrack.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/customers")]
     public class CustomersController : ControllerBase
     {
         private readonly ICustomerService _service;

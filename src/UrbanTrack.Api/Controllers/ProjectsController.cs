@@ -12,7 +12,7 @@ using UrbanTrack.Api.Controllers.Responses.Projects;
 namespace UrbanTrack.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/projects")]
     public class ProjectsController : ControllerBase
     {
 
