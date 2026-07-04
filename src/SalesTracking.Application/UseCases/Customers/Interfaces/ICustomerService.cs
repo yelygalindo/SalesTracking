@@ -11,5 +11,6 @@ namespace SalesTracking.Application.UseCases.Customers.Interfaces
         Task<IReadOnlyList<CustomerStatusResult>> GetCustomerStatusesAsync();
         Task<UpdateCustomerResult> UpdateCustomerAsync(UpdateCustomerCommand command);
         Task<ChangeCustomerStatusResult> ChangeCustomerStatusAsync(ChangeCustomerStatusCommand command);
+        Task<DeleteCustomerResult> DeleteCustomerAsync(DeleteCustomerCommand command);
     }
 }

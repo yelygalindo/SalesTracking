@@ -320,5 +320,35 @@ namespace SalesTracking.Application.UseCases.Customers.Services
                 Message = $"Estado cambiado a '{status.ToValue()}-{status.ToLabel()}'."
             };
         }
+
+        public async Task<DeleteCustomerResult> DeleteCustomerAsync(DeleteCustomerCommand command)
+        {
+            if (command == null || string.IsNullOrWhiteSpace(command.ExternalId))
+            {
+                return new DeleteCustomerResult
+                {
+                    Succeeded = false,
+                    Message = "El cliente es requerido."
+                };
+            }
+
+            bool deleted = await _repo.DeleteCustomerAsync(command.ExternalId.Trim());
+
+            if (!deleted)
+            {
+                return new DeleteCustomerResult
+                {
+                    Succeeded = false,
+                    NotFound = true,
+                    Message = "Cliente no encontrado."
+                };
+            }
+
+            return new DeleteCustomerResult
+            {
+                Succeeded = true,
+                Message = "Cliente eliminado correctamente."
+            };
+        }
     }
 }

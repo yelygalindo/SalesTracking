@@ -104,6 +104,26 @@ namespace UrbanTrack.Api.Controllers
             }
 
             return Ok(new MessageApiResponse { Message = result.Message });
-        }        
+        }
+
+        [HttpDelete("{externalId}")]
+        [ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<MessageApiResponse>> Delete(string externalId)
+        {
+            DeleteCustomerResult result = await _service.DeleteCustomerAsync(
+                new DeleteCustomerCommand(externalId));
+
+            if (!result.Succeeded)
+            {
+                if (result.NotFound)
+                    return NotFound(new ErrorResponse { Error = result.Message });
+
+                return BadRequest(new ErrorResponse { Error = result.Message });
+            }
+
+            return Ok(new MessageApiResponse { Message = result.Message });
+        }
     }
 }

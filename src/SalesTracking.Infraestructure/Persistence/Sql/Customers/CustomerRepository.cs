@@ -308,5 +308,53 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                 return false;
             }
         }
+
+        public async Task<bool> DeleteCustomerAsync(string externalId)
+        {
+            using var conn = CreateConnection();
+            conn.Open();
+
+            using var transaction = conn.BeginTransaction();
+
+            try
+            {
+                int? customerInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
+                    CustomerRepositoryQueries.GetCustomerInternalIdByExternalId,
+                    new { ExternalId = externalId },
+                    transaction);
+
+                if (customerInternalId == null)
+                {
+                    transaction.Rollback();
+                    return false;
+                }
+
+                await conn.ExecuteAsync(
+                    CustomerRepositoryQueries.DeleteCustomer,
+                    new { CustomerId = customerInternalId.Value },
+                    transaction);
+
+                await conn.ExecuteAsync(
+                    CustomerRepositoryQueries.CreateCustomerTimelineEvent,
+                    new
+                    {
+                        ExternalId = ExternalIdGenerator.New(ExternalIdPrefixes.CustomerTimelineEvent),
+                        CustomerId = customerInternalId.Value,
+                        EventType = "CustomerDeleted",
+                        Description = "Cliente eliminado.",
+                        CreatedById = (int?)null
+                    },
+                    transaction);
+
+                transaction.Commit();
+
+                return true;
+            }
+            catch
+            {
+                transaction.Rollback();
+                return false;
+            }
+        }
     }
 }

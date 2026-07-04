@@ -11,5 +11,6 @@ namespace SalesTracking.Application.UseCases.Customers.Interfaces
         Task<CreateCustomer> CreateCustomerAsync(CreateCustomer customer);
         Task<UpdateCustomer> UpdateCustomerAsync(UpdateCustomer customer);
         Task<bool> ChangeCustomerStatusAsync(string externalId, CustomerStatus status);
+        Task<bool> DeleteCustomerAsync(string externalId);
     }
 }

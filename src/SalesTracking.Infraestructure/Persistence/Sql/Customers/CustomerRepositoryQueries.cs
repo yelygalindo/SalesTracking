@@ -165,5 +165,13 @@
                                         UpdatedAtUtc = SYSUTCDATETIME()
                                     WHERE Id = @CustomerId
                                     AND IsDeleted = 0;";
+
+        public const string DeleteCustomer = @"
+                                    UPDATE Customers
+                                    SET
+                                        IsDeleted = 1,
+                                        UpdatedAtUtc = SYSUTCDATETIME()
+                                    WHERE Id = @CustomerId
+                                    AND IsDeleted = 0;";
     }
 }
