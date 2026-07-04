@@ -108,6 +108,71 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
             return row?.ToResult();
         }
 
+        public async Task<UpdateProjectResult> UpdateAsync(UpdateProjectCommand command)
+        {
+            using var connection = CreateConnection();
+
+            int projectExists = await connection.ExecuteScalarAsync<int>(
+                ProjectQueries.ProjectExistsByExternalId,
+                new { command.ExternalId });
+
+            if (projectExists == 0)
+            {
+                return new UpdateProjectResult
+                {
+                    Succeeded = false,
+                    NotFound = true,
+                    Message = "Proyecto no encontrado."
+                };
+            }
+
+            int customerExists = await connection.ExecuteScalarAsync<int>(
+                ProjectQueries.CustomerExistsByExternalId,
+                new { command.CustomerExternalId });
+
+            if (customerExists == 0)
+            {
+                return new UpdateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "Cliente no encontrado."
+                };
+            }
+
+            int sellerExists = await connection.ExecuteScalarAsync<int>(
+                ProjectQueries.SellerExistsByExternalId,
+                new { command.SellerExternalId });
+
+            if (sellerExists == 0)
+            {
+                return new UpdateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "Vendedor no encontrado."
+                };
+            }
+
+            await connection.ExecuteAsync(
+                ProjectQueries.Update,
+                new
+                {
+                    command.ExternalId,
+                    command.Name,
+                    command.Description,
+                    command.CustomerExternalId,
+                    command.SellerExternalId,
+                    command.EstimatedAmount,
+                    command.StartDateUtc,
+                    command.ExpectedCloseDateUtc
+                });
+
+            return new UpdateProjectResult
+            {
+                Succeeded = true,
+                Message = "Proyecto actualizado correctamente."
+            };
+        }
+
         public async Task<ChangeProjectStatusResult> ChangeStatusAsync(ChangeProjectStatusCommand command)
         {
             using var connection = CreateConnection();

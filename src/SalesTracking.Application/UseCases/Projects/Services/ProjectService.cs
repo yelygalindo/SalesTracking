@@ -71,6 +71,59 @@ namespace SalesTracking.Application.UseCases.Projects.Services
             return await _projectRepository.GetByExternalIdAsync(normalizedCommand);
         }
 
+        public async Task<UpdateProjectResult> UpdateAsync(UpdateProjectCommand command)
+        {
+            if (command == null || string.IsNullOrWhiteSpace(command.ExternalId))
+            {
+                return new UpdateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "El proyecto es requerido."
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(command.Name))
+            {
+                return new UpdateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "El nombre del proyecto es requerido."
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(command.CustomerExternalId))
+            {
+                return new UpdateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "El cliente es requerido."
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(command.SellerExternalId))
+            {
+                return new UpdateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "El vendedor es requerido."
+                };
+            }
+
+            var normalizedCommand = new UpdateProjectCommand
+            {
+                ExternalId = command.ExternalId.Trim(),
+                Name = command.Name.Trim(),
+                Description = command.Description?.Trim(),
+                CustomerExternalId = command.CustomerExternalId.Trim(),
+                SellerExternalId = command.SellerExternalId.Trim(),
+                EstimatedAmount = command.EstimatedAmount,
+                StartDateUtc = command.StartDateUtc,
+                ExpectedCloseDateUtc = command.ExpectedCloseDateUtc
+            };
+
+            return await _projectRepository.UpdateAsync(normalizedCommand);
+        }
+
         public async Task<ChangeProjectStatusResult> ChangeStatusAsync(ChangeProjectStatusCommand command)
         {
             if (command == null || string.IsNullOrWhiteSpace(command.ExternalId))

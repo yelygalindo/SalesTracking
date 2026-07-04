@@ -9,6 +9,7 @@ namespace SalesTracking.Application.UseCases.Projects.Interfaces
         Task<CreateProjectResult?> CreateAsync(CreateProjectCommand command);
         Task<ProjectPagedList> GetAsync(GetProjectsCommand command);
         Task<ProjectDetailResult?> GetByExternalIdAsync(GetProjectByExternalIdCommand command);
+        Task<UpdateProjectResult> UpdateAsync(UpdateProjectCommand command);
         Task<ChangeProjectStatusResult> ChangeStatusAsync(ChangeProjectStatusCommand command);
         Task<DeleteProjectResult> DeleteAsync(DeleteProjectCommand command);
     }

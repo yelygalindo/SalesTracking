@@ -100,6 +100,35 @@ SELECT COUNT(1)
 FROM ProjectStatus ps
 WHERE ps.ProjectStatusId = @StatusId;";
 
+        public const string CustomerExistsByExternalId = @"
+SELECT COUNT(1)
+FROM Customers c
+WHERE c.IsDeleted = 0
+  AND c.ExternalId = @CustomerExternalId;";
+
+        public const string SellerExistsByExternalId = @"
+SELECT COUNT(1)
+FROM Users u
+WHERE u.IsActive = 1
+  AND u.ExternalId = @SellerExternalId;";
+
+        public const string Update = @"
+UPDATE p
+SET
+    p.Name = @Name,
+    p.Description = @Description,
+    p.CustomerId = c.Id,
+    p.SellerId = u.Id,
+    p.EstimatedAmount = @EstimatedAmount,
+    p.StartDateUtc = @StartDateUtc,
+    p.ExpectedCloseDateUtc = @ExpectedCloseDateUtc,
+    p.UpdatedAtUtc = SYSUTCDATETIME()
+FROM Projects p
+INNER JOIN Customers c ON c.ExternalId = @CustomerExternalId AND c.IsDeleted = 0
+INNER JOIN Users u ON u.ExternalId = @SellerExternalId AND u.IsActive = 1
+WHERE p.IsDeleted = 0
+  AND p.ExternalId = @ExternalId;";
+
         public const string ChangeStatus = @"
 UPDATE Projects
 SET StatusId = @StatusId,

@@ -37,6 +37,23 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 request.PageSize);
         }
 
+        public static UpdateProjectCommand ToApplication(
+            this UpdateProjectRequest request,
+            string externalId)
+        {
+            return new UpdateProjectCommand
+            {
+                ExternalId = externalId,
+                Name = request.Name,
+                Description = request.Description,
+                CustomerExternalId = request.CustomerExternalId,
+                SellerExternalId = request.SellerExternalId,
+                EstimatedAmount = request.EstimatedAmount,
+                StartDateUtc = request.StartDateUtc,
+                ExpectedCloseDateUtc = request.ExpectedCloseDateUtc
+            };
+        }
+
         public static ChangeProjectStatusCommand ToApplication(
             this ChangeProjectStatusRequest request,
             string externalId)

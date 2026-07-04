@@ -78,6 +78,28 @@ namespace UrbanTrack.Api.Controllers
             return Ok(result.ToResponse());
         }
 
+        [HttpPut("{externalId}")]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<MessageResponse>> Update(
+            string externalId,
+            [FromBody] UpdateProjectRequest request)
+        {
+            UpdateProjectResult result = await _projectService.UpdateAsync(
+                request.ToApplication(externalId));
+
+            if (!result.Succeeded)
+            {
+                if (result.NotFound)
+                    return NotFound(new MessageResponse { Message = result.Message });
+
+                return BadRequest(new MessageResponse { Message = result.Message });
+            }
+
+            return Ok(new MessageResponse { Message = result.Message });
+        }
+
         [HttpPatch("{externalId}/status")]
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
