@@ -14,6 +14,8 @@ namespace SalesTracking.Domain.Entities
         public decimal? EstimatedAmount { get; private set; }
         public DateTime? StartDateUtc { get; private set; }
         public DateTime? ExpectedCloseDateUtc { get; private set; }
+        public decimal ProgressPercentage { get; private set; }
+        public DateTime? ActualCloseDateUtc { get; private set; }
         public string? Address { get; private set; }
         public decimal? Latitude { get; private set; }
         public decimal? Longitude { get; private set; }
@@ -28,6 +30,8 @@ namespace SalesTracking.Domain.Entities
             decimal? estimatedAmount,
             DateTime? startDateUtc,
             DateTime? expectedCloseDateUtc,
+            decimal progressPercentage,
+            DateTime? actualCloseDateUtc,
             string? address,
             decimal? latitude,
             decimal? longitude)
@@ -41,6 +45,8 @@ namespace SalesTracking.Domain.Entities
             EstimatedAmount = estimatedAmount;
             StartDateUtc = startDateUtc;
             ExpectedCloseDateUtc = expectedCloseDateUtc;
+            ProgressPercentage = progressPercentage;
+            ActualCloseDateUtc = actualCloseDateUtc;
             Address = address;
             Latitude = latitude;
             Longitude = longitude;
@@ -55,6 +61,8 @@ namespace SalesTracking.Domain.Entities
             decimal? estimatedAmount,
             DateTime? startDateUtc,
             DateTime? expectedCloseDateUtc,
+            decimal progressPercentage,
+            DateTime? actualCloseDateUtc,
             string? address,
             decimal? latitude,
             decimal? longitude)
@@ -81,6 +89,8 @@ namespace SalesTracking.Domain.Entities
                 estimatedAmount,
                 startDateUtc,
                 expectedCloseDateUtc,
+                progressPercentage,
+                actualCloseDateUtc,
                 address?.Trim(),
                 latitude,
                 longitude);

@@ -10,6 +10,8 @@ namespace SalesTracking.Application.UseCases.Projects.Comands
         public decimal? EstimatedAmount { get; set; }
         public DateTime? StartDateUtc { get; set; }
         public DateTime? ExpectedCloseDateUtc { get; set; }
+        public decimal? ProgressPercentage { get; set; }
+        public DateTime? ActualCloseDateUtc { get; set; }
         public string? Address { get; set; }
         public decimal? Latitude { get; set; }
         public decimal? Longitude { get; set; }

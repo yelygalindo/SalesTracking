@@ -71,6 +71,15 @@ namespace SalesTracking.Application.UseCases.Projects.Services
                 };
             }
 
+            if (command.ProgressPercentage is < 0 or > 100)
+            {
+                return new CreateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "El porcentaje de avance no es válido."
+                };
+            }
+
             var externalId = ExternalIdGenerator.New(ExternalIdPrefixes.Project);
 
             var project = Project.Create(
@@ -82,6 +91,8 @@ namespace SalesTracking.Application.UseCases.Projects.Services
                 command.EstimatedAmount,
                 command.StartDateUtc,
                 command.ExpectedCloseDateUtc,
+                command.ProgressPercentage ?? 0,
+                command.ActualCloseDateUtc,
                 command.Address,
                 command.Latitude,
                 command.Longitude);
@@ -175,6 +186,15 @@ namespace SalesTracking.Application.UseCases.Projects.Services
                 };
             }
 
+            if (command.ProgressPercentage is < 0 or > 100)
+            {
+                return new UpdateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "El porcentaje de avance no es válido."
+                };
+            }
+
             var normalizedCommand = new UpdateProjectCommand
             {
                 ExternalId = command.ExternalId.Trim(),
@@ -185,6 +205,8 @@ namespace SalesTracking.Application.UseCases.Projects.Services
                 EstimatedAmount = command.EstimatedAmount,
                 StartDateUtc = command.StartDateUtc,
                 ExpectedCloseDateUtc = command.ExpectedCloseDateUtc,
+                ProgressPercentage = command.ProgressPercentage ?? 0,
+                ActualCloseDateUtc = command.ActualCloseDateUtc,
                 Address = command.Address?.Trim(),
                 Latitude = command.Latitude,
                 Longitude = command.Longitude

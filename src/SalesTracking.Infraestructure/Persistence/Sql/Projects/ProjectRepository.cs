@@ -68,6 +68,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                     project.EstimatedAmount,
                     project.StartDateUtc,
                     project.ExpectedCloseDateUtc,
+                    project.ProgressPercentage,
+                    project.ActualCloseDateUtc,
                     project.Address,
                     project.Latitude,
                     project.Longitude
@@ -211,6 +213,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                     command.EstimatedAmount,
                     command.StartDateUtc,
                     command.ExpectedCloseDateUtc,
+                    command.ProgressPercentage,
+                    command.ActualCloseDateUtc,
                     command.Address,
                     command.Latitude,
                     command.Longitude

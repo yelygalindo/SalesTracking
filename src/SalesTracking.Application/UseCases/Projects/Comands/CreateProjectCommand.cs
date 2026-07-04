@@ -8,6 +8,8 @@
     decimal? EstimatedAmount,
     DateTime? StartDateUtc,
     DateTime? ExpectedCloseDateUtc,
+    decimal? ProgressPercentage,
+    DateTime? ActualCloseDateUtc,
     string? Address,
     decimal? Latitude,
     decimal? Longitude
