@@ -6,7 +6,7 @@ namespace SalesTracking.Application.UseCases.Projects.Interfaces
 {
     public interface IProjectRepository
     {
-        Task<string?> CreateAsync(Project project);
+        Task<CreateProjectResult> CreateAsync(Project project);
         Task<ProjectPagedList> GetAsync(GetProjectsCommand command);
         Task<ProjectDetailResult?> GetByExternalIdAsync(GetProjectByExternalIdCommand command);
         Task<UpdateProjectResult> UpdateAsync(UpdateProjectCommand command);

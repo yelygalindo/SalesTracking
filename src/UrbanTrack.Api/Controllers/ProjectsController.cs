@@ -24,21 +24,19 @@ namespace UrbanTrack.Api.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(IdMessageResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ProjectDetailResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IdMessageResponse>> Create([FromBody] CreateProjectRequest request)
+        public async Task<ActionResult<ProjectDetailResponse>> Create([FromBody] CreateProjectRequest request)
         {
             var result = await _projectService.CreateAsync(request.ToApplication());
 
-            if (result == null)
-            {
-                return BadRequest(new MessageResponse
-                {
-                    Message = "No se pudo crear el proyecto. Verifique que el cliente y el vendedor existan."
-                });
-            }
+            if (result == null || !result.Succeeded)
+                return BadRequest(new MessageResponse { Message = result?.Message ?? "No se pudo crear el proyecto." });
 
-            return Created(string.Empty, result.ToResponse());
+            if (result.Project == null)
+                return BadRequest(new MessageResponse { Message = "No se pudo obtener el proyecto creado." });
+
+            return Ok(result.Project.ToResponse());
         }
 
         [HttpGet]

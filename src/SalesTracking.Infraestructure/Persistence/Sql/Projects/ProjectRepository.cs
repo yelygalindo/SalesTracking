@@ -25,15 +25,40 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
         private IDbConnection CreateConnection() =>
             new SqlConnection(_databaseOptions.ConnectionString);
 
-        public async Task<string?> CreateAsync(Project project)
+        public async Task<CreateProjectResult> CreateAsync(Project project)
         {
             using var connection = CreateConnection();
+
+            int customerExists = await connection.ExecuteScalarAsync<int>(
+                ProjectQueries.CustomerExistsByExternalId,
+                new { CustomerExternalId = project.CustomerExternalId });
+
+            if (customerExists == 0)
+            {
+                return new CreateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "Cliente no encontrado."
+                };
+            }
+
+            int sellerExists = await connection.ExecuteScalarAsync<int>(
+                ProjectQueries.SellerExistsByExternalId,
+                new { SellerExternalId = project.SellerExternalId });
+
+            if (sellerExists == 0)
+            {
+                return new CreateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "Vendedor no encontrado."
+                };
+            }
 
             var createdId = await connection.QuerySingleOrDefaultAsync<string>(
                 ProjectQueries.Create,
                 new
                 {
-                    Id = project.Id,
                     ExternalId = project.ExternalId,
                     project.Name,
                     project.Description,
@@ -45,7 +70,26 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                     project.ExpectedCloseDateUtc
                 });
 
-            return createdId;
+            if (string.IsNullOrWhiteSpace(createdId))
+            {
+                return new CreateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "No se pudo crear el proyecto."
+                };
+            }
+
+            ProjectDetailRow? createdProject = await connection.QuerySingleOrDefaultAsync<ProjectDetailRow>(
+                ProjectQueries.GetByExternalId,
+                new { ExternalId = createdId });
+
+            return new CreateProjectResult
+            {
+                Succeeded = true,
+                Id = createdId,
+                Message = "Proyecto creado correctamente.",
+                Project = createdProject?.ToResult()
+            };
         }
         
 

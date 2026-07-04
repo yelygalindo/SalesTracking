@@ -13,29 +13,26 @@ INSERT INTO Projects (
     EstimatedAmount,
     StartDateUtc,
     ExpectedCloseDateUtc,
-    CreatedAtUtc
+    CreatedAtUtc,
+    IsDeleted
 )
-OUTPUT INSERTED.Id
+OUTPUT INSERTED.ExternalId
 SELECT
-    p.Id,
-    p.ExternalId,
-    p.Name,
-    p.Description,
+    @ExternalId,
+    @Name,
+    @Description,
     c.Id AS CustomerId,
-    u.Id AS UserId,
-    p.StatusId,
-    p.EstimatedAmount,
-    p.StartDateUtc,
-    p.ExpectedCloseDateUtc,
-    SYSUTCDATETIME() AS RetrievedAt
-FROM Projects AS p
-INNER JOIN Customers AS c
-    ON c.Id = p.CustomerId
-INNER JOIN Users AS u
-    ON u.Id = p.SellerId
-WHERE p.Id = @Id
-  AND c.IsDeleted = 0
-  AND u.IsActive = 1;";
+    u.Id AS SellerId,
+    @StatusId,
+    @EstimatedAmount,
+    @StartDateUtc,
+    @ExpectedCloseDateUtc,
+    SYSUTCDATETIME(),
+    0
+FROM Customers c
+INNER JOIN Users u ON u.ExternalId = @SellerExternalId AND u.IsActive = 1
+WHERE c.ExternalId = @CustomerExternalId
+  AND c.IsDeleted = 0;";
 
         public const string Get = @"
 SELECT

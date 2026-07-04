@@ -17,6 +17,42 @@ namespace SalesTracking.Application.UseCases.Projects.Services
 
         public async Task<CreateProjectResult?> CreateAsync(CreateProjectCommand command)
         {
+            if (command == null)
+            {
+                return new CreateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "La solicitud no es válida."
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(command.Name))
+            {
+                return new CreateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "El nombre del proyecto es requerido."
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(command.CustomerId))
+            {
+                return new CreateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "El cliente es requerido."
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(command.SellerId))
+            {
+                return new CreateProjectResult
+                {
+                    Succeeded = false,
+                    Message = "El vendedor es requerido."
+                };
+            }
+
             var externalId = ExternalIdGenerator.New(ExternalIdPrefixes.Project);
 
             var project = Project.Create(
@@ -29,16 +65,7 @@ namespace SalesTracking.Application.UseCases.Projects.Services
                 command.StartDateUtc,
                 command.ExpectedCloseDateUtc);
 
-            var createdId = await _projectRepository.CreateAsync(project);
-
-            if (createdId == null)
-                return null;
-
-            return new CreateProjectResult
-            {
-                Id = createdId,
-                Message = "Proyecto creado correctamente."
-            };
+            return await _projectRepository.CreateAsync(project);
         }       
 
         public async Task<ProjectPagedList> GetAsync(GetProjectsCommand command)
