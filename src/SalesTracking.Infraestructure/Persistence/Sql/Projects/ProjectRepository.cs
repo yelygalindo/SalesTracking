@@ -107,5 +107,51 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
 
             return row?.ToResult();
         }
+
+        public async Task<ChangeProjectStatusResult> ChangeStatusAsync(ChangeProjectStatusCommand command)
+        {
+            using var connection = CreateConnection();
+
+            int projectExists = await connection.ExecuteScalarAsync<int>(
+                ProjectQueries.ProjectExistsByExternalId,
+                new { command.ExternalId });
+
+            if (projectExists == 0)
+            {
+                return new ChangeProjectStatusResult
+                {
+                    Succeeded = false,
+                    NotFound = true,
+                    Message = "Proyecto no encontrado."
+                };
+            }
+
+            int statusExists = await connection.ExecuteScalarAsync<int>(
+                ProjectQueries.ProjectStatusExists,
+                new { command.StatusId });
+
+            if (statusExists == 0)
+            {
+                return new ChangeProjectStatusResult
+                {
+                    Succeeded = false,
+                    Message = "Estado de proyecto inválido."
+                };
+            }
+
+            await connection.ExecuteAsync(
+                ProjectQueries.ChangeStatus,
+                new
+                {
+                    command.ExternalId,
+                    command.StatusId
+                });
+
+            return new ChangeProjectStatusResult
+            {
+                Succeeded = true,
+                Message = "Estado de proyecto actualizado correctamente."
+            };
+        }
     }
 }

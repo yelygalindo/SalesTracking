@@ -37,6 +37,17 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 request.PageSize);
         }
 
+        public static ChangeProjectStatusCommand ToApplication(
+            this ChangeProjectStatusRequest request,
+            string externalId)
+        {
+            return new ChangeProjectStatusCommand
+            {
+                ExternalId = externalId,
+                StatusId = request.StatusId
+            };
+        }
+
         public static IdMessageResponse ToResponse(this CreateProjectResult result)
         {
             return new IdMessageResponse

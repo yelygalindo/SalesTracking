@@ -70,5 +70,34 @@ namespace SalesTracking.Application.UseCases.Projects.Services
 
             return await _projectRepository.GetByExternalIdAsync(normalizedCommand);
         }
+
+        public async Task<ChangeProjectStatusResult> ChangeStatusAsync(ChangeProjectStatusCommand command)
+        {
+            if (command == null || string.IsNullOrWhiteSpace(command.ExternalId))
+            {
+                return new ChangeProjectStatusResult
+                {
+                    Succeeded = false,
+                    Message = "El proyecto es requerido."
+                };
+            }
+
+            if (command.StatusId <= 0)
+            {
+                return new ChangeProjectStatusResult
+                {
+                    Succeeded = false,
+                    Message = "Estado de proyecto inválido."
+                };
+            }
+
+            var normalizedCommand = new ChangeProjectStatusCommand
+            {
+                ExternalId = command.ExternalId.Trim(),
+                StatusId = command.StatusId
+            };
+
+            return await _projectRepository.ChangeStatusAsync(normalizedCommand);
+        }
     }
 }

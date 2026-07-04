@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SalesTracking.Application.UseCases.Projects.Comands;
 using SalesTracking.Application.UseCases.Projects.Interfaces;
+using SalesTracking.Application.UseCases.Projects.Results;
 using UrbanTrack.Api.Controllers.Requests.Mappers;
 using UrbanTrack.Api.Controllers.Requests.Products;
 using UrbanTrack.Api.Controllers.Responses.Common;
@@ -75,6 +76,28 @@ namespace UrbanTrack.Api.Controllers
                 return NotFound(new ErrorResponse { Error = "Proyecto no encontrado." });
 
             return Ok(result.ToResponse());
-        }               
+        }
+
+        [HttpPatch("{externalId}/status")]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<MessageResponse>> ChangeStatus(
+            string externalId,
+            [FromBody] ChangeProjectStatusRequest request)
+        {
+            ChangeProjectStatusResult result = await _projectService.ChangeStatusAsync(
+                request.ToApplication(externalId));
+
+            if (!result.Succeeded)
+            {
+                if (result.NotFound)
+                    return NotFound(new MessageResponse { Message = result.Message });
+
+                return BadRequest(new MessageResponse { Message = result.Message });
+            }
+
+            return Ok(new MessageResponse { Message = result.Message });
+        }
     }
 }

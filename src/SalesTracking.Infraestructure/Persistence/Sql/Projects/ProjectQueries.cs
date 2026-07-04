@@ -43,32 +43,21 @@ SELECT
     p.ExternalId,
     p.Name,
     p.Description,
-
     c.ExternalId AS CustomerExternalId,
     c.Name AS CustomerName,
-
     u.ExternalId AS SellerExternalId,
     u.FullName AS SellerName,
-
     p.StatusId,
-    CASE p.StatusId
-        WHEN 1 THEN 'Draft'
-        WHEN 2 THEN 'Active'
-        WHEN 3 THEN 'OnHold'
-        WHEN 4 THEN 'Completed'
-        WHEN 5 THEN 'Cancelled'
-        ELSE 'Unknown'
-    END AS StatusName,
-
+    ps.Name AS StatusName,
     p.EstimatedAmount,
     p.StartDateUtc,
     p.ExpectedCloseDateUtc,
     p.CreatedAtUtc,
-
     COUNT(1) OVER() AS TotalCount
 FROM Projects p
 INNER JOIN Customers c ON c.Id = p.CustomerId
 INNER JOIN Users u ON u.Id = p.SellerId
+INNER JOIN ProjectStatus ps ON ps.ProjectStatusId = p.StatusId
 WHERE p.IsDeleted = 0
   AND (@CustomerExternalId IS NULL OR c.ExternalId = @CustomerExternalId)
   AND (@SellerExternalId IS NULL OR u.ExternalId = @SellerExternalId)
@@ -83,23 +72,12 @@ SELECT
     p.ExternalId,
     p.Name,
     p.Description,
-
     c.ExternalId AS CustomerExternalId,
     c.Name AS CustomerName,
-
     u.ExternalId AS SellerExternalId,
     u.FullName AS SellerName,
-
     p.StatusId,
-    CASE p.StatusId
-        WHEN 1 THEN 'Draft'
-        WHEN 2 THEN 'Active'
-        WHEN 3 THEN 'OnHold'
-        WHEN 4 THEN 'Completed'
-        WHEN 5 THEN 'Cancelled'
-        ELSE 'Unknown'
-    END AS StatusName,
-
+    ps.Name AS StatusName,
     p.EstimatedAmount,
     p.StartDateUtc,
     p.ExpectedCloseDateUtc,
@@ -107,7 +85,26 @@ SELECT
 FROM Projects p
 INNER JOIN Customers c ON c.Id = p.CustomerId
 INNER JOIN Users u ON u.Id = p.SellerId
+INNER JOIN ProjectStatus ps ON ps.ProjectStatusId = p.StatusId
 WHERE p.IsDeleted = 0
   AND p.ExternalId = @ExternalId;";
+
+        public const string ProjectExistsByExternalId = @"
+SELECT COUNT(1)
+FROM Projects p
+WHERE p.IsDeleted = 0
+  AND p.ExternalId = @ExternalId;";
+
+        public const string ProjectStatusExists = @"
+SELECT COUNT(1)
+FROM ProjectStatus ps
+WHERE ps.ProjectStatusId = @StatusId;";
+
+        public const string ChangeStatus = @"
+UPDATE Projects
+SET StatusId = @StatusId,
+    UpdatedAtUtc = SYSUTCDATETIME()
+WHERE IsDeleted = 0
+  AND ExternalId = @ExternalId;";
     }
 }
