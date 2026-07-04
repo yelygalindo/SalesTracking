@@ -2,7 +2,7 @@
 {
     public class UpdateCustomer
     {
-        public int CustomerId { get; set; }
+        public string ExternalId { get; set; } = string.Empty;
         public string Name { get; set; }
         public string? CompanyName { get; set; }
         public string? Phone { get; set; }

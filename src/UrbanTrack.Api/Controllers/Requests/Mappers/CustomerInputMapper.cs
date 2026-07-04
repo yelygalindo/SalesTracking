@@ -32,11 +32,11 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
             };
         }
 
-        public static UpdateCustomerCommand ToApplication(this UpdateCustomerRequest request, int customerId)
+        public static UpdateCustomerCommand ToApplication(this UpdateCustomerRequest request, string externalId)
         {
             return new UpdateCustomerCommand
             {
-                CustomerId = customerId,
+                ExternalId = externalId,
                 Name = request.Name,
                 CompanyName = request.CompanyName,
                 Phone = request.Phone,
@@ -48,11 +48,11 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
             };
         }
 
-        public static ChangeCustomerStatusCommand ToApplication(this ChangeStatusRequest request, int customerId)
+        public static ChangeCustomerStatusCommand ToApplication(this ChangeStatusRequest request, string externalId)
         {
             return new ChangeCustomerStatusCommand
             {
-                CustomerId = customerId,
+                ExternalId = externalId,
                 StatusId = request.StatusId
             };
         }

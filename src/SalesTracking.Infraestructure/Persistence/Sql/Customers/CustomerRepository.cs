@@ -35,7 +35,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
 
             CustomerDetailRow? customerDetailRow =
                 await conn.QueryFirstOrDefaultAsync<CustomerDetailRow>(
-                    CustomerRepositoryQueries.GetCustomerById,
+                    CustomerRepositoryQueries.GetCustomerByExternalId,
                     new { ExternalId = externalId });
 
             if (customerDetailRow == null)
@@ -176,8 +176,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
             try
             {
                 int? customerInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
-                    CustomerRepositoryQueries.GetCustomerById,
-                    new { Id = customer.CustomerId },
+                    CustomerRepositoryQueries.GetCustomerInternalIdByExternalId,
+                    new { customer.ExternalId },
                     transaction);
 
                 if (customerInternalId == null)
@@ -257,7 +257,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
             }
         }
 
-        public async Task<bool> ChangeCustomerStatusAsync(int customerId, CustomerStatus status)
+        public async Task<bool> ChangeCustomerStatusAsync(string externalId, CustomerStatus status)
         {
             using var conn = CreateConnection();
             conn.Open();
@@ -267,8 +267,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
             try
             {
                 int? customerInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
-                    CustomerRepositoryQueries.GetCustomerById,
-                    new { Id = customerId },
+                    CustomerRepositoryQueries.GetCustomerInternalIdByExternalId,
+                    new { ExternalId = externalId },
                     transaction);
 
                 if (customerInternalId == null)
@@ -281,7 +281,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                     CustomerRepositoryQueries.ChangeCustomerStatus,
                     new
                     {
-                        CustomerId = customerId,
+                        CustomerId = customerInternalId.Value,
                         StatusId = (int)status
                     },
                     transaction);

@@ -2,7 +2,7 @@
 {
     public class ChangeCustomerStatusCommand
     {
-        public int CustomerId { get; set; }
+        public string ExternalId { get; set; } = string.Empty;
         public int StatusId { get; set; }
     }
 }

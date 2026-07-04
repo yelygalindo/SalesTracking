@@ -63,18 +63,18 @@ namespace UrbanTrack.Api.Controllers
 
             return CreatedAtAction(
                 nameof(GetById),
-                new { id = createCustomerResult.Id },
+                new { externalId = createCustomerResult.Id },
                 createCustomerResult.ToResponse());
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{externalId}")]
         [ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<MessageApiResponse>> Update(int id,[FromBody] UpdateCustomerRequest request)
+        public async Task<ActionResult<MessageApiResponse>> Update(string externalId,[FromBody] UpdateCustomerRequest request)
         {
             UpdateCustomerResult result = await _service.UpdateCustomerAsync(
-                request.ToApplication(id));
+                request.ToApplication(externalId));
 
             if (!result.Succeeded)
             {
@@ -87,13 +87,13 @@ namespace UrbanTrack.Api.Controllers
             return Ok(new MessageApiResponse { Message = result.Message });
         }
 
-        [HttpPatch("{id}/status")]
+        [HttpPatch("{externalId}/status")]
         [ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<MessageApiResponse>> ChangeStatus(int id,[FromBody] ChangeStatusRequest request)
+        public async Task<ActionResult<MessageApiResponse>> ChangeStatus(string externalId,[FromBody] ChangeStatusRequest request)
         {
-            ChangeCustomerStatusResult result = await _service.ChangeCustomerStatusAsync(request.ToApplication(id));
+            ChangeCustomerStatusResult result = await _service.ChangeCustomerStatusAsync(request.ToApplication(externalId));
 
             if (!result.Succeeded)
             {

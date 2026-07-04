@@ -136,11 +136,11 @@
                                 SYSUTCDATETIME()
                             );";
 
-        public const string GetCustomerById = @"
+        public const string GetCustomerInternalIdByExternalId = @"
                                     SELECT TOP 1
                                         Id
                                     FROM Customers
-                                    WHERE Id = @Id
+                                    WHERE ExternalId = @ExternalId
                                     AND IsDeleted = 0;";
 
         public const string UpdateCustomer = @"

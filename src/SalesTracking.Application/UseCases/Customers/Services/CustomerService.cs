@@ -212,7 +212,7 @@ namespace SalesTracking.Application.UseCases.Customers.Services
                 };
             }
 
-            if (command.CustomerId <= 0)
+            if (string.IsNullOrWhiteSpace(command.ExternalId))
             {
                 return new UpdateCustomerResult
                 {
@@ -250,7 +250,7 @@ namespace SalesTracking.Application.UseCases.Customers.Services
 
             var customer = new UpdateCustomer
             {
-                CustomerId = command.CustomerId,
+                ExternalId = command.ExternalId.Trim(),
                 Name = command.Name.Trim(),
                 CompanyName = command.CompanyName?.Trim(),
                 Phone = command.Phone?.Trim(),
@@ -282,7 +282,7 @@ namespace SalesTracking.Application.UseCases.Customers.Services
                 };
             }
 
-            if (command.CustomerId <= 0)
+            if (string.IsNullOrWhiteSpace(command.ExternalId))
             {
                 return new ChangeCustomerStatusResult
                 {
@@ -302,7 +302,7 @@ namespace SalesTracking.Application.UseCases.Customers.Services
 
             CustomerStatus status = (CustomerStatus)command.StatusId;
 
-            bool updated = await _repo.ChangeCustomerStatusAsync(command.CustomerId, status);
+            bool updated = await _repo.ChangeCustomerStatusAsync(command.ExternalId.Trim(), status);
 
             if (!updated)
             {
