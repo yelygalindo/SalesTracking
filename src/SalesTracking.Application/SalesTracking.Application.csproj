@@ -16,11 +16,6 @@
     <Folder Include="UseCases\Dashboard\Models\" />
     <Folder Include="UseCases\Dashboard\Results\" />
     <Folder Include="UseCases\Dashboard\Services\" />
-    <Folder Include="UseCases\Projects\Comands\" />
-    <Folder Include="UseCases\Projects\Interfaces\" />
-    <Folder Include="UseCases\Projects\Models\" />
-    <Folder Include="UseCases\Projects\Results\" />
-    <Folder Include="UseCases\Projects\Services\" />
     <Folder Include="UseCases\Products\Comands\" />
     <Folder Include="UseCases\Products\Interfaces\" />
     <Folder Include="UseCases\Products\Models\" />

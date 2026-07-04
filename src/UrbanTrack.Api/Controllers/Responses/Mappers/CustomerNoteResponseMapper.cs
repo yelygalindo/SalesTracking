@@ -14,7 +14,7 @@ namespace UrbanTrack.Api.Controllers.Responses.Mappers
                 Id = note.Id,
                 ExternalId = note.ExternalId,
                 Text = note.Text,
-                Author = new AuthorResponse(note.Author.Id, note.Author.ExternalId, note.Author.Name),
+                Author = new UserResponse(note.Author.Id, note.Author.ExternalId, note.Author.Name),
                 CreatedAt = note.CreatedAtUtc
             };
         }

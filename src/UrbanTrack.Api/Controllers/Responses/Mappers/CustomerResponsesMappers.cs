@@ -19,12 +19,7 @@ namespace UrbanTrack.Api.Controllers.Responses.Mappers
                 Phone = customerDetailResult.Phone,
                 Email = customerDetailResult.Email,
                 Status = customerDetailResult.Status.ToApiValue(),
-                Seller = new SellerResponse()
-                {
-                    Id = customerDetailResult.SellerResult?.Id,
-                    ExternalId = customerDetailResult.SellerResult?.ExternalId,
-                    Name = customerDetailResult.SellerResult?.Name,
-                },
+                Seller = new UserResponse(customerDetailResult.SellerResult?.Id, customerDetailResult.SellerResult?.ExternalId, customerDetailResult.SellerResult?.Name),               
                 Address = customerDetailResult.Address,
                 Latitude = customerDetailResult.Latitude,
                 Longitude = customerDetailResult.Longitude,
@@ -49,7 +44,7 @@ namespace UrbanTrack.Api.Controllers.Responses.Mappers
             {                
                 ExternalId = customerNoteResult.ExternalId,
                 Text = customerNoteResult.Text,
-                Author = new AuthorResponse(customerNoteResult.Author.Id, customerNoteResult.Author.ExternalId, customerNoteResult.Author.Name),
+                Author = new UserResponse(customerNoteResult.Author.Id, customerNoteResult.Author.ExternalId, customerNoteResult.Author.Name),
                 CreatedAt = customerNoteResult.CreatedAtUtc,
             };
         }
@@ -80,12 +75,7 @@ namespace UrbanTrack.Api.Controllers.Responses.Mappers
                 Email = customerSummaryResult.Email,
                 Status = customerSummaryResult.Status.ToApiValue(),
                 CreatedAt = customerSummaryResult.CreatedAtUtc,
-                Seller = new SellerResponse()
-                {
-                    Id = customerSummaryResult.SellerResult?.Id,
-                    ExternalId = customerSummaryResult.SellerResult?.ExternalId,
-                    Name = customerSummaryResult.SellerResult?.Name,
-                }
+                Seller = new UserResponse((int)(customerSummaryResult.SellerResult?.Id), customerSummaryResult.SellerResult?.ExternalId, customerSummaryResult.SellerResult?.Name)                
             };
         }
 

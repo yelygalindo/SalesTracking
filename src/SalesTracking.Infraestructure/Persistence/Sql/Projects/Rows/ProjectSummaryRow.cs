@@ -1,6 +1,6 @@
-namespace UrbanTrack.Api.Controllers.Responses.Projects
+﻿namespace SalesTracking.Infrastructure.Persistence.Sql.Projects.Rows
 {
-    public sealed class ProjectDetailResponse
+    internal sealed class ProjectSummaryRow
     {
         public int Id { get; set; }
         public string ExternalId { get; set; } = string.Empty;
@@ -10,10 +10,12 @@ namespace UrbanTrack.Api.Controllers.Responses.Projects
         public string CustomerName { get; set; } = string.Empty;
         public string SellerExternalId { get; set; } = string.Empty;
         public string SellerName { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
+        public int StatusId { get; set; }
+        public string StatusName { get; set; } = string.Empty;
         public decimal? EstimatedAmount { get; set; }
         public DateTime? StartDateUtc { get; set; }
         public DateTime? ExpectedCloseDateUtc { get; set; }
         public DateTime CreatedAtUtc { get; set; }
+        public int TotalCount { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 {
     public class LoginResponse
     {
-        public UserResponse User { get; set; }
+        public UserCompleteResponse User { get; set; }
         public string AccessToken { get; init; }
         public string RefreshToken { get; init; }
         public DateTime ExpiresAtUtc { get; set; }

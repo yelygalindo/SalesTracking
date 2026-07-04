@@ -19,10 +19,10 @@ namespace UrbanTrack.Api.Controllers.Responses.Mappers
             };
         }
 
-        public static UserResponse ToResponse(this UserResult userResult)
+        public static UserCompleteResponse ToResponse(this UserResult userResult)
         {
             if (userResult == null) return null;
-            return new UserResponse()
+            return new UserCompleteResponse()
             {
                 Id = userResult.Id,
                 ExternalId = userResult.ExternalId,

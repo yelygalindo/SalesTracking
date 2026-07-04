@@ -1,3 +1,4 @@
+using UrbanTrack.Api.Controllers.Responses.Common;
 using UrbanTrack.Api.Controllers.Responses.CustomerNotes;
 
 namespace UrbanTrack.Api.Controllers.Responses.Customers
@@ -15,7 +16,7 @@ namespace UrbanTrack.Api.Controllers.Responses.Customers
         public decimal? Latitude { get; set; }
         public decimal? Longitude { get; set; }
         public DateTime CreatedAt { get; set; }
-        public SellerResponse Seller { get; set; }
+        public UserResponse Seller { get; set; }
         public IEnumerable<CustomerNoteResponse> Notes { get; set; } = new List<CustomerNoteResponse>();
     }
 }

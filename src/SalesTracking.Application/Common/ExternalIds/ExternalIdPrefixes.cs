@@ -7,6 +7,7 @@
         public const string CustomerReminder = "rmd";
         public const string CustomerTimelineEvent = "tle";
         public const string User = "user";
-        public const string Invitation = "inv";
+        public const string Invitation = "inv"; 
+        public const string Project = "p";
     }
 }

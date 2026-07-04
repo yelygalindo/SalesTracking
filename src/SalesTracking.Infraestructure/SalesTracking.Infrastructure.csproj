@@ -23,7 +23,5 @@
     <Folder Include="Persistence\Sql\Invitations\Mappers\" />
     <Folder Include="Persistence\Sql\Products\Mappers\" />
     <Folder Include="Persistence\Sql\Products\Rows\" />
-    <Folder Include="Persistence\Sql\Projects\Mappers\" />
-    <Folder Include="Persistence\Sql\Projects\Rows\" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 ﻿namespace UrbanTrack.Api.Controllers.Responses.AuthResponses
 {
-    public class UserResponse
+    public class UserCompleteResponse
     {
         public int Id { get; set; }
         public string ExternalId { get; set; }

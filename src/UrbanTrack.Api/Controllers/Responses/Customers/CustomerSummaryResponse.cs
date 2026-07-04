@@ -1,3 +1,5 @@
+using UrbanTrack.Api.Controllers.Responses.Common;
+
 namespace UrbanTrack.Api.Controllers.Responses.Customers
 {
     public class CustomerSummaryResponse
@@ -10,6 +12,6 @@ namespace UrbanTrack.Api.Controllers.Responses.Customers
         public string Email { get; set; }
         public string Status { get; set; }        
         public DateTime CreatedAt { get; set; }
-        public SellerResponse Seller { get; set; }
+        public UserResponse Seller { get; set; }
     }
 }

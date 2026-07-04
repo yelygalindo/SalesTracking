@@ -15,7 +15,7 @@ namespace UrbanTrack.Api.Controllers.Responses.Mappers
                 ExternalId = reminder.ExternalId,
                 Text = reminder.Text,
                 ReminderAt = reminder.ReminderAtUtc,
-                AssignedTo = new AssignedReminderResponse(reminder.Customer.Id, reminder.Customer.ExternalId, reminder.Customer.Name),
+                AssignedTo = new UserResponse(reminder.Customer.Id, reminder.Customer.ExternalId, reminder.Customer.Name),
                 Completed = reminder.Completed
             };
         }

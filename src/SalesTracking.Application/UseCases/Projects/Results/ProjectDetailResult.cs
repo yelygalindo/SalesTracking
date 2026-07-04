@@ -1,6 +1,6 @@
-namespace UrbanTrack.Api.Controllers.Responses.Projects
+namespace SalesTracking.Application.UseCases.Projects.Results
 {
-    public sealed class ProjectDetailResponse
+    public sealed class ProjectDetailResult
     {
         public int Id { get; set; }
         public string ExternalId { get; set; } = string.Empty;
