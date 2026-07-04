@@ -36,7 +36,10 @@ namespace UrbanTrack.Api.Controllers
             if (result.Project == null)
                 return BadRequest(new MessageResponse { Message = "No se pudo obtener el proyecto creado." });
 
-            return Ok(result.Project.ToResponse());
+            return CreatedAtAction(
+                nameof(GetByExternalId),
+                new { externalId = result.Project.ExternalId },
+                result.Project.ToResponse());
         }
 
         [HttpGet]

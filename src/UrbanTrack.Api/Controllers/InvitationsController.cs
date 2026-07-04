@@ -23,17 +23,20 @@ namespace UrbanTrack.Api.Controllers
             _service = service;
         }
 
-        [HttpPost("/api/invitations")]
-        [ProducesResponseType(typeof(CreateInvitationResponse), StatusCodes.Status200OK)]
+        [HttpPost]
+        [ProducesResponseType(typeof(CreateInvitationResponse), StatusCodes.Status201Created)]
         public async Task<ActionResult<CreateInvitationResponse>> CreateInvitation( [FromBody] CreateInvitationRequest request)
         {
             CreateInvitationResult result =
                 await _service.CreateInvitationAsync(request.ToApplication());
-            return Ok(result.ToResponse());
+            return CreatedAtAction(
+                nameof(GetInvitationByToken),
+                new { token = result.Token },
+                result.ToResponse());
 
         }
 
-        [HttpGet("/api/invitations/{token}")]
+        [HttpGet("{token}")]
         [ProducesResponseType(typeof(InvitationResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<InvitationResponse>> GetInvitationByToken(string token)
@@ -43,7 +46,7 @@ namespace UrbanTrack.Api.Controllers
             return Ok(inv.ToResponse());
         }
 
-        [HttpPost("/api/invitations/accept")]
+        [HttpPost("accept")]
         [ProducesResponseType(typeof(AcceptInvitationResponse), StatusCodes.Status200OK)]
         public async Task<ActionResult<AcceptInvitationResponse>> AcceptInvitation([FromBody] AcceptInvitationInput request)
         {
