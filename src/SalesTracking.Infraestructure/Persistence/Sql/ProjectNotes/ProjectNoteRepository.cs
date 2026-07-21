@@ -207,6 +207,21 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
             }
         }
 
+        public async Task<ProjectNoteResult?> GetNoteAsync(string projectExternalId, string noteExternalId)
+        {
+            using IDbConnection connection = CreateConnection();
+
+            ProjectNoteRow? row = await connection.QueryFirstOrDefaultAsync<ProjectNoteRow>(
+                ProjectNoteQueries.GetByExternalId,
+                new
+                {
+                    ProjectExternalId = projectExternalId,
+                    NoteExternalId = noteExternalId
+                });
+
+            return row?.ToResult();
+        }
+
         public async Task<IReadOnlyList<ProjectNoteResult>> GetNotesAsync(string projectExternalId)
         {
             using IDbConnection connection = CreateConnection();

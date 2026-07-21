@@ -205,6 +205,18 @@ namespace SalesTracking.Application.UseCases.ProjectNotes.Services
             };
         }
 
+        public async Task<ProjectNoteResult?> GetNoteAsync(GetProjectNoteCommand command)
+        {
+            if (command == null ||
+                string.IsNullOrWhiteSpace(command.ProjectExternalId) ||
+                string.IsNullOrWhiteSpace(command.NoteExternalId))
+                return null;
+
+            return await _projectNoteRepository.GetNoteAsync(
+                command.ProjectExternalId.Trim(),
+                command.NoteExternalId.Trim());
+        }
+
         public async Task<IReadOnlyList<ProjectNoteResult>> GetNotesAsync(GetProjectNotesCommand command)
         {
             if (command == null || string.IsNullOrWhiteSpace(command.ProjectExternalId))

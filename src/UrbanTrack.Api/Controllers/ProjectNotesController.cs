@@ -32,6 +32,22 @@ namespace UrbanTrack.Api.Controllers
             return Ok(notes.Select(x => x.ToResponse()));
         }
 
+        [HttpGet("{noteExternalId}")]
+        [ProducesResponseType(typeof(ProjectNoteResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ProjectNoteResponse>> GetNote(
+            string projectExternalId,
+            string noteExternalId)
+        {
+            ProjectNoteResult? note = await _projectNoteService.GetNoteAsync(
+                new GetProjectNoteCommand(projectExternalId, noteExternalId));
+
+            if (note == null)
+                return NotFound(new ErrorResponse { Error = "Nota de proyecto no encontrada." });
+
+            return Ok(note.ToResponse());
+        }
+
         [HttpPost]
         [ProducesResponseType(typeof(IdMessageResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
