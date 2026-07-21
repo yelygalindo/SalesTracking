@@ -22,7 +22,8 @@ namespace SalesTracking.Application.UseCases.CustomerReminders.Services
             if (command == null || string.IsNullOrWhiteSpace(command.CustomerExternalId))
                 return new List<CustomerReminderResult>();
 
-            IEnumerable<CustomerReminder> customerReminder = await _repo.GetRemindersAsync(command.CustomerExternalId);
+            IEnumerable<CustomerReminder> customerReminder = await _repo.GetRemindersAsync(
+                command.CustomerExternalId.Trim());
             return customerReminder.Select(r => new CustomerReminderResult
             {
                 Id = r.Id,

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace UrbanTrack.Api.Controllers.Responses.Sellers
 {
     public sealed record SellerResponse(
-         string Id,
-         string DisplayName);
+         string ExternalId,
+         string DisplayName,
+         string Email);
 }

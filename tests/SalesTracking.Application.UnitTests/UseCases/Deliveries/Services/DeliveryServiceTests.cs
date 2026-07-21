@@ -25,6 +25,30 @@ public sealed class DeliveryServiceTests
     }
 
     [Fact]
+    public async Task GetAsync_ShouldNormalizeAndPropagateFilters()
+    {
+        _repository.Setup(x => x.GetAsync(It.IsAny<GetDeliveriesCommand>()))
+            .ReturnsAsync(new Application.UseCases.Deliveries.Models.DeliveryPagedList());
+        DeliveryService service = new(_repository.Object);
+        DateTimeOffset from = new(2026, 7, 1, 0, 0, 0, TimeSpan.Zero);
+        DateTimeOffset to = new(2026, 7, 31, 23, 59, 59, TimeSpan.Zero);
+
+        await service.GetAsync(new GetDeliveriesCommand(
+            2, 30, " project-1 ", " customer-1 ", " seller-1 ", 2, from, to, true));
+
+        _repository.Verify(x => x.GetAsync(It.Is<GetDeliveriesCommand>(command =>
+            command.ProjectExternalId == "project-1" &&
+            command.CustomerExternalId == "customer-1" &&
+            command.SellerExternalId == "seller-1" &&
+            command.StatusId == 2 &&
+            command.From == from &&
+            command.To == to &&
+            command.Overdue == true &&
+            command.Page == 2 &&
+            command.PageSize == 30)), Times.Once);
+    }
+
+    [Fact]
     public async Task CreateAsync_WhenItemsAreMissing_ShouldReturnValidationError()
     {
         DeliveryService service = new(_repository.Object);

@@ -110,12 +110,18 @@ namespace SalesTracking.Application.UseCases.Projects.Services
 
             var normalizedCommand = command with
             {
+                Status = Normalize(command.Status),
+                CustomerId = Normalize(command.CustomerId),
+                SellerId = Normalize(command.SellerId),
                 Page = page,
                 PageSize = pageSize
             };
 
             return await _projectRepository.GetAsync(normalizedCommand);
         }
+
+        private static string? Normalize(string? value) =>
+            string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
         public async Task<ProjectDetailResult?> GetByExternalIdAsync(GetProjectByExternalIdCommand command)
         {

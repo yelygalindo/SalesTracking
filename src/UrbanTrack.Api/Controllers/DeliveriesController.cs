@@ -29,15 +29,9 @@ namespace UrbanTrack.Api.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(PagedResponse<DeliveryResponse>), StatusCodes.Status200OK)]
         public async Task<ActionResult<PagedResponse<DeliveryResponse>>> Get(
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20)
+            [FromQuery] GetDeliveriesRequest request)
         {
-            DeliveryPagedList result = await _deliveryService.GetAsync(
-                new GetDeliveriesRequest
-                {
-                    Page = page,
-                    PageSize = pageSize
-                }.ToApplication());
+            DeliveryPagedList result = await _deliveryService.GetAsync(request.ToApplication());
 
             return Ok(result.ToResponse());
         }

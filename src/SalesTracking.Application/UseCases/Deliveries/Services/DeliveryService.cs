@@ -32,7 +32,15 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
             if (pageSize > 100)
                 pageSize = 100;
 
-            return await _deliveryRepository.GetAsync(new GetDeliveriesCommand(page, pageSize));
+            return await _deliveryRepository.GetAsync(command with
+            {
+                Page = page,
+                PageSize = pageSize,
+                ProjectExternalId = Normalize(command.ProjectExternalId),
+                CustomerExternalId = Normalize(command.CustomerExternalId),
+                SellerExternalId = Normalize(command.SellerExternalId),
+                StatusId = command.StatusId > 0 ? command.StatusId : null
+            });
         }
 
         public async Task<DeliveryResult?> GetByExternalIdAsync(GetDeliveryByExternalIdCommand command)
@@ -223,6 +231,9 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
 
             return await _deliveryRepository.DeleteAsync(command with { ExternalId = command.ExternalId.Trim() });
         }
+
+        private static string? Normalize(string? value) =>
+            string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
         private static CreateDeliveryResult? Validate(CreateDeliveryCommand command)
         {

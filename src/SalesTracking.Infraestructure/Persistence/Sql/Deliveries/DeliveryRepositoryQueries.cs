@@ -30,9 +30,21 @@ SELECT
     COUNT(1) OVER() AS TotalCount
 FROM Deliveries d
 INNER JOIN Projects p ON p.Id = d.ProjectId
+LEFT JOIN Customers c ON c.Id = p.CustomerId
 INNER JOIN Users u ON u.Id = d.SellerId
 INNER JOIN DeliveryStatus ds ON ds.DeliveryStatusId = d.StatusId
 WHERE d.IsDeleted = 0
+  AND (@ProjectExternalId IS NULL OR p.ExternalId = @ProjectExternalId)
+  AND (@CustomerExternalId IS NULL OR c.ExternalId = @CustomerExternalId)
+  AND (@SellerExternalId IS NULL OR u.ExternalId = @SellerExternalId)
+  AND (@StatusId IS NULL OR d.StatusId = @StatusId)
+  AND (@FromUtc IS NULL OR d.CommittedDateUtc >= @FromUtc)
+  AND (@ToUtc IS NULL OR d.CommittedDateUtc <= @ToUtc)
+  AND (
+      @Overdue IS NULL
+      OR (@Overdue = 1 AND d.StatusId <> 3 AND d.CommittedDateUtc < SYSUTCDATETIME())
+      OR (@Overdue = 0 AND (d.StatusId = 3 OR d.CommittedDateUtc >= SYSUTCDATETIME()))
+  )
 ORDER BY d.CreatedAtUtc DESC
 OFFSET @Offset ROWS
 FETCH NEXT @PageSize ROWS ONLY;";

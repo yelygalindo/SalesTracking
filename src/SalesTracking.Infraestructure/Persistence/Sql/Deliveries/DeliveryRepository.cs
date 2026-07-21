@@ -51,7 +51,14 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                 new
                 {
                     Offset = (command.Page - 1) * command.PageSize,
-                    command.PageSize
+                    command.PageSize,
+                    command.ProjectExternalId,
+                    command.CustomerExternalId,
+                    command.SellerExternalId,
+                    command.StatusId,
+                    FromUtc = command.From?.UtcDateTime,
+                    ToUtc = command.To?.UtcDateTime,
+                    command.Overdue
                 })).ToList();
 
             var items = await GetItemsAsync(connection, rows.Select(x => x.Id).ToList());

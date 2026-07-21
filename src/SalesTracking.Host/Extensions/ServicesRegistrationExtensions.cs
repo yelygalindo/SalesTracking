@@ -33,6 +33,8 @@ using SalesTracking.Application.UseCases.Reports.Interfaces;
 using SalesTracking.Application.UseCases.Reports.Services;
 using SalesTracking.Application.UseCases.Units.Interfaces;
 using SalesTracking.Application.UseCases.Units.Services;
+using SalesTracking.Application.UseCases.Sellers.Interfaces;
+using SalesTracking.Application.UseCases.Sellers.Services;
 using SalesTracking.Infrastructure.Persistence.Security;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.Auth;
@@ -52,6 +54,7 @@ using SalesTracking.Infrastructure.Persistence.Sql.ProjectMaterials;
 using SalesTracking.Infrastructure.Persistence.Sql.Products;
 using SalesTracking.Infrastructure.Persistence.Sql.Reports;
 using SalesTracking.Infrastructure.Persistence.Sql.Units;
+using SalesTracking.Infrastructure.Persistence.Sql.Sellers;
 using SalesTracking.Infrastructure.Storage;
 
 namespace SalesTracking.Host.Extensions
@@ -83,6 +86,7 @@ namespace SalesTracking.Host.Extensions
             services.AddScoped<IDeliveryService, DeliveryService>();
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IReportService, ReportService>();
+            services.AddScoped<ISellerService, SellerService>();
 
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
@@ -101,6 +105,7 @@ namespace SalesTracking.Host.Extensions
             services.AddScoped<ICustomerNoteRepository, CustomerNoteRepository>();
             services.AddScoped<ICustomerReminderRepository, CustomerReminderRepository>();
             services.AddScoped<ICustomerTimelineRepository, CustomerTimelineRepository>();
+            services.AddScoped<ISellerRepository, SellerRepository>();
 
             services.AddScoped<IFileStorage, LocalFileStorage>();
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();

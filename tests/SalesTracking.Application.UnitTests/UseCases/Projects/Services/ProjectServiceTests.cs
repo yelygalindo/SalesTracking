@@ -19,6 +19,23 @@ namespace SalesTracking.Application.UnitTests.UseCases.Projects.Services
         }
 
         [Fact]
+        public async Task GetAsync_ShouldNormalizeCustomerFilterAndPagination()
+        {
+            _repositoryMock.Setup(x => x.GetAsync(It.IsAny<GetProjectsCommand>()))
+                .ReturnsAsync(new ProjectPagedList());
+
+            await _service.GetAsync(new GetProjectsCommand(
+                " Active ", " customer-1 ", " seller-1 ", 0, 500));
+
+            _repositoryMock.Verify(x => x.GetAsync(It.Is<GetProjectsCommand>(command =>
+                command.Status == "Active" &&
+                command.CustomerId == "customer-1" &&
+                command.SellerId == "seller-1" &&
+                command.Page == 1 &&
+                command.PageSize == 100)), Times.Once);
+        }
+
+        [Fact]
         public async Task CreateAsync_WhenCommandIsValid_ShouldCreateProjectAndCallRepository()
         {
             Project? capturedProject = null;

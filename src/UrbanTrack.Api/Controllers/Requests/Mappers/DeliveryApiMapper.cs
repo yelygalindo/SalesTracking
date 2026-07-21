@@ -12,7 +12,16 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
     {
         public static GetDeliveriesCommand ToApplication(this GetDeliveriesRequest request)
         {
-            return new GetDeliveriesCommand(request.Page, request.PageSize);
+            return new GetDeliveriesCommand(
+                request.Page,
+                request.PageSize,
+                request.ProjectExternalId,
+                request.CustomerExternalId,
+                request.SellerExternalId,
+                request.StatusId,
+                request.From,
+                request.To,
+                request.Overdue);
         }
 
         public static CreateDeliveryCommand ToApplication(this CreateDeliveryRequest request, int createdByUserId)
