@@ -144,7 +144,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                         CustomerId = customerId,
                         EventType = "CustomerCreated",
                         Description = "Cliente creado.",
-                        CreatedById = sellerInternalId
+                        CreatedById = customer.CreatedByUserId
                     },
                     transaction);
 
@@ -235,7 +235,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                         CustomerId = customerInternalId.Value,
                         EventType = "CustomerUpdated",
                         Description = "Cliente actualizado.",
-                        CreatedById = sellerInternalId
+                        CreatedById = customer.UpdatedByUserId
                     },
                     transaction);
 
@@ -257,7 +257,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
             }
         }
 
-        public async Task<bool> ChangeCustomerStatusAsync(string externalId, CustomerStatus status)
+        public async Task<bool> ChangeCustomerStatusAsync(string externalId, CustomerStatus status, int changedByUserId)
         {
             using var conn = CreateConnection();
             conn.Open();
@@ -294,7 +294,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                         CustomerId = customerInternalId.Value,
                         EventType = "CustomerStatusChanged",
                         Description = $"Estado cambiado a '{status.ToLabel()}'.",
-                        CreatedById = (int?)null
+                        CreatedById = changedByUserId
                     },
                     transaction);
 
@@ -309,7 +309,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
             }
         }
 
-        public async Task<bool> DeleteCustomerAsync(string externalId)
+        public async Task<bool> DeleteCustomerAsync(string externalId, int deletedByUserId)
         {
             using var conn = CreateConnection();
             conn.Open();
@@ -342,7 +342,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                         CustomerId = customerInternalId.Value,
                         EventType = "CustomerDeleted",
                         Description = "Cliente eliminado.",
-                        CreatedById = (int?)null
+                        CreatedById = deletedByUserId
                     },
                     transaction);
 

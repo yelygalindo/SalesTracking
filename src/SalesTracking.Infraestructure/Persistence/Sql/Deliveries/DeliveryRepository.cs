@@ -260,6 +260,20 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     await InsertItemAsync(connection, transaction, existing.Id, item, productId.Value, unitId.Value);
                 }
 
+                await ProjectTimelineWriter.InsertAsync(
+                    connection,
+                    transaction,
+                    new ProjectTimelineEvent
+                    {
+                        ProjectId = projectId.Value,
+                        EventTypeId = ProjectTimelineEventTypeIds.DeliveryUpdated,
+                        Title = "Entrega actualizada",
+                        Description = "Entrega del proyecto actualizada.",
+                        CreatedByUserId = delivery.UpdatedByUserId,
+                        RelatedEntityType = RelatedEntityType,
+                        RelatedEntityId = existing.Id
+                    });
+
                 transaction.Commit();
 
                 return new UpdateDeliveryResult
@@ -489,7 +503,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                 };
             }
         }
-        public async Task<DeleteDeliveryResult> DeleteAsync(string externalId)
+        public async Task<DeleteDeliveryResult> DeleteAsync(DeleteDeliveryCommand command)
         {
             using IDbConnection connection = CreateConnection();
             connection.Open();
@@ -499,7 +513,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
             {
                 DeliveryInternalRow? delivery = await connection.QuerySingleOrDefaultAsync<DeliveryInternalRow>(
                     DeliveryRepositoryQueries.GetDeliveryInternalByExternalId,
-                    new { ExternalId = externalId },
+                    new { command.ExternalId },
                     transaction);
 
                 if (delivery == null)
@@ -507,7 +521,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
 
                 int affectedRows = await connection.ExecuteAsync(
                     DeliveryRepositoryQueries.DeleteDelivery,
-                    new { ExternalId = externalId },
+                    new { command.ExternalId },
                     transaction);
 
                 if (affectedRows == 0)
@@ -517,6 +531,20 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     DeliveryRepositoryQueries.SoftDeleteItems,
                     new { DeliveryId = delivery.Id },
                     transaction);
+
+                await ProjectTimelineWriter.InsertAsync(
+                    connection,
+                    transaction,
+                    new ProjectTimelineEvent
+                    {
+                        ProjectId = delivery.ProjectId,
+                        EventTypeId = ProjectTimelineEventTypeIds.DeliveryDeleted,
+                        Title = "Entrega eliminada",
+                        Description = "Entrega eliminada del proyecto.",
+                        CreatedByUserId = command.DeletedByUserId,
+                        RelatedEntityType = RelatedEntityType,
+                        RelatedEntityId = delivery.Id
+                    });
 
                 transaction.Commit();
 

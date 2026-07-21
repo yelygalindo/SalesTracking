@@ -118,7 +118,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders
             }
         }
 
-        public async Task<bool> CompleteReminderAsync(string customerExternalId, string reminderExternalId)
+        public async Task<bool> CompleteReminderAsync(string customerExternalId, string reminderExternalId, int completedByUserId)
         {
             using IDbConnection conn = CreateConnection();
             conn.Open();
@@ -161,7 +161,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders
                         CustomerId = customerInternalId.Value,
                         EventType = "CustomerReminderCompleted",
                         Description = "Recordatorio marcado como completado.",
-                        CreatedById = (int?)null
+                        CreatedById = completedByUserId
                     },
                     transaction);
 

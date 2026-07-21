@@ -185,8 +185,11 @@ namespace SalesTracking.Application.UseCases.ProjectNotes.Services
             }
 
             ResponseDeleteProjectNote deleted = await _projectNoteRepository.DeleteNoteAsync(
-                command.ProjectExternalId.Trim(),
-                command.NoteExternalId.Trim());
+                command with
+                {
+                    ProjectExternalId = command.ProjectExternalId.Trim(),
+                    NoteExternalId = command.NoteExternalId.Trim()
+                });
 
             if (!deleted.Succeeded)
             {

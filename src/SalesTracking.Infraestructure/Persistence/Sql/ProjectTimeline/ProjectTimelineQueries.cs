@@ -36,8 +36,7 @@ VALUES (
 SELECT TOP 1
     Id
 FROM Projects
-WHERE ExternalId = @ProjectExternalId
-  AND IsDeleted = 0;";
+WHERE ExternalId = @ProjectExternalId;";
 
         public const string GetByProjectId = @"
 SELECT
@@ -53,6 +52,13 @@ SELECT
         WHEN 8 THEN 'DeliveryCreated'
         WHEN 9 THEN 'DeliveryStatusChanged'
         WHEN 10 THEN 'DeliveryReceiptConfirmed'
+        WHEN 11 THEN 'ProjectDeleted'
+        WHEN 12 THEN 'NoteUpdated'
+        WHEN 13 THEN 'NoteDeleted'
+        WHEN 14 THEN 'AttachmentDeleted'
+        WHEN 15 THEN 'AttachmentCoverChanged'
+        WHEN 16 THEN 'DeliveryUpdated'
+        WHEN 17 THEN 'DeliveryDeleted'
         ELSE 'Unknown'
     END AS EventTypeName,
     pt.Title,

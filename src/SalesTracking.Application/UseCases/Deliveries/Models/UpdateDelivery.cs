@@ -10,5 +10,6 @@ namespace SalesTracking.Application.UseCases.Deliveries.Models
         public DateTime? DeliveredDateUtc { get; set; }
         public string? Notes { get; set; }
         public IReadOnlyList<CreateDeliveryItem> Items { get; set; } = new List<CreateDeliveryItem>();
+        public int UpdatedByUserId { get; set; }
     }
 }

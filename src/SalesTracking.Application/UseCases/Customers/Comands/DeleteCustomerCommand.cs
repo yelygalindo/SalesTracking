@@ -1,4 +1,4 @@
 namespace SalesTracking.Application.UseCases.Customers.Comands
 {
-    public record DeleteCustomerCommand(string ExternalId);
+    public record DeleteCustomerCommand(string ExternalId, int DeletedByUserId = 0);
 }

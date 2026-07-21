@@ -183,9 +183,15 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
         public async Task<DeleteProjectAttachmentResult> DeleteAsync(DeleteProjectAttachmentCommand command)
         {
             using IDbConnection connection = CreateConnection();
+            connection.Open();
+            using IDbTransaction transaction = connection.BeginTransaction();
 
             try
             {
+                ProjectAttachmentInternalRow? attachment = await connection.QueryFirstOrDefaultAsync<ProjectAttachmentInternalRow>(
+                    ProjectAttachmentQueries.GetAttachmentInternal,
+                    new { command.ProjectExternalId, command.AttachmentExternalId },
+                    transaction);
 
                 int affectedRows = await connection.ExecuteAsync(
                     ProjectAttachmentQueries.Delete,
@@ -194,10 +200,12 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                         command.ProjectExternalId,
                         command.AttachmentExternalId,
                         DeletedByUserId = command.DeletedByUserId
-                    });
+                    },
+                    transaction);
 
                 if (affectedRows == 0)
                 {
+                    transaction.Rollback();
                     return new DeleteProjectAttachmentResult
                     {
                         Succeeded = false,
@@ -205,6 +213,22 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                         Message = "Archivo no encontrado."
                     };
                 }
+
+                await ProjectTimelineWriter.InsertAsync(
+                    connection,
+                    transaction,
+                    new ProjectTimelineEvent
+                    {
+                        ProjectId = attachment!.ProjectId,
+                        EventTypeId = ProjectTimelineEventTypeIds.AttachmentDeleted,
+                        Title = "Archivo eliminado",
+                        Description = "Archivo eliminado del proyecto.",
+                        CreatedByUserId = command.DeletedByUserId,
+                        RelatedEntityType = RelatedEntityType,
+                        RelatedEntityId = attachment.Id
+                    });
+
+                transaction.Commit();
 
                 return new DeleteProjectAttachmentResult
                 {
@@ -214,6 +238,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
             }
             catch
             {
+                transaction.Rollback();
                 return new DeleteProjectAttachmentResult
                 {
                     Succeeded = false,
@@ -264,6 +289,20 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
 
                 if (affectedRows == 0)
                     return RollbackSetCover(transaction, "Archivo no encontrado.", true);
+
+                await ProjectTimelineWriter.InsertAsync(
+                    connection,
+                    transaction,
+                    new ProjectTimelineEvent
+                    {
+                        ProjectId = attachment.ProjectId,
+                        EventTypeId = ProjectTimelineEventTypeIds.AttachmentCoverChanged,
+                        Title = "Portada actualizada",
+                        Description = "Se selecciono un archivo como portada del proyecto.",
+                        CreatedByUserId = command.UpdatedByUserId,
+                        RelatedEntityType = RelatedEntityType,
+                        RelatedEntityId = attachment.Id
+                    });
 
                 transaction.Commit();
                 return new SetProjectAttachmentCoverResult

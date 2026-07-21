@@ -10,7 +10,7 @@ namespace SalesTracking.Application.UseCases.Customers.Interfaces
         Task<Customer?> GetCustomerByExternalIdAsync(string externalId);
         Task<CreateCustomer> CreateCustomerAsync(CreateCustomer customer);
         Task<UpdateCustomer> UpdateCustomerAsync(UpdateCustomer customer);
-        Task<bool> ChangeCustomerStatusAsync(string externalId, CustomerStatus status);
-        Task<bool> DeleteCustomerAsync(string externalId);
+        Task<bool> ChangeCustomerStatusAsync(string externalId, CustomerStatus status, int changedByUserId);
+        Task<bool> DeleteCustomerAsync(string externalId, int deletedByUserId);
     }
 }

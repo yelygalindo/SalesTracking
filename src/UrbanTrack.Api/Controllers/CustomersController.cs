@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SalesTracking.Application.UseCases.Customers.Comands;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.UseCases.Customers.Interfaces;
 using SalesTracking.Application.UseCases.Customers.Results;
 using UrbanTrack.Api.Controllers.Requests.Customers;
@@ -16,10 +17,12 @@ namespace UrbanTrack.Api.Controllers
     public class CustomersController : ControllerBase
     {
         private readonly ICustomerService _service;
+        private readonly ICurrentUser _currentUser;
 
-        public CustomersController(ICustomerService service)
+        public CustomersController(ICustomerService service, ICurrentUser currentUser)
         {
             _service = service;
+            _currentUser = currentUser;
         }
 
         [HttpGet("statuses")]
@@ -56,7 +59,8 @@ namespace UrbanTrack.Api.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IdMessageResponse>> Create([FromBody] CreateCustomerRequest createCustomer)
         {
-            CreateCustomerResult createCustomerResult = await _service.CreateCustomerAsync(createCustomer.ToApplication());
+            CreateCustomerResult createCustomerResult = await _service.CreateCustomerAsync(
+                createCustomer.ToApplication(_currentUser.UserId.GetValueOrDefault()));
 
             if (!createCustomerResult.Succeeded)
                 return BadRequest(new ErrorResponse { Error = createCustomerResult.Message });
@@ -74,7 +78,7 @@ namespace UrbanTrack.Api.Controllers
         public async Task<ActionResult<MessageApiResponse>> Update(string externalId,[FromBody] UpdateCustomerRequest request)
         {
             UpdateCustomerResult result = await _service.UpdateCustomerAsync(
-                request.ToApplication(externalId));
+                request.ToApplication(externalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {
@@ -93,7 +97,8 @@ namespace UrbanTrack.Api.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<MessageApiResponse>> ChangeStatus(string externalId,[FromBody] ChangeStatusRequest request)
         {
-            ChangeCustomerStatusResult result = await _service.ChangeCustomerStatusAsync(request.ToApplication(externalId));
+            ChangeCustomerStatusResult result = await _service.ChangeCustomerStatusAsync(
+                request.ToApplication(externalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {
@@ -113,7 +118,7 @@ namespace UrbanTrack.Api.Controllers
         public async Task<ActionResult<MessageApiResponse>> Delete(string externalId)
         {
             DeleteCustomerResult result = await _service.DeleteCustomerAsync(
-                new DeleteCustomerCommand(externalId));
+                new DeleteCustomerCommand(externalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {

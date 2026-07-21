@@ -16,5 +16,6 @@ namespace SalesTracking.Application.UseCases.Customers.Models
         public CustomerStatus Status { get; set; }
         public bool Succeeded { get; set; }
         public string? Message { get; set; }
+        public int CreatedByUserId { get; set; }
     }
 }

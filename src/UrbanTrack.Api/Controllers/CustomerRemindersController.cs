@@ -65,7 +65,10 @@ namespace UrbanTrack.Api.Controllers
             string reminderExternalId)
         {
             CompleteCustomerReminderResult result = await _service.CompleteReminderAsync(
-                new CompleteCustomerReminderCommand(customerExternalId, reminderExternalId));
+                new CompleteCustomerReminderCommand(
+                    customerExternalId,
+                    reminderExternalId,
+                    _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
                 return NotFound(new ErrorResponse { Error = result.Message });

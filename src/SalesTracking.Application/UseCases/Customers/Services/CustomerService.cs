@@ -165,7 +165,8 @@ namespace SalesTracking.Application.UseCases.Customers.Services
                 Address = command.Address?.Trim(),
                 Latitude = command.Latitude,
                 Longitude = command.Longitude,
-                Status = CustomerStatus.Prospect
+                Status = CustomerStatus.Prospect,
+                CreatedByUserId = command.CreatedByUserId
             };
 
             CreateCustomer created = await _repo.CreateCustomerAsync(customer);
@@ -258,7 +259,8 @@ namespace SalesTracking.Application.UseCases.Customers.Services
                 SellerId = command.RegisterByExternalId,
                 Address = command.Address?.Trim(),
                 Latitude = command.Latitude,
-                Longitude = command.Longitude
+                Longitude = command.Longitude,
+                UpdatedByUserId = command.UpdatedByUserId
             };
 
             UpdateCustomer updated = await _repo.UpdateCustomerAsync(customer);
@@ -302,7 +304,8 @@ namespace SalesTracking.Application.UseCases.Customers.Services
 
             CustomerStatus status = (CustomerStatus)command.StatusId;
 
-            bool updated = await _repo.ChangeCustomerStatusAsync(command.ExternalId.Trim(), status);
+            bool updated = await _repo.ChangeCustomerStatusAsync(
+                command.ExternalId.Trim(), status, command.ChangedByUserId);
 
             if (!updated)
             {
@@ -332,7 +335,7 @@ namespace SalesTracking.Application.UseCases.Customers.Services
                 };
             }
 
-            bool deleted = await _repo.DeleteCustomerAsync(command.ExternalId.Trim());
+            bool deleted = await _repo.DeleteCustomerAsync(command.ExternalId.Trim(), command.DeletedByUserId);
 
             if (!deleted)
             {

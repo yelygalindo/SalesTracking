@@ -5,8 +5,7 @@ internal static class CustomerTimelineQueries
     public const string GetCustomerId = @"
 SELECT TOP 1 Id
 FROM Customers
-WHERE ExternalId = @CustomerExternalId
-  AND IsDeleted = 0;";
+WHERE ExternalId = @CustomerExternalId;";
 
     public const string GetTimeline = @"
 SELECT

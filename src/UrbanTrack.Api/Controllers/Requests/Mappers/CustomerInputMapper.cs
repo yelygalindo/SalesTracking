@@ -5,7 +5,7 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
 {
     public static class CustomerInputMapper
     {
-        public static CreateCustomerCommand ToApplication(this CreateCustomerRequest request)
+        public static CreateCustomerCommand ToApplication(this CreateCustomerRequest request, int createdByUserId)
         {
             return new CreateCustomerCommand
             {
@@ -16,7 +16,8 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 RegisterByExternalId = request.RegisterByExternalId,
                 Address = request.Address,
                 Latitude = request.Latitude,
-                Longitude = request.Longitude
+                Longitude = request.Longitude,
+                CreatedByUserId = createdByUserId
             };
         }
 
@@ -32,7 +33,10 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
             };
         }
 
-        public static UpdateCustomerCommand ToApplication(this UpdateCustomerRequest request, string externalId)
+        public static UpdateCustomerCommand ToApplication(
+            this UpdateCustomerRequest request,
+            string externalId,
+            int updatedByUserId)
         {
             return new UpdateCustomerCommand
             {
@@ -44,16 +48,21 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 RegisterByExternalId = request.RegisterByExternalId,
                 Address = request.Address,
                 Latitude = request.Latitude,
-                Longitude = request.Longitude
+                Longitude = request.Longitude,
+                UpdatedByUserId = updatedByUserId
             };
         }
 
-        public static ChangeCustomerStatusCommand ToApplication(this ChangeStatusRequest request, string externalId)
+        public static ChangeCustomerStatusCommand ToApplication(
+            this ChangeStatusRequest request,
+            string externalId,
+            int changedByUserId)
         {
             return new ChangeCustomerStatusCommand
             {
                 ExternalId = externalId,
-                StatusId = request.StatusId
+                StatusId = request.StatusId,
+                ChangedByUserId = changedByUserId
             };
         }
     }

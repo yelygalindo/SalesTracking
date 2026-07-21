@@ -11,5 +11,12 @@
         public const int DeliveryCreated = 8;
         public const int DeliveryStatusChanged = 9;
         public const int DeliveryReceiptConfirmed = 10;
+        public const int ProjectDeleted = 11;
+        public const int NoteUpdated = 12;
+        public const int NoteDeleted = 13;
+        public const int AttachmentDeleted = 14;
+        public const int AttachmentCoverChanged = 15;
+        public const int DeliveryUpdated = 16;
+        public const int DeliveryDeleted = 17;
     }
 }

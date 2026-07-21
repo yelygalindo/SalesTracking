@@ -7,6 +7,9 @@ namespace SalesTracking.Application.UseCases.CustomerReminders.Interfaces
     {
         Task<IReadOnlyList<CustomerReminder>> GetRemindersAsync(string customerExternalId);
         Task<CreateCustomerReminder> CreateReminderAsync(CreateCustomerReminder reminder);
-        Task<bool> CompleteReminderAsync(string customerExternalId, string reminderExternalId);
+        Task<bool> CompleteReminderAsync(
+            string customerExternalId,
+            string reminderExternalId,
+            int completedByUserId);
     }
 }

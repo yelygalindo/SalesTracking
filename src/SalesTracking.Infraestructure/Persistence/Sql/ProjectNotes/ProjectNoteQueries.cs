@@ -16,6 +16,15 @@ FROM Users
 WHERE ExternalId = @ExternalId
   AND IsActive = 1;";
 
+        public const string GetInternal = @"
+SELECT TOP 1 pn.Id, pn.ProjectId
+FROM ProjectNotes pn
+INNER JOIN Projects p ON p.Id = pn.ProjectId
+WHERE p.ExternalId = @ProjectExternalId
+  AND p.IsDeleted = 0
+  AND pn.ExternalId = @NoteExternalId
+  AND pn.IsDeleted = 0;";
+
         public const string GetByProjectExternalId = @"
 SELECT
     pn.Id,

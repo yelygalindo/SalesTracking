@@ -133,7 +133,7 @@ namespace UrbanTrack.Api.Controllers
         public async Task<ActionResult<MessageResponse>> Delete(string externalId)
         {
             DeleteProjectResult result = await _projectService.DeleteAsync(
-                new DeleteProjectCommand(externalId));
+                new DeleteProjectCommand(externalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {

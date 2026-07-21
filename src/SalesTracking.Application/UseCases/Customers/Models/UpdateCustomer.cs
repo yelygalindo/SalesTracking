@@ -14,5 +14,6 @@
         public bool Succeeded { get; set; }
         public bool NotFound { get; set; }
         public string? Message { get; set; }
+        public int UpdatedByUserId { get; set; }
     }
 }

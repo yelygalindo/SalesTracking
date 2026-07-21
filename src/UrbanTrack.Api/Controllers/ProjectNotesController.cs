@@ -105,7 +105,10 @@ namespace UrbanTrack.Api.Controllers
             string noteExternalId)
         {
             DeleteProjectNoteResult result = await _projectNoteService.DeleteNoteAsync(
-                new DeleteProjectNoteCommand(projectExternalId, noteExternalId));
+                new DeleteProjectNoteCommand(
+                    projectExternalId,
+                    noteExternalId,
+                    _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {

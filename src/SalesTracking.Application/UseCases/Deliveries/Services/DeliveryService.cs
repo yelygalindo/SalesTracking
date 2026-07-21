@@ -104,6 +104,7 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
                 CommittedDateUtc = command.CommittedDateUtc,
                 DeliveredDateUtc = NormalizeDeliveredDate(statusId, command.DeliveredDateUtc),
                 Notes = command.Notes?.Trim(),
+                UpdatedByUserId = command.UpdatedByUserId,
                 Items = command.Items.Select(x => new CreateDeliveryItem
                 {
                     ExternalId = ExternalIdGenerator.New(ExternalIdPrefixes.DeliveryItem),
@@ -220,7 +221,7 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
                 };
             }
 
-            return await _deliveryRepository.DeleteAsync(command.ExternalId.Trim());
+            return await _deliveryRepository.DeleteAsync(command with { ExternalId = command.ExternalId.Trim() });
         }
 
         private static CreateDeliveryResult? Validate(CreateDeliveryCommand command)

@@ -84,7 +84,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] UpdateDeliveryRequest request)
         {
             UpdateDeliveryResult result = await _deliveryService.UpdateAsync(
-                request.ToApplication(deliveryExternalId));
+                request.ToApplication(deliveryExternalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {
@@ -148,7 +148,7 @@ namespace UrbanTrack.Api.Controllers
         public async Task<ActionResult<MessageResponse>> Delete(string deliveryExternalId)
         {
             DeleteDeliveryResult result = await _deliveryService.DeleteAsync(
-                new DeleteDeliveryCommand(deliveryExternalId));
+                new DeleteDeliveryCommand(deliveryExternalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {

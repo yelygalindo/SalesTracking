@@ -35,7 +35,10 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
             };
         }
 
-        public static UpdateDeliveryCommand ToApplication(this UpdateDeliveryRequest request, string externalId)
+        public static UpdateDeliveryCommand ToApplication(
+            this UpdateDeliveryRequest request,
+            string externalId,
+            int updatedByUserId)
         {
             return new UpdateDeliveryCommand
             {
@@ -45,6 +48,7 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 CommittedDateUtc = request.CommittedDateUtc,
                 DeliveredDateUtc = request.DeliveredDateUtc,
                 Notes = request.Notes,
+                UpdatedByUserId = updatedByUserId,
                 Items = request.Items.Select(x => new UpdateDeliveryItemCommand
                 {
                     ProductExternalId = x.ProductExternalId,

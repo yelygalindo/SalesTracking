@@ -2,6 +2,7 @@ using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using SalesTracking.Application.UseCases.ProjectNotes.Interfaces;
+using SalesTracking.Application.UseCases.ProjectNotes.Comands;
 using SalesTracking.Application.UseCases.ProjectNotes.Models;
 using SalesTracking.Application.UseCases.ProjectNotes.Results;
 using SalesTracking.Infrastructure.Persistence.Settings;
@@ -106,6 +107,21 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
 
             try
             {
+                ProjectNoteInternalRow? internalNote = await connection.QueryFirstOrDefaultAsync<ProjectNoteInternalRow>(
+                    ProjectNoteQueries.GetInternal,
+                    new { note.ProjectExternalId, note.NoteExternalId },
+                    transaction);
+
+                if (internalNote == null)
+                {
+                    transaction.Rollback();
+                    return new ResponseUpdateProjectNote
+                    {
+                        Succeeded = false,
+                        NotFound = true,
+                        Message = "Nota de proyecto no encontrada."
+                    };
+                }
 
                 int affectedRows = await connection.ExecuteAsync(
                     ProjectNoteQueries.UpdateNote,
@@ -129,6 +145,20 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                     };
                 }
 
+                await ProjectTimelineWriter.InsertAsync(
+                    connection,
+                    transaction,
+                    new ProjectTimelineEvent
+                    {
+                        ProjectId = internalNote.ProjectId,
+                        EventTypeId = ProjectTimelineEventTypeIds.NoteUpdated,
+                        Title = "Nota actualizada",
+                        Description = "Nota del proyecto actualizada.",
+                        CreatedByUserId = note.UpdatedByUserId,
+                        RelatedEntityType = "ProjectNote",
+                        RelatedEntityId = internalNote.Id
+                    });
+
                 transaction.Commit();
                 return new ResponseUpdateProjectNote
                 {
@@ -149,22 +179,26 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
             }
         }
 
-        public async Task<ResponseDeleteProjectNote> DeleteNoteAsync(string projectExternalId, string noteExternalId)
+        public async Task<ResponseDeleteProjectNote> DeleteNoteAsync(DeleteProjectNoteCommand command)
         {
             using IDbConnection connection = CreateConnection();
+            connection.Open();
+            using IDbTransaction transaction = connection.BeginTransaction();
 
             try
             {
-                int affectedRows = await connection.ExecuteAsync(
-                    ProjectNoteQueries.DeleteNote,
+                ProjectNoteInternalRow? internalNote = await connection.QueryFirstOrDefaultAsync<ProjectNoteInternalRow>(
+                    ProjectNoteQueries.GetInternal,
                     new
                     {
-                        ProjectExternalId = projectExternalId,
-                        NoteExternalId = noteExternalId
-                    });
+                        command.ProjectExternalId,
+                        command.NoteExternalId
+                    },
+                    transaction);
 
-                if (affectedRows == 0)
+                if (internalNote == null)
                 {
+                    transaction.Rollback();
                     return new ResponseDeleteProjectNote
                     {
                         Succeeded = false,
@@ -172,6 +206,42 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                         Message = "Nota de proyecto no encontrada."
                     };
                 }
+
+                int affectedRows = await connection.ExecuteAsync(
+                    ProjectNoteQueries.DeleteNote,
+                    new
+                    {
+                        command.ProjectExternalId,
+                        command.NoteExternalId
+                    },
+                    transaction);
+
+                if (affectedRows == 0)
+                {
+                    transaction.Rollback();
+                    return new ResponseDeleteProjectNote
+                    {
+                        Succeeded = false,
+                        NotFound = true,
+                        Message = "Nota de proyecto no encontrada."
+                    };
+                }
+
+                await ProjectTimelineWriter.InsertAsync(
+                    connection,
+                    transaction,
+                    new ProjectTimelineEvent
+                    {
+                        ProjectId = internalNote.ProjectId,
+                        EventTypeId = ProjectTimelineEventTypeIds.NoteDeleted,
+                        Title = "Nota eliminada",
+                        Description = "Nota eliminada del proyecto.",
+                        CreatedByUserId = command.DeletedByUserId,
+                        RelatedEntityType = "ProjectNote",
+                        RelatedEntityId = internalNote.Id
+                    });
+
+                transaction.Commit();
 
                 return new ResponseDeleteProjectNote
                 {
@@ -182,6 +252,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
             }
             catch
             {
+                transaction.Rollback();
                 return new ResponseDeleteProjectNote
                 {
                     Succeeded = false,
@@ -215,6 +286,12 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                 new { ProjectExternalId = projectExternalId });
 
             return rows.Select(x => x.ToResult()).ToList();
+        }
+
+        private sealed class ProjectNoteInternalRow
+        {
+            public int Id { get; set; }
+            public int ProjectId { get; set; }
         }
     }
 }

@@ -128,7 +128,8 @@ namespace SalesTracking.Application.UseCases.CustomerReminders.Services
 
             bool completed = await _repo.CompleteReminderAsync(
                 command.CustomerExternalId,
-                command.ReminderExternalId);
+                command.ReminderExternalId,
+                command.CompletedByUserId);
 
             if (!completed)
             {

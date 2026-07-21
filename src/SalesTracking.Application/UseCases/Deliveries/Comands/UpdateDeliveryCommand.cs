@@ -9,6 +9,7 @@ namespace SalesTracking.Application.UseCases.Deliveries.Comands
         public DateTime? DeliveredDateUtc { get; set; }
         public string? Notes { get; set; }
         public IReadOnlyList<UpdateDeliveryItemCommand> Items { get; set; } = new List<UpdateDeliveryItemCommand>();
+        public int UpdatedByUserId { get; set; }
     }
 
     public sealed class UpdateDeliveryItemCommand

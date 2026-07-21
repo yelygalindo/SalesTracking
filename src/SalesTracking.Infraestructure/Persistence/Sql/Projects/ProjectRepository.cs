@@ -433,13 +433,17 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
         public async Task<DeleteProjectResult> DeleteAsync(DeleteProjectCommand command)
         {
             using var connection = CreateConnection();
+            connection.Open();
+            using IDbTransaction transaction = connection.BeginTransaction();
 
-            int projectExists = await connection.ExecuteScalarAsync<int>(
-                ProjectQueries.ProjectExistsByExternalId,
-                new { command.ExternalId });
+            ProjectTimelineProjectRow? project = await connection.QuerySingleOrDefaultAsync<ProjectTimelineProjectRow>(
+                ProjectQueries.GetTimelineProjectByExternalId,
+                new { command.ExternalId },
+                transaction);
 
-            if (projectExists == 0)
+            if (project == null)
             {
+                transaction.Rollback();
                 return new DeleteProjectResult
                 {
                     Succeeded = false,
@@ -450,7 +454,22 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
 
             await connection.ExecuteAsync(
                 ProjectQueries.Delete,
-                new { command.ExternalId });
+                new { command.ExternalId },
+                transaction);
+
+            await ProjectTimelineWriter.InsertAsync(
+                connection,
+                transaction,
+                new ProjectTimelineEvent
+                {
+                    ProjectId = project.Id,
+                    EventTypeId = ProjectTimelineEventTypeIds.ProjectDeleted,
+                    Title = "Proyecto eliminado",
+                    Description = "Proyecto eliminado.",
+                    CreatedByUserId = command.DeletedByUserId
+                });
+
+            transaction.Commit();
 
             return new DeleteProjectResult
             {
