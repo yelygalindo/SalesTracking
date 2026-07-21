@@ -1,4 +1,4 @@
-﻿using SalesTracking.Application.Common.Interfaces;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.UseCases.Authentication.Interfaces;
 using SalesTracking.Application.UseCases.Authentication.Services;
 using SalesTracking.Application.UseCases.CustomerNotes.Interfaces;
@@ -13,6 +13,8 @@ using SalesTracking.Application.UseCases.ProjectNotes.Interfaces;
 using SalesTracking.Application.UseCases.ProjectNotes.Services;
 using SalesTracking.Application.UseCases.Projects.Interfaces;
 using SalesTracking.Application.UseCases.Projects.Services;
+using SalesTracking.Application.UseCases.ProjectTimeline.Interfaces;
+using SalesTracking.Application.UseCases.ProjectTimeline.Services;
 using SalesTracking.Infrastructure.Persistence.Security;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.Auth;
@@ -22,6 +24,7 @@ using SalesTracking.Infrastructure.Persistence.Sql.Customers;
 using SalesTracking.Infrastructure.Persistence.Sql.Invitations;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes;
 using SalesTracking.Infrastructure.Persistence.Sql.Projects;
+using SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline;
 
 namespace SalesTracking.Host.Extensions
 {
@@ -41,10 +44,12 @@ namespace SalesTracking.Host.Extensions
             services.AddScoped<ICustomerNoteService, CustomerNoteService>();
             services.AddScoped<ICustomerReminderService, CustomerReminderService>();
             services.AddScoped<IProjectNoteService, ProjectNoteService>();
+            services.AddScoped<IProjectTimelineService, ProjectTimelineService>();
 
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
             services.AddScoped<IProjectNoteRepository, ProjectNoteRepository>();
+            services.AddScoped<IProjectTimelineRepository, ProjectTimelineRepository>();
             services.AddScoped<IInvitationRepository, InvitationRepository>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<ICustomerNoteRepository, CustomerNoteRepository>();

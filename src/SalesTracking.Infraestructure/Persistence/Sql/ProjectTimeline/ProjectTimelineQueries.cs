@@ -29,5 +29,41 @@ VALUES (
     SYSUTCDATETIME(),
     0
 );";
+
+        public const string GetProjectInternalIdByExternalId = @"
+SELECT TOP 1
+    Id
+FROM Projects
+WHERE ExternalId = @ProjectExternalId
+  AND IsDeleted = 0;";
+
+        public const string GetByProjectId = @"
+SELECT
+    pt.ExternalId,
+    pt.EventTypeId,
+    CASE pt.EventTypeId
+        WHEN 1 THEN 'ProjectCreated'
+        WHEN 2 THEN 'ProjectUpdated'
+        WHEN 3 THEN 'ProjectStatusChanged'
+        WHEN 4 THEN 'ProjectProgressUpdated'
+        WHEN 6 THEN 'NoteAdded'
+        ELSE 'Unknown'
+    END AS EventTypeName,
+    pt.Title,
+    pt.Description,
+    pt.OccurredAtUtc,
+    u.ExternalId AS CreatedByUserExternalId,
+    u.FullName AS CreatedByUserName,
+    pt.RelatedEntityType,
+    pt.RelatedEntityId,
+    pt.MetadataJson,
+    COUNT(1) OVER() AS TotalCount
+FROM dbo.ProjectTimeline pt
+LEFT JOIN Users u ON u.Id = pt.CreatedByUserId
+WHERE pt.ProjectId = @ProjectId
+  AND pt.IsDeleted = 0
+ORDER BY pt.OccurredAtUtc DESC
+OFFSET @Offset ROWS
+FETCH NEXT @PageSize ROWS ONLY;";
     }
 }
