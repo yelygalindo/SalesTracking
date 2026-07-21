@@ -1,7 +1,14 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SalesTracking.Application.UseCases.Products.Comands;
+using SalesTracking.Application.UseCases.Products.Interfaces;
+using SalesTracking.Application.UseCases.Products.Models;
+using SalesTracking.Application.UseCases.Products.Results;
+using UrbanTrack.Api.Controllers.Requests.Mappers;
+using UrbanTrack.Api.Controllers.Requests.Products;
 using UrbanTrack.Api.Controllers.Responses.Common;
 using UrbanTrack.Api.Controllers.Responses.Pagination;
-using Microsoft.AspNetCore.Http;
+using UrbanTrack.Api.Controllers.Responses.Products;
 
 namespace UrbanTrack.Api.Controllers
 {
@@ -9,119 +16,98 @@ namespace UrbanTrack.Api.Controllers
     [Route("api/products")]
     public class ProductsController : ControllerBase
     {
-        //[HttpGet]
-        //[ProducesResponseType(typeof(PagedResponse<ProductSummaryResponse>), StatusCodes.Status200OK)]
-        //public async Task<ActionResult<PagedResponse<ProductSummaryResponse>>> Get([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
-        //{
-        //    var all = GetMockProducts();
-        //    var filtered = all.Where(p => string.IsNullOrEmpty(search) || p.Name.Contains(search, StringComparison.OrdinalIgnoreCase) || p.Code.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
+        private readonly IProductService _productService;
 
-        //    var items = filtered.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        public ProductsController(IProductService productService)
+        {
+            _productService = productService;
+        }
 
-        //    var response = new PagedResponse<ProductSummaryResponse>
-        //    {
-        //        Items = items,
-        //        Pagination = new PaginationResponse { Page = page, PageSize = pageSize, TotalItems = filtered.Count, TotalPages = (int)Math.Ceiling(filtered.Count / (double)pageSize) }
-        //    };
+        [HttpGet]
+        [ProducesResponseType(typeof(PagedResponse<ProductResponse>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResponse<ProductResponse>>> Get(
+            [FromQuery] string? search,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            ProductPagedList result = await _productService.GetAsync(
+                new GetProductsRequest
+                {
+                    Search = search,
+                    Page = page,
+                    PageSize = pageSize
+                }.ToApplication());
 
-        //    return await Task.FromResult(Ok(response));
-        //}
+            return Ok(result.ToResponse());
+        }
 
-        //[HttpGet("{id}")]
-        //[ProducesResponseType(typeof(ProductSummaryResponse), StatusCodes.Status200OK)]
-        //[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        //public async Task<ActionResult<ProductSummaryResponse>> GetById(string id)
-        //{
-        //    var p = GetMockProducts().FirstOrDefault(x => x.Id == id);
-        //    if (p == null) return await Task.FromResult(NotFound(new ErrorResponse { Error = "Producto no encontrado." }));
-        //    return await Task.FromResult(Ok(p));
-        //}
+        [HttpGet("{externalId}")]
+        [ProducesResponseType(typeof(ProductResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ProductResponse>> GetByExternalId(string externalId)
+        {
+            ProductResult? result = await _productService.GetByExternalIdAsync(
+                new GetProductByExternalIdCommand(externalId));
 
-        //[HttpPost]
-        //[ProducesResponseType(typeof(IdMessageResponse), StatusCodes.Status201Created)]
-        //public async Task<ActionResult<IdMessageResponse>> Create([FromBody] CreateProductRequest req)
-        //{
-        //    var id = $"prod-{Guid.NewGuid():N}".Substring(0,8);
-        //    return await Task.FromResult(Created(string.Empty, new IdMessageResponse { Id = id, Message = "Producto creado (mock)." }));
-        //}
+            if (result == null)
+                return NotFound(new ErrorResponse { Error = "Producto no encontrado." });
 
-        //[HttpPut("{id}")]
-        //[ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
-        //public async Task<ActionResult<MessageApiResponse>> Update(string id, [FromBody] CreateProductRequest req)
-        //{
-        //    return await Task.FromResult(Ok(new MessageApiResponse { Message = "Producto actualizado (mock)." }));
-        //}
+            return Ok(result.ToResponse());
+        }
 
-        //[HttpDelete("{id}")]
-        //[ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
-        //public async Task<ActionResult<MessageApiResponse>> Delete(string id)
-        //{
-        //    return await Task.FromResult(Ok(new MessageApiResponse { Message = "Producto eliminado (mock)." }));
-        //}
+        [HttpPost]
+        [ProducesResponseType(typeof(IdMessageResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IdMessageResponse>> Create([FromBody] CreateProductRequest request)
+        {
+            CreateProductResult result = await _productService.CreateAsync(request.ToApplication());
 
-        //// Units endpoints (inside ProductsController per contract)
-        //[HttpGet("/api/units")]
-        //[ProducesResponseType(typeof(IEnumerable<object>), StatusCodes.Status200OK)]
-        //public async Task<ActionResult<IEnumerable<object>>> GetUnits()
-        //{
-        //    var units = new[]
-        //    {
-        //        new { Id = "u-m2", Name = "m2" },
-        //        new { Id = "u-pza", Name = "pieza" }
-        //    };
+            if (!result.Succeeded)
+                return BadRequest(new ErrorResponse { Error = result.Message });
 
-        //    // NOTE: contract forbids anonymous objects, but units are simple; return typed objects instead:
-        //    var typed = new List<UnitResponse>();
-        //    foreach (var u in units)
-        //    {
-        //        typed.Add(new UnitResponse { Id = u.Id, Name = u.Name });
-        //    }
+            return Created(string.Empty, result.ToResponse());
+        }
 
-        //    return await Task.FromResult(Ok(typed));
-        //}
+        [HttpPut("{externalId}")]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<MessageResponse>> Update(
+            string externalId,
+            [FromBody] UpdateProductRequest request)
+        {
+            UpdateProductResult result = await _productService.UpdateAsync(
+                request.ToApplication(externalId));
 
-        //[HttpPost("/api/units")]
-        //[ProducesResponseType(typeof(IdMessageResponse), StatusCodes.Status201Created)]
-        //public async Task<ActionResult<IdMessageResponse>> CreateUnit([FromBody] UnitRequest req)
-        //{
-        //    var id = $"u-{Guid.NewGuid():N}".Substring(0,8);
-        //    return await Task.FromResult(Created(string.Empty, new IdMessageResponse { Id = id, Message = "Unidad creada (mock)." }));
-        //}
+            if (!result.Succeeded)
+            {
+                if (result.NotFound)
+                    return NotFound(new ErrorResponse { Error = result.Message });
 
-        //[HttpPut("/api/units/{id}")]
-        //[ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
-        //public async Task<ActionResult<MessageApiResponse>> UpdateUnit(string id, [FromBody] UnitRequest req)
-        //{
-        //    return await Task.FromResult(Ok(new MessageApiResponse { Message = "Unidad actualizada (mock)." }));
-        //}
+                return BadRequest(new ErrorResponse { Error = result.Message });
+            }
 
-        //[HttpDelete("/api/units/{id}")]
-        //[ProducesResponseType(typeof(MessageApiResponse), StatusCodes.Status200OK)]
-        //public async Task<ActionResult<MessageApiResponse>> DeleteUnit(string id)
-        //{
-        //    return await Task.FromResult(Ok(new MessageApiResponse { Message = "Unidad eliminada (mock)." }));
-        //}
+            return Ok(new MessageResponse { Message = result.Message });
+        }
 
-        //private List<ProductSummaryResponse> GetMockProducts()
-        //{
-        //    return new List<ProductSummaryResponse>
-        //    {
-        //        new ProductSummaryResponse { Id = "prod-01", Name = "Calamina galvanizada", Code = "CAL-G01", Unit = "m2", Price = 150.25m },
-        //        new ProductSummaryResponse { Id = "prod-02", Name = "Aislante térmico", Code = "AIS-T02", Unit = "m2", Price = 85.50m },
-        //        new ProductSummaryResponse { Id = "prod-03", Name = "Clavos 3\"", Code = "CLV-03", Unit = "pza", Price = 0.12m }
-        //    };
-        //}
+        [HttpDelete("{externalId}")]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<MessageResponse>> Delete(string externalId)
+        {
+            DeleteProductResult result = await _productService.DeleteAsync(
+                new DeleteProductCommand(externalId));
 
-        //// Unit DTOs (typed)
-        //public class UnitResponse
-        //{
-        //    public string Id { get; set; }
-        //    public string Name { get; set; }
-        //}
+            if (!result.Succeeded)
+            {
+                if (result.NotFound)
+                    return NotFound(new ErrorResponse { Error = result.Message });
 
-        //public class UnitRequest
-        //{
-        //    public string Name { get; set; }
-        //}
+                return BadRequest(new ErrorResponse { Error = result.Message });
+            }
+
+            return Ok(new MessageResponse { Message = result.Message });
+        }
     }
 }

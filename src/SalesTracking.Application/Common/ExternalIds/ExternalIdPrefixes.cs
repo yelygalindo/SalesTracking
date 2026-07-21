@@ -7,6 +7,7 @@ namespace SalesTracking.Application.Common.ExternalIds
         public const string CustomerReminder = "rmd";
         public const string CustomerTimelineEvent = "tle";
         public const string ProjectTimelineEvent = "ptl";
+        public const string Product = "prod";
         public const string User = "user";
         public const string Invitation = "inv"; 
         public const string Project = "p";
