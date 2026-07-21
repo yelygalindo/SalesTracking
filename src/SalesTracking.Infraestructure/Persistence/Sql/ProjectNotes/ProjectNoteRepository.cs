@@ -92,7 +92,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                 {
                     Succeeded = false,
                     NotFound = false,
-                    Message = "Ocurrió un error al agregar la nota.",
+                    Message = "Ocurrio un error al agregar la nota.",
                     CreateProjectNote = note
                 };
             }
@@ -160,7 +160,49 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                 {
                     Succeeded = false,
                     NotFound = false,
-                    Message = "Ocurrió un error al actualizar la nota."
+                    Message = "Ocurrio un error al actualizar la nota."
+                };
+            }
+        }
+
+        public async Task<ResponseDeleteProjectNote> DeleteNoteAsync(string projectExternalId, string noteExternalId)
+        {
+            using IDbConnection connection = CreateConnection();
+
+            try
+            {
+                int affectedRows = await connection.ExecuteAsync(
+                    ProjectNoteQueries.DeleteNote,
+                    new
+                    {
+                        ProjectExternalId = projectExternalId,
+                        NoteExternalId = noteExternalId
+                    });
+
+                if (affectedRows == 0)
+                {
+                    return new ResponseDeleteProjectNote
+                    {
+                        Succeeded = false,
+                        NotFound = true,
+                        Message = "Nota de proyecto no encontrada."
+                    };
+                }
+
+                return new ResponseDeleteProjectNote
+                {
+                    Succeeded = true,
+                    NotFound = false,
+                    Message = "Nota eliminada correctamente."
+                };
+            }
+            catch
+            {
+                return new ResponseDeleteProjectNote
+                {
+                    Succeeded = false,
+                    NotFound = false,
+                    Message = "Ocurrio un error al eliminar la nota."
                 };
             }
         }

@@ -22,7 +22,7 @@ namespace SalesTracking.Application.UseCases.ProjectNotes.Services
                 return new AddProjectNoteResult
                 {
                     Succeeded = false,
-                    Message = "La solicitud no es válida."
+                    Message = "La solicitud no es valida."
                 };
             }
 
@@ -88,7 +88,7 @@ namespace SalesTracking.Application.UseCases.ProjectNotes.Services
                 return new UpdateProjectNoteResult
                 {
                     Succeeded = false,
-                    Message = "La solicitud no es válida."
+                    Message = "La solicitud no es valida."
                 };
             }
 
@@ -152,6 +152,56 @@ namespace SalesTracking.Application.UseCases.ProjectNotes.Services
             {
                 Succeeded = true,
                 Message = "Nota actualizada correctamente."
+            };
+        }
+
+        public async Task<DeleteProjectNoteResult> DeleteNoteAsync(DeleteProjectNoteCommand command)
+        {
+            if (command == null)
+            {
+                return new DeleteProjectNoteResult
+                {
+                    Succeeded = false,
+                    Message = "La solicitud no es valida."
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(command.ProjectExternalId))
+            {
+                return new DeleteProjectNoteResult
+                {
+                    Succeeded = false,
+                    Message = "El proyecto es requerido."
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(command.NoteExternalId))
+            {
+                return new DeleteProjectNoteResult
+                {
+                    Succeeded = false,
+                    Message = "La nota es requerida."
+                };
+            }
+
+            ResponseDeleteProjectNote deleted = await _projectNoteRepository.DeleteNoteAsync(
+                command.ProjectExternalId.Trim(),
+                command.NoteExternalId.Trim());
+
+            if (!deleted.Succeeded)
+            {
+                return new DeleteProjectNoteResult
+                {
+                    Succeeded = false,
+                    NotFound = deleted.NotFound,
+                    Message = deleted.Message ?? "No se pudo eliminar la nota."
+                };
+            }
+
+            return new DeleteProjectNoteResult
+            {
+                Succeeded = true,
+                Message = "Nota eliminada correctamente."
             };
         }
 

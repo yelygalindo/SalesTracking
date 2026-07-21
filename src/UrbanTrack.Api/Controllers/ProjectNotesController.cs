@@ -76,5 +76,27 @@ namespace UrbanTrack.Api.Controllers
 
             return Ok(new MessageResponse { Message = result.Message });
         }
+
+        [HttpDelete("{noteExternalId}")]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<MessageResponse>> DeleteNote(
+            string projectExternalId,
+            string noteExternalId)
+        {
+            DeleteProjectNoteResult result = await _projectNoteService.DeleteNoteAsync(
+                new DeleteProjectNoteCommand(projectExternalId, noteExternalId));
+
+            if (!result.Succeeded)
+            {
+                if (result.NotFound)
+                    return NotFound(new ErrorResponse { Error = result.Message });
+
+                return BadRequest(new ErrorResponse { Error = result.Message });
+            }
+
+            return Ok(new MessageResponse { Message = result.Message });
+        }
     }
 }

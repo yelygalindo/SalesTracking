@@ -68,5 +68,17 @@ WHERE p.ExternalId = @ProjectExternalId
   AND p.IsDeleted = 0
   AND pn.ExternalId = @NoteExternalId
   AND pn.IsDeleted = 0;";
+
+        public const string DeleteNote = @"
+UPDATE pn
+SET
+    pn.IsDeleted = 1,
+    pn.UpdatedAtUtc = SYSUTCDATETIME()
+FROM ProjectNotes pn
+INNER JOIN Projects p ON p.Id = pn.ProjectId
+WHERE p.ExternalId = @ProjectExternalId
+  AND p.IsDeleted = 0
+  AND pn.ExternalId = @NoteExternalId
+  AND pn.IsDeleted = 0;";
     }
 }
