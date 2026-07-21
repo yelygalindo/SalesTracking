@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SalesTracking.Application.Common.Interfaces;
+using SalesTracking.Application.Common.Authorization;
 using SalesTracking.Domain.Entities;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using System.IdentityModel.Tokens.Jwt;
@@ -19,9 +20,9 @@ namespace SalesTracking.Infrastructure.Persistence.Security
             _settings = options.Value;
         }
 
-        public string GenerateAccessToken(User user, DateTime expiresAtUtc)
+        public string GenerateAccessToken(User user, UserAuthorizationInfo authorization, DateTime expiresAtUtc)
         {
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -30,6 +31,9 @@ namespace SalesTracking.Infrastructure.Persistence.Security
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("companyId", user.Company.Id.ToString())
             };
+
+            claims.AddRange(authorization.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
+            claims.AddRange(authorization.Permissions.Select(permission => new Claim("permission", permission)));
 
             var keyBytes = Encoding.UTF8.GetBytes(_settings.Secret);
 

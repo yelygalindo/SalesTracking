@@ -103,6 +103,7 @@ SELECT TOP 1 Id
 FROM Projects
 WHERE ExternalId = @ExternalId
   AND CompanyId = @CompanyId
+  AND (@SellerUserId IS NULL OR SellerId = @SellerUserId)
   AND IsDeleted = 0;";
 
         public const string GetSellerInternalIdByExternalId = @"

@@ -83,8 +83,9 @@ namespace UrbanTrack.Api.Controllers.Responses.Mappers
             if (api == null) return null;
             return new InvitationResponse()
             {
-                Token = api.Token,
                 Email = api.Email,
+                FullName = api.FullName,
+                RoleCode = api.RoleCode,
                 CompanyId = api.CompanyId,
                 CompanyName = api.CompanyName,
                 ExpiresAtUtc = api.ExpiresAtUtc,
@@ -97,8 +98,8 @@ namespace UrbanTrack.Api.Controllers.Responses.Mappers
             if (api == null) return null;
             return new CreateInvitationResponse()
             {
-                Token = api.Token,
                 Email = api.Email,
+                Message = api.Message,
                 ExpiresAtUtc = api.ExpiresAtUtc,
             };
         }

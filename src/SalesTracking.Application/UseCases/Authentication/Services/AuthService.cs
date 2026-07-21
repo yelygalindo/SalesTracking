@@ -1,16 +1,21 @@
 ﻿using SalesTracking.Application.UseCases.Authentication.Comands;
 using SalesTracking.Application.UseCases.Authentication.Interfaces;
 using SalesTracking.Application.UseCases.Authentication.Results;
+using SalesTracking.Application.Common.Interfaces;
 
 namespace SalesTracking.Application.UseCases.Authentication.Services
 {
     public class AuthService : IAuthService
     {
         private readonly IAuthRepository _repo;
+        private readonly IPasswordPolicy _passwordPolicy;
+        private readonly IUserAuthorizationRepository? _authorizationRepository;
 
-        public AuthService(IAuthRepository repo)
+        public AuthService(IAuthRepository repo, IPasswordPolicy? passwordPolicy = null, IUserAuthorizationRepository? authorizationRepository = null)
         {
             _repo = repo;
+            _passwordPolicy = passwordPolicy ?? new SalesTracking.Application.Common.Validation.PasswordPolicy();
+            _authorizationRepository = authorizationRepository;
         }
 
         public async Task<LoginResult?> LoginAsync(LoginCommand loginCommand)
@@ -77,8 +82,9 @@ namespace SalesTracking.Application.UseCases.Authentication.Services
             if (resetPasswordComand == null || string.IsNullOrWhiteSpace(resetPasswordComand.Token))
                 return new ResetPasswordResult { Succeeded = false, Message = "Token inválido o expirado" };
 
-            if (string.IsNullOrWhiteSpace(resetPasswordComand.NewPassword) || resetPasswordComand.NewPassword.Length < 8)
-                return new ResetPasswordResult { Succeeded = false, Message = "La contraseña debe tener al menos 8 caracteres" };
+            var validation = _passwordPolicy.Validate(resetPasswordComand.NewPassword);
+            if (!validation.IsValid)
+                return new ResetPasswordResult { Succeeded = false, Message = validation.Error! };
 
             var ok = await _repo.ResetPasswordAsync(resetPasswordComand.Token.Trim(), resetPasswordComand.NewPassword);
             return new ResetPasswordResult
@@ -97,6 +103,25 @@ namespace SalesTracking.Application.UseCases.Authentication.Services
 
             await _repo.SendForgotPasswordAsync(forgotPasswordComand.Email.Trim());
             return new ForgotPasswordResult { Message = message };
+        }
+
+        public async Task<AuthMeResult?> GetMeAsync(int userId)
+        {
+            var user = await _repo.GetUserByIdAsync(userId);
+            if (user == null) return null;
+            if (_authorizationRepository == null) return null;
+            var authorization = await _authorizationRepository.GetByUserIdAsync(userId);
+            return new AuthMeResult
+            {
+                ExternalId = user.ExternalId,
+                FullName = user.FullName,
+                Email = user.Email,
+                CompanyId = user.Company.Id,
+                CompanyExternalId = user.Company.ExternalId,
+                CompanyName = user.Company.Name,
+                Roles = authorization.Roles,
+                Permissions = authorization.Permissions
+            };
         }
     }
 }

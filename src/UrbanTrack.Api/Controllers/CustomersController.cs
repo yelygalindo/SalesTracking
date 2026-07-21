@@ -60,7 +60,7 @@ namespace UrbanTrack.Api.Controllers
         public async Task<ActionResult<IdMessageResponse>> Create([FromBody] CreateCustomerRequest createCustomer)
         {
             CreateCustomerResult createCustomerResult = await _service.CreateCustomerAsync(
-                createCustomer.ToApplication(_currentUser.UserId.GetValueOrDefault()));
+                createCustomer.ToApplication(_currentUser.UserId));
 
             if (!createCustomerResult.Succeeded)
                 return BadRequest(new ErrorResponse { Error = createCustomerResult.Message });
@@ -78,7 +78,7 @@ namespace UrbanTrack.Api.Controllers
         public async Task<ActionResult<MessageApiResponse>> Update(string externalId,[FromBody] UpdateCustomerRequest request)
         {
             UpdateCustomerResult result = await _service.UpdateCustomerAsync(
-                request.ToApplication(externalId, _currentUser.UserId.GetValueOrDefault()));
+                request.ToApplication(externalId, _currentUser.UserId));
 
             if (!result.Succeeded)
             {
@@ -98,7 +98,7 @@ namespace UrbanTrack.Api.Controllers
         public async Task<ActionResult<MessageApiResponse>> ChangeStatus(string externalId,[FromBody] ChangeStatusRequest request)
         {
             ChangeCustomerStatusResult result = await _service.ChangeCustomerStatusAsync(
-                request.ToApplication(externalId, _currentUser.UserId.GetValueOrDefault()));
+                request.ToApplication(externalId, _currentUser.UserId));
 
             if (!result.Succeeded)
             {
@@ -118,7 +118,7 @@ namespace UrbanTrack.Api.Controllers
         public async Task<ActionResult<MessageApiResponse>> Delete(string externalId)
         {
             DeleteCustomerResult result = await _service.DeleteCustomerAsync(
-                new DeleteCustomerCommand(externalId, _currentUser.UserId.GetValueOrDefault()));
+                new DeleteCustomerCommand(externalId, _currentUser.UserId));
 
             if (!result.Succeeded)
             {

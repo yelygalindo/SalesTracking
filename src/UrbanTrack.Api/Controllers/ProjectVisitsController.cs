@@ -32,7 +32,7 @@ public sealed class ProjectVisitsController : ControllerBase
         [FromBody] CreateProjectVisitRequest request)
     {
         CreateProjectVisitResult result = await _service.CreateAsync(
-            request.ToApplication(projectExternalId, _currentUser.UserId.GetValueOrDefault()));
+            request.ToApplication(projectExternalId, _currentUser.UserId));
 
         if (!result.Succeeded)
         {

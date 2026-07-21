@@ -21,7 +21,7 @@ public sealed class ProjectMaterialsRepository : IProjectMaterialsRepository
         _currentUser = currentUser;
     }
 
-    private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
+    private int CompanyId => _currentUser.CompanyId;
 
     public async Task<GetProjectMaterialsSummaryResult> GetSummaryAsync(string projectExternalId)
     {

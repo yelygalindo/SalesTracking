@@ -24,7 +24,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Dashboard
             _currentUser = currentUser;
         }
 
-        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
+        private int CompanyId => _currentUser.CompanyId;
+        private bool IsSeller => _currentUser.Roles.Contains("seller", StringComparer.OrdinalIgnoreCase);
 
         private IDbConnection CreateConnection() =>
             new SqlConnection(_databaseOptions.ConnectionString);
@@ -35,7 +36,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Dashboard
 
             var parameters = new
             {
-                command.SellerExternalId,
+                SellerExternalId = IsSeller ? _currentUser.UserExternalId : command.SellerExternalId,
                 command.StatusId,
                 CompanyId
             };

@@ -28,7 +28,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
             _currentUser = currentUser;
         }
 
-        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
+        private int CompanyId => _currentUser.CompanyId;
 
         private IDbConnection CreateConnection() =>
             new SqlConnection(_databaseOptions.ConnectionString);

@@ -55,7 +55,9 @@ using SalesTracking.Infrastructure.Persistence.Sql.Products;
 using SalesTracking.Infrastructure.Persistence.Sql.Reports;
 using SalesTracking.Infrastructure.Persistence.Sql.Units;
 using SalesTracking.Infrastructure.Persistence.Sql.Sellers;
+using SalesTracking.Infrastructure.Persistence.Sql.Authorization;
 using SalesTracking.Infrastructure.Storage;
+using SalesTracking.Application.Common.Validation;
 
 namespace SalesTracking.Host.Extensions
 {
@@ -89,6 +91,8 @@ namespace SalesTracking.Host.Extensions
             services.AddScoped<ISellerService, SellerService>();
 
             services.AddScoped<IAuthRepository, AuthRepository>();
+            services.AddScoped<IUserAuthorizationRepository, UserAuthorizationRepository>();
+            services.AddScoped<IResourceOwnershipRepository, ResourceOwnershipRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
             services.AddScoped<IProjectNoteRepository, ProjectNoteRepository>();
             services.AddScoped<IProjectTimelineRepository, ProjectTimelineRepository>();
@@ -109,6 +113,7 @@ namespace SalesTracking.Host.Extensions
 
             services.AddScoped<IFileStorage, LocalFileStorage>();
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
+            services.AddSingleton<IPasswordPolicy, PasswordPolicy>();
             services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
             return services;
         }

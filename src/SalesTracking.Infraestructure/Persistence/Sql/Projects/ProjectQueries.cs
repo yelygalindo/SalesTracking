@@ -143,6 +143,7 @@ SELECT COUNT(1)
 FROM Customers c
 WHERE c.IsDeleted = 0
   AND c.CompanyId = @CompanyId
+  AND (@SellerUserId IS NULL OR c.SellerId = @SellerUserId)
   AND c.ExternalId = @CustomerExternalId;";
 
         public const string SellerExistsByExternalId = @"
@@ -178,6 +179,7 @@ SET
     p.UpdatedAtUtc = SYSUTCDATETIME()
 FROM Projects p
 INNER JOIN Customers c ON c.ExternalId = @CustomerExternalId AND c.IsDeleted = 0 AND c.CompanyId = @CompanyId
+    AND (@SellerUserId IS NULL OR c.SellerId = @SellerUserId)
 INNER JOIN Users u ON u.ExternalId = @SellerExternalId AND u.IsActive = 1 AND u.CompanyId = @CompanyId
 WHERE p.IsDeleted = 0
   AND p.CompanyId = @CompanyId

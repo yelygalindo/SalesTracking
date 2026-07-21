@@ -27,7 +27,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
             _currentUser = currentUser;
         }
 
-        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
+        private int CompanyId => _currentUser.CompanyId;
+        private bool IsSeller => _currentUser.Roles.Contains("seller", StringComparer.OrdinalIgnoreCase);
 
         private IDbConnection CreateConnection() =>
             new SqlConnection(_databaseOptions.ConnectionString);
@@ -43,7 +44,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
             {
                 int customerExists = await connection.ExecuteScalarAsync<int>(
                     ProjectQueries.CustomerExistsByExternalId,
-                    new { CustomerExternalId = project.CustomerExternalId, CompanyId },
+                    new { CustomerExternalId = project.CustomerExternalId, CompanyId, SellerUserId = IsSeller ? _currentUser.UserId : (int?)null },
                     transaction);
 
                 if (customerExists == 0)
@@ -58,7 +59,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
 
                 int sellerExists = await connection.ExecuteScalarAsync<int>(
                     ProjectQueries.SellerExistsByExternalId,
-                    new { SellerExternalId = project.SellerExternalId, CompanyId },
+                    new { SellerExternalId = IsSeller ? _currentUser.UserExternalId : project.SellerExternalId, CompanyId },
                     transaction);
 
                 if (sellerExists == 0)
@@ -79,7 +80,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                         project.Name,
                         project.Description,
                         CustomerExternalId = project.CustomerExternalId,
-                        SellerExternalId = project.SellerExternalId,
+                        SellerExternalId = IsSeller ? _currentUser.UserExternalId : project.SellerExternalId,
                         StatusId = (int)project.Status,
                         project.EstimatedAmount,
                         project.StartDateUtc,
@@ -180,7 +181,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                         ? null
                         : command.CustomerId,
 
-                    SellerExternalId = string.IsNullOrWhiteSpace(command.SellerId)
+                    SellerExternalId = IsSeller ? _currentUser.UserExternalId : string.IsNullOrWhiteSpace(command.SellerId)
                         ? null
                         : command.SellerId,
 
@@ -242,7 +243,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
 
                 int customerExists = await connection.ExecuteScalarAsync<int>(
                     ProjectQueries.CustomerExistsByExternalId,
-                    new { command.CustomerExternalId, CompanyId },
+                    new { command.CustomerExternalId, CompanyId, SellerUserId = IsSeller ? _currentUser.UserId : (int?)null },
                     transaction);
 
                 if (customerExists == 0)
@@ -257,7 +258,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
 
                 int? sellerInternalId = await connection.QueryFirstOrDefaultAsync<int?>(
                     ProjectQueries.GetUserInternalIdByExternalId,
-                    new { ExternalId = command.SellerExternalId, CompanyId },
+                    new { ExternalId = IsSeller ? _currentUser.UserExternalId : command.SellerExternalId, CompanyId },
                     transaction);
 
                 if (sellerInternalId == null)
@@ -278,7 +279,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                         command.Name,
                         command.Description,
                         command.CustomerExternalId,
-                        command.SellerExternalId,
+                        SellerExternalId = IsSeller ? _currentUser.UserExternalId : command.SellerExternalId,
                         command.EstimatedAmount,
                         command.StartDateUtc,
                         command.ExpectedCloseDateUtc,
@@ -287,7 +288,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                         command.Address,
                         command.Latitude,
                         command.Longitude,
-                        CompanyId
+                        CompanyId,
+                        SellerUserId = IsSeller ? _currentUser.UserId : (int?)null
                     },
                     transaction);
 

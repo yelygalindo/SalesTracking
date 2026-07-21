@@ -82,7 +82,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Reports
                 command.StatusId,
                 Offset = (command.Page - 1) * command.PageSize,
                 command.PageSize,
-                CompanyId = _currentUser.CompanyId.GetValueOrDefault()
+                CompanyId = _currentUser.CompanyId
             };
         }
 

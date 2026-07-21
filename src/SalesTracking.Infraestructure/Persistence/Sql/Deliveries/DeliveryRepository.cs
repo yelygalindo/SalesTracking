@@ -32,7 +32,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
             _currentUser = currentUser;
         }
 
-        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
+        private int CompanyId => _currentUser.CompanyId;
+        private bool IsSeller => _currentUser.Roles.Contains("seller", StringComparer.OrdinalIgnoreCase);
 
         private IDbConnection CreateConnection() =>
             new SqlConnection(_databaseOptions.ConnectionString);
@@ -59,7 +60,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     command.PageSize,
                     command.ProjectExternalId,
                     command.CustomerExternalId,
-                    command.SellerExternalId,
+                    SellerExternalId = IsSeller ? _currentUser.UserExternalId : command.SellerExternalId,
                     command.StatusId,
                     FromUtc = command.From?.UtcDateTime,
                     ToUtc = command.To?.UtcDateTime,
@@ -118,7 +119,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     connection,
                     transaction,
                     DeliveryRepositoryQueries.GetSellerInternalIdByExternalId,
-                    delivery.SellerExternalId);
+                    IsSeller ? _currentUser.UserExternalId : delivery.SellerExternalId);
 
                 if (sellerId == null)
                     return RollbackCreate(transaction, "Vendedor no encontrado.", true);
@@ -224,7 +225,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     connection,
                     transaction,
                     DeliveryRepositoryQueries.GetSellerInternalIdByExternalId,
-                    delivery.SellerExternalId);
+                    IsSeller ? _currentUser.UserExternalId : delivery.SellerExternalId);
 
                 if (sellerId == null)
                     return RollbackUpdate(transaction, "Vendedor no encontrado.", true);
@@ -653,7 +654,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
         {
             return await connection.QuerySingleOrDefaultAsync<int?>(
                 query,
-                new { ExternalId = externalId, CompanyId },
+                new { ExternalId = externalId, CompanyId, SellerUserId = IsSeller ? _currentUser.UserId : (int?)null },
                 transaction);
         }
 

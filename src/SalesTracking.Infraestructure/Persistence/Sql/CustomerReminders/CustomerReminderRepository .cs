@@ -26,7 +26,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders
         }
 
         private IDbConnection CreateConnection() => new SqlConnection(_databaseOptions.ConnectionString);
-        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
+        private int CompanyId => _currentUser.CompanyId;
 
         public async Task<IReadOnlyList<CustomerReminder>> GetRemindersAsync(string customerExternalId)
         {

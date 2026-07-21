@@ -74,7 +74,7 @@ namespace UrbanTrack.Api.Controllers
             [FromForm] UploadProjectAttachmentRequest request)
         {
             UploadProjectAttachmentResult result = await _projectAttachmentService.UploadAsync(
-                request.ToApplication(projectExternalId, _currentUser.UserId.GetValueOrDefault()));
+                request.ToApplication(projectExternalId, _currentUser.UserId));
 
             if (!result.Succeeded)
             {
@@ -96,7 +96,7 @@ namespace UrbanTrack.Api.Controllers
             string attachmentExternalId)
         {
             DeleteProjectAttachmentResult result = await _projectAttachmentService.DeleteAsync(
-                new DeleteProjectAttachmentCommand(projectExternalId, attachmentExternalId, _currentUser.UserId.GetValueOrDefault()));
+                new DeleteProjectAttachmentCommand(projectExternalId, attachmentExternalId, _currentUser.UserId));
 
             if (!result.Succeeded)
             {
@@ -119,7 +119,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] SetProjectAttachmentCoverRequest request)
         {
             SetProjectAttachmentCoverResult result = await _projectAttachmentService.SetCoverAsync(
-                request.ToApplication(projectExternalId, attachmentExternalId, _currentUser.UserId.GetValueOrDefault()));
+                request.ToApplication(projectExternalId, attachmentExternalId, _currentUser.UserId));
 
             if (!result.Succeeded)
             {

@@ -31,7 +31,7 @@ namespace UrbanTrack.Api.Controllers
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ProjectDetailResponse>> Create([FromBody] CreateProjectRequest request)
         {
-            var result = await _projectService.CreateAsync(request.ToApplication(_currentUser.UserId.GetValueOrDefault()));
+            var result = await _projectService.CreateAsync(request.ToApplication(_currentUser.UserId));
 
             if (result == null || !result.Succeeded)
                 return BadRequest(new MessageResponse { Message = result?.Message ?? "No se pudo crear el proyecto." });
@@ -91,7 +91,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] UpdateProjectRequest request)
         {
             UpdateProjectResult result = await _projectService.UpdateAsync(
-                request.ToApplication(externalId, _currentUser.UserId.GetValueOrDefault()));
+                request.ToApplication(externalId, _currentUser.UserId));
 
             if (!result.Succeeded)
             {
@@ -113,7 +113,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] ChangeProjectStatusRequest request)
         {
             ChangeProjectStatusResult result = await _projectService.ChangeStatusAsync(
-                request.ToApplication(externalId, _currentUser.UserId.GetValueOrDefault()));
+                request.ToApplication(externalId, _currentUser.UserId));
 
             if (!result.Succeeded)
             {
@@ -133,7 +133,7 @@ namespace UrbanTrack.Api.Controllers
         public async Task<ActionResult<MessageResponse>> Delete(string externalId)
         {
             DeleteProjectResult result = await _projectService.DeleteAsync(
-                new DeleteProjectCommand(externalId, _currentUser.UserId.GetValueOrDefault()));
+                new DeleteProjectCommand(externalId, _currentUser.UserId));
 
             if (!result.Succeeded)
             {

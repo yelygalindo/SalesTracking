@@ -10,6 +10,7 @@ using UrbanTrack.Api.Controllers.Requests.Mappers;
 using UrbanTrack.Api.Controllers.Responses.Common;
 using UrbanTrack.Api.Controllers.Responses.Invitations;
 using UrbanTrack.Api.Controllers.Responses.Mappers;
+using SalesTracking.Application.Common.Interfaces;
 
 namespace UrbanTrack.Api.Controllers
 {
@@ -18,21 +19,23 @@ namespace UrbanTrack.Api.Controllers
     public class InvitationsController : ControllerBase
     {
         private readonly IInvitationService _service;
+        private readonly ICurrentUser _currentUser;
 
-        public InvitationsController(IInvitationService service)
+        public InvitationsController(IInvitationService service, ICurrentUser currentUser)
         {
             _service = service;
+            _currentUser = currentUser;
         }
 
         [HttpPost]
         [ProducesResponseType(typeof(CreateInvitationResponse), StatusCodes.Status201Created)]
         public async Task<ActionResult<CreateInvitationResponse>> CreateInvitation([FromBody] CreateInvitationRequest request)
         {
-            CreateInvitationResult result = await _service.CreateInvitationAsync(request.ToApplication());
-            return CreatedAtAction(
-                nameof(GetInvitationByToken),
-                new { token = result.Token },
-                result.ToResponse());
+            CreateInvitationResult result = await _service.CreateInvitationAsync(
+                new CreateInvitationComand(request.FullName, request.Email, request.RoleCode, _currentUser.CompanyId, _currentUser.UserExternalId));
+            if (!result.Succeeded)
+                return BadRequest(new MessageResponse { Message = result.Message });
+            return StatusCode(StatusCodes.Status201Created, result.ToResponse());
         }
 
         [AllowAnonymous]

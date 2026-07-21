@@ -8,6 +8,7 @@ using UrbanTrack.Api.Controllers.Requests.Mappers;
 using UrbanTrack.Api.Controllers.Responses.AuthResponses;
 using UrbanTrack.Api.Controllers.Responses.Common;
 using UrbanTrack.Api.Controllers.Responses.Mappers;
+using SalesTracking.Application.Common.Interfaces;
 
 namespace UrbanTrack.Api.Controllers
 {
@@ -17,10 +18,12 @@ namespace UrbanTrack.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _service;
+        private readonly ICurrentUser? _currentUser;
 
-        public AuthController(IAuthService service)
+        public AuthController(IAuthService service, ICurrentUser? currentUser = null)
         {
             _service = service;
+            _currentUser = currentUser;
         }
 
         [AllowAnonymous]
@@ -40,6 +43,29 @@ namespace UrbanTrack.Api.Controllers
             LogoutResult resp = await _service.LogoutAsync(request.ToApplication());
             if (resp == null) return NotFound(new MessageResponse { Message = "Usuario no encontrado." });
             return Ok(resp.ToResponse());
+        }
+
+        [HttpGet("me")]
+        [ProducesResponseType(typeof(UserCompleteResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<UserCompleteResponse>> Me()
+        {
+            if (_currentUser == null || !_currentUser.IsAuthenticated) return Unauthorized();
+            AuthMeResult? result = await _service.GetMeAsync(_currentUser.UserId);
+            if (result == null) return NotFound();
+            return Ok(new UserCompleteResponse
+            {
+                ExternalId = result.ExternalId,
+                FullName = result.FullName,
+                Email = result.Email,
+                Company = new CompanyResponse
+                {
+                    Id = result.CompanyId,
+                    ExternalId = result.CompanyExternalId,
+                    Name = result.CompanyName
+                },
+                Roles = result.Roles,
+                Permissions = result.Permissions
+            });
         }
 
         [AllowAnonymous]

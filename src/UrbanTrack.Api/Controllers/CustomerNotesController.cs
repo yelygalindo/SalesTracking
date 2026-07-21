@@ -44,7 +44,7 @@ namespace UrbanTrack.Api.Controllers
             string customerExternalId,
             [FromBody] CustomerNoteRequest request)
         {
-            AddCustomerNoteResult result = await _service.AddNoteAsync(request.ToApplication(customerExternalId, _currentUser.UserId.GetValueOrDefault()));
+            AddCustomerNoteResult result = await _service.AddNoteAsync(request.ToApplication(customerExternalId, _currentUser.UserId));
 
             if (!result.Succeeded)
             {

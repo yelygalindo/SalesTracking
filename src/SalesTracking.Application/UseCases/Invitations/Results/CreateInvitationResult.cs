@@ -2,8 +2,9 @@
 {
     public class CreateInvitationResult
     {
-        public string Token { get; init; }
+        public bool Succeeded { get; init; }
         public string Email { get; init; }
+        public string Message { get; init; } = default!;
         public DateTime ExpiresAtUtc { get; init; }
     }
 }

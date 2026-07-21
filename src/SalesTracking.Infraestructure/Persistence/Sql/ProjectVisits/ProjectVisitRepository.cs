@@ -25,7 +25,7 @@ public sealed class ProjectVisitRepository : IProjectVisitRepository
         _currentUser = currentUser;
     }
 
-    private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
+    private int CompanyId => _currentUser.CompanyId;
 
     public async Task<CreateProjectVisitResult> CreateAsync(CreateProjectVisit visit)
     {

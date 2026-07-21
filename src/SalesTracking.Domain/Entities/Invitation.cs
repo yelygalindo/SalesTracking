@@ -7,6 +7,8 @@
         public string TokenHash { get; set; } = default!;
 
         public string Email { get; set; } = default!;
+        public string FullName { get; set; } = default!;
+        public string RoleCode { get; set; } = default!;
 
         public string InvitedBy { get; set; }
 

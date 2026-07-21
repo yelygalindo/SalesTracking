@@ -2,8 +2,8 @@
 {
     public class CreateInvitationResponse
     {
-        public string Token { get; init; }
         public string Email { get; init; }
+        public string Message { get; init; } = default!;
         public DateTime ExpiresAtUtc { get; init; }
     }
 }

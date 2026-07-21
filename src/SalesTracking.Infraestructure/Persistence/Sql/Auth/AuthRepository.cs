@@ -19,17 +19,20 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
         private readonly IPasswordHasher _passwordHasher;
         private readonly ITokenGenerator _tokenGenerator;
         private readonly AuthSettings _authSettings;
+        private readonly IUserAuthorizationRepository _userAuthorizationRepository;
 
         public AuthRepository(
             IOptions<DatabaseSettings> databaseOptions,
             IOptions<AuthSettings> authSettings,
             IPasswordHasher passwordHasher,
-            ITokenGenerator tokenGenerator)
+            ITokenGenerator tokenGenerator,
+            IUserAuthorizationRepository userAuthorizationRepository)
         {
             _databaseOptions = databaseOptions.Value ?? throw new ArgumentNullException(nameof(databaseOptions));
             _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
             _tokenGenerator = tokenGenerator ?? throw new ArgumentNullException(nameof(tokenGenerator));
             _authSettings = authSettings?.Value ?? throw new ArgumentNullException(nameof(authSettings));
+            _userAuthorizationRepository = userAuthorizationRepository;
         }
 
         private IDbConnection CreateConnection() => new SqlConnection(_databaseOptions.ConnectionString);
@@ -96,7 +99,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
             var accessTokenExpiresAtUtc = DateTime.UtcNow.AddHours( _authSettings.AccessTokenExpirationHours);
             var refreshTokenExpiresAtUtc = DateTime.UtcNow.AddDays( _authSettings.RefreshTokenExpirationDays);
 
-            var accessToken = _tokenGenerator.GenerateAccessToken(user, accessTokenExpiresAtUtc);
+            var authorization = await _userAuthorizationRepository.GetByUserIdAsync(user.Id);
+            var accessToken = _tokenGenerator.GenerateAccessToken(user, authorization, accessTokenExpiresAtUtc);
             var refreshToken = _tokenGenerator.GenerateRefreshToken();
             string refreshTokenHash = TokenHasher.Hash(refreshToken);
 
@@ -234,7 +238,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
             var accessTokenExpiresAtUtc = DateTime.UtcNow.AddHours(_authSettings.AccessTokenExpirationHours);
             var refreshTokenExpiresAtUtc = DateTime.UtcNow.AddDays(_authSettings.RefreshTokenExpirationDays);
             User user = authUserRow.ToAuthUserResponse();
-            var accessToken = _tokenGenerator.GenerateAccessToken(user, accessTokenExpiresAtUtc);
+            var authorization = await _userAuthorizationRepository.GetByUserIdAsync(user.Id);
+            var accessToken = _tokenGenerator.GenerateAccessToken(user, authorization, accessTokenExpiresAtUtc);
             var refreshToken = _tokenGenerator.GenerateRefreshToken();
 
             await conn.ExecuteAsync(AuthRepositoryQueries.InsertRefreshToken, new

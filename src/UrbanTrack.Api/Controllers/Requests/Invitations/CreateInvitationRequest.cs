@@ -3,7 +3,7 @@
     public class CreateInvitationRequest
     {
         public string Email { get; set; }
-        public int CompanyId { get; set; }
-        public string InvitedBy { get; set; }
+        public string FullName { get; set; } = default!;
+        public string RoleCode { get; set; } = default!;
     }
 }

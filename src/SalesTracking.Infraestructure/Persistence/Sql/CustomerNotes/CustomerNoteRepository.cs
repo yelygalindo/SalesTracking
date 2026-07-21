@@ -25,7 +25,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes
         }
 
         private IDbConnection CreateConnection() => new SqlConnection(_databaseOptions.ConnectionString);
-        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
+        private int CompanyId => _currentUser.CompanyId;
         public async Task<IReadOnlyList<CustomerNote>> GetNotesAsync(string customerExternalId)
         {
             using IDbConnection conn = CreateConnection();

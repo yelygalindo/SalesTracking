@@ -28,7 +28,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
         }
 
         private IDbConnection CreateConnection() => new SqlConnection(_databaseOptions.ConnectionString);
-        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
+        private int CompanyId => _currentUser.CompanyId;
+        private bool IsSeller => _currentUser.Roles.Contains("seller", StringComparer.OrdinalIgnoreCase);
 
         public async Task<Customer?> GetCustomerByExternalIdAsync(string externalId)
         {
@@ -67,7 +68,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
             var parameters = new
             {
                 StatusId = filter.Status,
-                SellerExternalId = filter.SellerExternalId,
+                SellerExternalId = IsSeller ? _currentUser.UserExternalId : filter.SellerExternalId,
                 Search = string.IsNullOrWhiteSpace(filter.Search)
                     ? null
                     : $"%{filter.Search.Trim()}%",
@@ -106,11 +107,12 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
             {
                 int? sellerInternalId = null;
 
-                if (!string.IsNullOrWhiteSpace(customer.RegisterByExternalId))
+                string? assignedSeller = IsSeller ? _currentUser.UserExternalId : customer.RegisterByExternalId;
+                if (!string.IsNullOrWhiteSpace(assignedSeller))
                 {
                     sellerInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
                         CustomerRepositoryQueries.GetSellerInternalIdByExternalId,
-                        new { ExternalId = customer.RegisterByExternalId, CompanyId },
+                        new { ExternalId = assignedSeller, CompanyId },
                         transaction);
 
                     if (sellerInternalId == null)
@@ -200,11 +202,12 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
 
                 int? sellerInternalId = null;
 
-                if (!string.IsNullOrWhiteSpace(customer.SellerId))
+                string? assignedSeller = IsSeller ? _currentUser.UserExternalId : customer.SellerId;
+                if (!string.IsNullOrWhiteSpace(assignedSeller))
                 {
                     sellerInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
                         CustomerRepositoryQueries.GetSellerInternalIdByExternalId,
-                        new { ExternalId = customer.SellerId, CompanyId },
+                        new { ExternalId = assignedSeller, CompanyId },
                         transaction);
 
                     if (sellerInternalId == null)

@@ -38,14 +38,20 @@ builder.Services
             ValidAudience = jwtSettings.Audience,
             ValidateLifetime = true,
             RequireExpirationTime = true,
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.Zero,
+            RoleClaimType = System.Security.Claims.ClaimTypes.Role
         };
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+builder.Services.AddScoped<SellerResourceAuthorizationFilter>();
 builder.Services
     .AddControllers(options =>
     {
+        options.Conventions.Add(new PermissionAuthorizationConvention());
+        options.Filters.AddService<SellerResourceAuthorizationFilter>();
         AuthorizationPolicy policy = new AuthorizationPolicyBuilder()
             .RequireAuthenticatedUser()
             .Build();

@@ -48,10 +48,5 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
             return new AcceptInvitationComand() { Token = api.Token, Password = api.Password, FullNameUser = api.FullNameUser };
         }
 
-        public static CreateInvitationComand ToApplication(this CreateInvitationRequest api)
-        {
-            if (api == null) return null;
-            return new CreateInvitationComand(api.Email,api.CompanyId, api.InvitedBy);
-        }
     }
 }

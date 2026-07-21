@@ -10,5 +10,6 @@ namespace SalesTracking.Application.UseCases.Authentication.Interfaces
         Task<RefreshTokenResult?> RefreshTokenAsync(RefreshTokenComand refreshTokenComand);
         Task<ForgotPasswordResult> ForgotPasswordAsync(ForgotPasswordComand forgotPasswordComand);
         Task<ResetPasswordResult> ResetPasswordAsync(ResetPasswordComand resetPasswordComand);       
+        Task<AuthMeResult?> GetMeAsync(int userId);
     }
 }

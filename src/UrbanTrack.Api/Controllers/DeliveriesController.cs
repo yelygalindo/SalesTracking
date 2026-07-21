@@ -56,7 +56,7 @@ namespace UrbanTrack.Api.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IdMessageResponse>> Create([FromBody] CreateDeliveryRequest request)
         {
-            CreateDeliveryResult result = await _deliveryService.CreateAsync(request.ToApplication(_currentUser.UserId.GetValueOrDefault()));
+            CreateDeliveryResult result = await _deliveryService.CreateAsync(request.ToApplication(_currentUser.UserId));
 
             if (!result.Succeeded)
             {
@@ -78,7 +78,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] UpdateDeliveryRequest request)
         {
             UpdateDeliveryResult result = await _deliveryService.UpdateAsync(
-                request.ToApplication(deliveryExternalId, _currentUser.UserId.GetValueOrDefault()));
+                request.ToApplication(deliveryExternalId, _currentUser.UserId));
 
             if (!result.Succeeded)
             {
@@ -100,7 +100,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] ChangeDeliveryStatusRequest request)
         {
             ChangeDeliveryStatusResult result = await _deliveryService.ChangeStatusAsync(
-                request.ToApplication(deliveryExternalId, _currentUser.UserId.GetValueOrDefault()));
+                request.ToApplication(deliveryExternalId, _currentUser.UserId));
 
             if (!result.Succeeded)
             {
@@ -123,7 +123,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] ConfirmDeliveryReceiptRequest request)
         {
             ConfirmDeliveryReceiptResult result = await _deliveryService.ConfirmReceiptAsync(
-                request.ToApplication(deliveryExternalId, _currentUser.UserId.GetValueOrDefault()));
+                request.ToApplication(deliveryExternalId, _currentUser.UserId));
 
             if (!result.Succeeded)
             {
@@ -142,7 +142,7 @@ namespace UrbanTrack.Api.Controllers
         public async Task<ActionResult<MessageResponse>> Delete(string deliveryExternalId)
         {
             DeleteDeliveryResult result = await _deliveryService.DeleteAsync(
-                new DeleteDeliveryCommand(deliveryExternalId, _currentUser.UserId.GetValueOrDefault()));
+                new DeleteDeliveryCommand(deliveryExternalId, _currentUser.UserId));
 
             if (!result.Succeeded)
             {

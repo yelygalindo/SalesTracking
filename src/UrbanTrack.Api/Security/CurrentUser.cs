@@ -17,11 +17,11 @@ namespace UrbanTrack.Api.Security
 
         public bool IsAuthenticated => User?.Identity?.IsAuthenticated == true;
 
-        public int? UserId => GetIntClaim("sub") ?? GetIntClaim(ClaimTypes.NameIdentifier);
+        public int UserId => GetIntClaim(ClaimTypes.NameIdentifier) ?? GetIntClaim("sub") ?? 0;
 
-        public string? UserExternalId => GetClaim("userExternalId");
+        public string UserExternalId => GetClaim("userExternalId") ?? string.Empty;
 
-        public int? CompanyId => GetIntClaim("companyId");
+        public int CompanyId => GetIntClaim("companyId") ?? 0;
 
         public string? Email => GetClaim("email") ?? GetClaim(ClaimTypes.Email);
 
@@ -30,6 +30,14 @@ namespace UrbanTrack.Api.Security
         public IReadOnlyCollection<string> Roles => User?
             .FindAll(ClaimTypes.Role)
             .Concat(User.FindAll("role"))
+            .Select(x => x.Value)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList()
+            ?? new List<string>();
+
+        public IReadOnlyCollection<string> Permissions => User?
+            .FindAll("permission")
             .Select(x => x.Value)
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)

@@ -24,7 +24,7 @@ public sealed class CustomerTimelineRepository : ICustomerTimelineRepository
     }
 
     private IDbConnection CreateConnection() => new SqlConnection(_settings.ConnectionString);
-    private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
+    private int CompanyId => _currentUser.CompanyId;
 
     public async Task<GetCustomerTimelineResult> GetAsync(GetCustomerTimelineCommand command)
     {

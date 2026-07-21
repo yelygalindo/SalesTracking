@@ -26,7 +26,7 @@ public sealed class SellersController : ControllerBase
     public async Task<ActionResult<IReadOnlyList<SellerResponse>>> Get()
     {
         IReadOnlyList<SellerResult> sellers = await _service.GetAsync(
-            new GetSellersCommand(_currentUser.CompanyId.GetValueOrDefault()));
+            new GetSellersCommand(_currentUser.CompanyId));
 
         return Ok(sellers.Select(seller => new SellerResponse(
             seller.ExternalId,

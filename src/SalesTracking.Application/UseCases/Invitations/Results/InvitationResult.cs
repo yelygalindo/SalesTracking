@@ -2,8 +2,9 @@
 {
     public class InvitationResult
     {
-        public string Token { get; set; }
         public string Email { get; set; }
+        public string FullName { get; set; } = default!;
+        public string RoleCode { get; set; } = default!;
         public string InvitedBy { get; set; }
         public string CompanyId { get; set; }
         public string CompanyName { get; set; }

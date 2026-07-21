@@ -12,6 +12,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
                 SELECT 
                     rt.Id AS RefreshTokenId,
                     rt.UserId,
+                    u.ExternalId,
                     rt.ExpiresAtUtc,
                     rt.RevokedAtUtc,
                     u.Id AS AuthUserId,
@@ -109,9 +110,12 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
         public const string GetUserById = @"
                 SELECT 
                     u.Id,
+                    u.ExternalId,
                     u.Username,
                     u.FullName,
+                    u.Email,
                     c.Id AS CompanyId,
+                    c.ExternalId AS CompanyExternalId,
                     c.Name AS CompanyName
                 FROM Users u
                 LEFT JOIN Companies c ON u.CompanyId = c.Id

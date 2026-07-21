@@ -60,7 +60,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] ProjectNoteRequest request)
         {
             AddProjectNoteResult result = await _projectNoteService.AddNoteAsync(
-                request.ToApplication(projectExternalId, _currentUser.UserId.GetValueOrDefault()));
+                request.ToApplication(projectExternalId, _currentUser.UserId));
 
             if (!result.Succeeded)
             {
@@ -83,7 +83,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] UpdateProjectNoteRequest request)
         {
             UpdateProjectNoteResult result = await _projectNoteService.UpdateNoteAsync(
-                request.ToApplication(projectExternalId, noteExternalId, _currentUser.UserId.GetValueOrDefault()));
+                request.ToApplication(projectExternalId, noteExternalId, _currentUser.UserId));
 
             if (!result.Succeeded)
             {
@@ -108,7 +108,7 @@ namespace UrbanTrack.Api.Controllers
                 new DeleteProjectNoteCommand(
                     projectExternalId,
                     noteExternalId,
-                    _currentUser.UserId.GetValueOrDefault()));
+                    _currentUser.UserId));
 
             if (!result.Succeeded)
             {
