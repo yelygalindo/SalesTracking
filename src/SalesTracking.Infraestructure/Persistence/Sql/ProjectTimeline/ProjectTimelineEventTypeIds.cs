@@ -1,4 +1,4 @@
-namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline
+﻿namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline
 {
     internal static class ProjectTimelineEventTypeIds
     {
@@ -7,5 +7,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline
         public const int ProjectStatusChanged = 3;
         public const int ProjectProgressUpdated = 4;
         public const int NoteAdded = 6;
+        public const int DeliveryCreated = 8;
+        public const int DeliveryStatusChanged = 9;
     }
 }

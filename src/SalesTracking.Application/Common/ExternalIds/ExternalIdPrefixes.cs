@@ -9,6 +9,8 @@ namespace SalesTracking.Application.Common.ExternalIds
         public const string ProjectTimelineEvent = "ptl";
         public const string Product = "prod";
         public const string Unit = "unit";
+        public const string Delivery = "del";
+        public const string DeliveryItem = "ditem";
         public const string User = "user";
         public const string Invitation = "inv"; 
         public const string Project = "p";

@@ -1,4 +1,4 @@
-namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline
+﻿namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline
 {
     internal static class ProjectTimelineQueries
     {
@@ -47,6 +47,8 @@ SELECT
         WHEN 3 THEN 'ProjectStatusChanged'
         WHEN 4 THEN 'ProjectProgressUpdated'
         WHEN 6 THEN 'NoteAdded'
+        WHEN 8 THEN 'DeliveryCreated'
+        WHEN 9 THEN 'DeliveryStatusChanged'
         ELSE 'Unknown'
     END AS EventTypeName,
     pt.Title,

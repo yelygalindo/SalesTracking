@@ -1,4 +1,4 @@
-using SalesTracking.Application.Common.Interfaces;
+﻿using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.UseCases.Authentication.Interfaces;
 using SalesTracking.Application.UseCases.Authentication.Services;
 using SalesTracking.Application.UseCases.CustomerNotes.Interfaces;
@@ -7,6 +7,8 @@ using SalesTracking.Application.UseCases.CustomerReminders.Interfaces;
 using SalesTracking.Application.UseCases.CustomerReminders.Services;
 using SalesTracking.Application.UseCases.Customers.Interfaces;
 using SalesTracking.Application.UseCases.Customers.Services;
+using SalesTracking.Application.UseCases.Deliveries.Interfaces;
+using SalesTracking.Application.UseCases.Deliveries.Services;
 using SalesTracking.Application.UseCases.Invitations.Interfaces;
 using SalesTracking.Application.UseCases.Invitations.Services;
 using SalesTracking.Application.UseCases.ProjectNotes.Interfaces;
@@ -25,6 +27,7 @@ using SalesTracking.Infrastructure.Persistence.Sql.Auth;
 using SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes;
 using SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders;
 using SalesTracking.Infrastructure.Persistence.Sql.Customers;
+using SalesTracking.Infrastructure.Persistence.Sql.Deliveries;
 using SalesTracking.Infrastructure.Persistence.Sql.Invitations;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes;
 using SalesTracking.Infrastructure.Persistence.Sql.Projects;
@@ -53,6 +56,7 @@ namespace SalesTracking.Host.Extensions
             services.AddScoped<IProjectTimelineService, ProjectTimelineService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IUnitService, UnitService>();
+            services.AddScoped<IDeliveryService, DeliveryService>();
 
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
@@ -60,6 +64,7 @@ namespace SalesTracking.Host.Extensions
             services.AddScoped<IProjectTimelineRepository, ProjectTimelineRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IUnitRepository, UnitRepository>();
+            services.AddScoped<IDeliveryRepository, DeliveryRepository>();
             services.AddScoped<IInvitationRepository, InvitationRepository>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<ICustomerNoteRepository, CustomerNoteRepository>();
