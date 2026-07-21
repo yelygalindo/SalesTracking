@@ -7,6 +7,8 @@ using SalesTracking.Application.UseCases.CustomerReminders.Interfaces;
 using SalesTracking.Application.UseCases.CustomerReminders.Services;
 using SalesTracking.Application.UseCases.Customers.Interfaces;
 using SalesTracking.Application.UseCases.Customers.Services;
+using SalesTracking.Application.UseCases.CustomerTimeline.Interfaces;
+using SalesTracking.Application.UseCases.CustomerTimeline.Services;
 using SalesTracking.Application.UseCases.Deliveries.Interfaces;
 using SalesTracking.Application.UseCases.Deliveries.Services;
 using SalesTracking.Application.UseCases.Dashboard.Interfaces;
@@ -33,6 +35,7 @@ using SalesTracking.Infrastructure.Persistence.Sql.Auth;
 using SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes;
 using SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders;
 using SalesTracking.Infrastructure.Persistence.Sql.Customers;
+using SalesTracking.Infrastructure.Persistence.Sql.CustomerTimeline;
 using SalesTracking.Infrastructure.Persistence.Sql.Dashboard;
 using SalesTracking.Infrastructure.Persistence.Sql.Deliveries;
 using SalesTracking.Infrastructure.Persistence.Sql.Invitations;
@@ -63,6 +66,7 @@ namespace SalesTracking.Host.Extensions
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<ICustomerNoteService, CustomerNoteService>();
             services.AddScoped<ICustomerReminderService, CustomerReminderService>();
+            services.AddScoped<ICustomerTimelineService, CustomerTimelineService>();
             services.AddScoped<IProjectNoteService, ProjectNoteService>();
             services.AddScoped<IProjectTimelineService, ProjectTimelineService>();
             services.AddScoped<IProjectAttachmentService, ProjectAttachmentService>();
@@ -86,6 +90,7 @@ namespace SalesTracking.Host.Extensions
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<ICustomerNoteRepository, CustomerNoteRepository>();
             services.AddScoped<ICustomerReminderRepository, CustomerReminderRepository>();
+            services.AddScoped<ICustomerTimelineRepository, CustomerTimelineRepository>();
 
             services.AddScoped<IFileStorage, LocalFileStorage>();
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();

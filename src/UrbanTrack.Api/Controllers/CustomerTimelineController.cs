@@ -1,23 +1,43 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SalesTracking.Application.UseCases.CustomerTimeline.Interfaces;
+using SalesTracking.Application.UseCases.CustomerTimeline.Results;
+using UrbanTrack.Api.Controllers.Requests.CustomerTimeline;
+using UrbanTrack.Api.Controllers.Requests.Mappers;
+using UrbanTrack.Api.Controllers.Responses.Common;
+using UrbanTrack.Api.Controllers.Responses.CustomerTimeline;
+using UrbanTrack.Api.Controllers.Responses.Pagination;
 
-namespace UrbanTrack.Api.Controllers
+namespace UrbanTrack.Api.Controllers;
+
+[ApiController]
+[Route("api/customers/{customerExternalId}/timeline")]
+public sealed class CustomerTimelineController : ControllerBase
 {
-    [ApiController]
-    [Route("api/customer-timeline")]
-    public class CustomerTimelineController : ControllerBase    
+    private readonly ICustomerTimelineService _service;
+
+    public CustomerTimelineController(ICustomerTimelineService service)
     {
-        [HttpGet("{id}/timeline")]
-        [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<string>>> GetTimeline(string id)
+        _service = service;
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResponse<CustomerTimelineResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PagedResponse<CustomerTimelineResponse>>> Get(
+        string customerExternalId,
+        [FromQuery] GetCustomerTimelineRequest request)
+    {
+        GetCustomerTimelineResult result = await _service.GetAsync(
+            request.ToApplication(customerExternalId));
+
+        if (!result.Succeeded)
         {
-            var timeline = new List<string>
-            {
-                "2026-04-01: Cotización enviada.",
-                "2026-04-05: Llamada de seguimiento.",
-                "2026-04-10: Cliente convertido a activo."
-            };
-            return await Task.FromResult(Ok(timeline));
+            ErrorResponse error = new() { Error = result.Message };
+            return result.NotFound ? NotFound(error) : BadRequest(error);
         }
+
+        return Ok(result.Timeline.ToResponse());
     }
 }
