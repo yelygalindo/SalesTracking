@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
     <PackageReference Include="FluentAssertions" Version="8.10.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
@@ -22,6 +23,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\SalesTracking.Application\SalesTracking.Application.csproj" />
+    <ProjectReference Include="..\..\src\UrbanTrack.Api\UrbanTrack.Api.csproj" />
+    <ProjectReference Include="..\..\src\SalesTracking.Infraestructure\SalesTracking.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

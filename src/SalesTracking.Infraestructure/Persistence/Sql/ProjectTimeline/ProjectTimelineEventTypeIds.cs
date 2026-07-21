@@ -19,5 +19,6 @@
         public const int AttachmentCoverChanged = 15;
         public const int DeliveryUpdated = 16;
         public const int DeliveryDeleted = 17;
+        public const int DeliveryCompleted = 18;
     }
 }

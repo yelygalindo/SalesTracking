@@ -60,6 +60,7 @@ SELECT
         WHEN 15 THEN 'AttachmentCoverChanged'
         WHEN 16 THEN 'DeliveryUpdated'
         WHEN 17 THEN 'DeliveryDeleted'
+        WHEN 18 THEN 'DeliveryCompleted'
         ELSE 'Unknown'
     END AS EventTypeName,
     pt.Title,

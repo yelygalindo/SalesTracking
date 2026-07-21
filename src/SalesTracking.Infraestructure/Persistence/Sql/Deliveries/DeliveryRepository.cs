@@ -367,6 +367,24 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                         RelatedEntityId = delivery.Id
                     });
 
+                if (delivery.StatusId != DeliveredStatusId && command.StatusId == DeliveredStatusId)
+                {
+                    await ProjectTimelineWriter.InsertAsync(
+                        connection,
+                        transaction,
+                        new ProjectTimelineEvent
+                        {
+                            ProjectId = delivery.ProjectId,
+                            EventTypeId = ProjectTimelineEventTypeIds.DeliveryCompleted,
+                            Title = "Entrega completada",
+                            Description = "La entrega fue completada.",
+                            OccurredAtUtc = command.DeliveredDateUtc ?? DateTime.UtcNow,
+                            CreatedByUserId = command.ChangedByUserId,
+                            RelatedEntityType = RelatedEntityType,
+                            RelatedEntityId = delivery.Id
+                        });
+                }
+
                 transaction.Commit();
 
                 return new ChangeDeliveryStatusResult
@@ -491,6 +509,25 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                         RelatedEntityId = delivery.Id,
                         MetadataJson = metadataJson
                     });
+
+                if (delivery.StatusId != DeliveredStatusId && statusId == DeliveredStatusId)
+                {
+                    await ProjectTimelineWriter.InsertAsync(
+                        connection,
+                        transaction,
+                        new ProjectTimelineEvent
+                        {
+                            ProjectId = delivery.ProjectId,
+                            EventTypeId = ProjectTimelineEventTypeIds.DeliveryCompleted,
+                            Title = "Entrega completada",
+                            Description = "La recepción completó todas las cantidades comprometidas.",
+                            OccurredAtUtc = command.ReceivedAtUtc,
+                            CreatedByUserId = command.CreatedByUserId,
+                            RelatedEntityType = RelatedEntityType,
+                            RelatedEntityId = delivery.Id,
+                            MetadataJson = metadataJson
+                        });
+                }
 
                 transaction.Commit();
 
