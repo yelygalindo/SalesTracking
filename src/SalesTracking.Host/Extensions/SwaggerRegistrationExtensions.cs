@@ -16,7 +16,7 @@ namespace SalesTracking.Host.Extensions
                              {
                                  Version = "v1",
                                  Title = "SalesTracking API",
-                                 Description = "SalesTracking Web API."
+                                 Description = "API para seguimiento comercial, clientes, proyectos, productos y entregas."
                              });
 
                 options.TagActionsBy(api =>
@@ -26,9 +26,7 @@ namespace SalesTracking.Host.Extensions
                         return new[] { api.GroupName };
                     }
 
-                    var controllerActionDescriptor = api.ActionDescriptor as ControllerActionDescriptor;
-
-                    if (controllerActionDescriptor != null)
+                    if (api.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor)
                     {
                         return new[] { controllerActionDescriptor.ControllerName };
                     }
@@ -36,16 +34,16 @@ namespace SalesTracking.Host.Extensions
                     throw new InvalidOperationException("Unable to determine tag for endpoint.");
                 });
 
-                options.DocInclusionPredicate((name, api) => true);
-                //options.EnableAnnotations();
+                options.DocInclusionPredicate((_, _) => true);
 
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Description = "JWT Authorization header using the Bearer scheme (Example: 'Bearer 12345abcdef')",
+                    Description = "Ingrese el access token JWT. Swagger agregará automáticamente el prefijo Bearer.",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT"
                 });
 
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
