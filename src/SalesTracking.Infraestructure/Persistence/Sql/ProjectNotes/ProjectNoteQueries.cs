@@ -55,5 +55,18 @@ VALUES (
     SYSUTCDATETIME(),
     0
 );";
+
+        public const string UpdateNote = @"
+UPDATE pn
+SET
+    pn.Content = @Content,
+    pn.UpdatedByUserId = @UpdatedByUserId,
+    pn.UpdatedAtUtc = SYSUTCDATETIME()
+FROM ProjectNotes pn
+INNER JOIN Projects p ON p.Id = pn.ProjectId
+WHERE p.ExternalId = @ProjectExternalId
+  AND p.IsDeleted = 0
+  AND pn.ExternalId = @NoteExternalId
+  AND pn.IsDeleted = 0;";
     }
 }

@@ -16,5 +16,19 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 AuthorExternalId = request.AuthorExternalId
             };
         }
+
+        public static UpdateProjectNoteCommand ToApplication(
+            this UpdateProjectNoteRequest request,
+            string projectExternalId,
+            string noteExternalId)
+        {
+            return new UpdateProjectNoteCommand
+            {
+                ProjectExternalId = projectExternalId,
+                NoteExternalId = noteExternalId,
+                Content = request.Content,
+                UpdatedByUserExternalId = request.UpdatedByUserExternalId
+            };
+        }
     }
 }

@@ -98,6 +98,73 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
             }
         }
 
+        public async Task<ResponseUpdateProjectNote> UpdateNoteAsync(UpdateProjectNote note)
+        {
+            using IDbConnection connection = CreateConnection();
+            connection.Open();
+
+            using IDbTransaction transaction = connection.BeginTransaction();
+
+            try
+            {
+                int? updatedByUserId = await connection.QueryFirstOrDefaultAsync<int?>(
+                    ProjectNoteQueries.GetUserInternalIdByExternalId,
+                    new { ExternalId = note.UpdatedByUserExternalId },
+                    transaction);
+
+                if (updatedByUserId == null)
+                {
+                    transaction.Rollback();
+                    return new ResponseUpdateProjectNote
+                    {
+                        Succeeded = false,
+                        NotFound = true,
+                        Message = "Usuario no encontrado o inactivo."
+                    };
+                }
+
+                int affectedRows = await connection.ExecuteAsync(
+                    ProjectNoteQueries.UpdateNote,
+                    new
+                    {
+                        note.ProjectExternalId,
+                        note.NoteExternalId,
+                        note.Content,
+                        UpdatedByUserId = updatedByUserId.Value
+                    },
+                    transaction);
+
+                if (affectedRows == 0)
+                {
+                    transaction.Rollback();
+                    return new ResponseUpdateProjectNote
+                    {
+                        Succeeded = false,
+                        NotFound = true,
+                        Message = "Nota de proyecto no encontrada."
+                    };
+                }
+
+                transaction.Commit();
+                return new ResponseUpdateProjectNote
+                {
+                    Succeeded = true,
+                    NotFound = false,
+                    Message = "Nota actualizada correctamente."
+                };
+            }
+            catch
+            {
+                transaction.Rollback();
+                return new ResponseUpdateProjectNote
+                {
+                    Succeeded = false,
+                    NotFound = false,
+                    Message = "Ocurrió un error al actualizar la nota."
+                };
+            }
+        }
+
         public async Task<IReadOnlyList<ProjectNoteResult>> GetNotesAsync(string projectExternalId)
         {
             using IDbConnection connection = CreateConnection();

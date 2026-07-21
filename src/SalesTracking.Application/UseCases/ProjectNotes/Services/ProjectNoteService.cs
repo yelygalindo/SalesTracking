@@ -81,6 +81,80 @@ namespace SalesTracking.Application.UseCases.ProjectNotes.Services
             };
         }
 
+        public async Task<UpdateProjectNoteResult> UpdateNoteAsync(UpdateProjectNoteCommand command)
+        {
+            if (command == null)
+            {
+                return new UpdateProjectNoteResult
+                {
+                    Succeeded = false,
+                    Message = "La solicitud no es válida."
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(command.ProjectExternalId))
+            {
+                return new UpdateProjectNoteResult
+                {
+                    Succeeded = false,
+                    Message = "El proyecto es requerido."
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(command.NoteExternalId))
+            {
+                return new UpdateProjectNoteResult
+                {
+                    Succeeded = false,
+                    Message = "La nota es requerida."
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(command.Content))
+            {
+                return new UpdateProjectNoteResult
+                {
+                    Succeeded = false,
+                    Message = "El contenido de la nota es requerido."
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(command.UpdatedByUserExternalId))
+            {
+                return new UpdateProjectNoteResult
+                {
+                    Succeeded = false,
+                    Message = "El usuario que actualiza es requerido."
+                };
+            }
+
+            UpdateProjectNote note = new UpdateProjectNote
+            {
+                ProjectExternalId = command.ProjectExternalId.Trim(),
+                NoteExternalId = command.NoteExternalId.Trim(),
+                Content = command.Content.Trim(),
+                UpdatedByUserExternalId = command.UpdatedByUserExternalId.Trim()
+            };
+
+            ResponseUpdateProjectNote updated = await _projectNoteRepository.UpdateNoteAsync(note);
+
+            if (!updated.Succeeded)
+            {
+                return new UpdateProjectNoteResult
+                {
+                    Succeeded = false,
+                    NotFound = updated.NotFound,
+                    Message = updated.Message ?? "No se pudo actualizar la nota."
+                };
+            }
+
+            return new UpdateProjectNoteResult
+            {
+                Succeeded = true,
+                Message = "Nota actualizada correctamente."
+            };
+        }
+
         public async Task<IReadOnlyList<ProjectNoteResult>> GetNotesAsync(GetProjectNotesCommand command)
         {
             if (command == null || string.IsNullOrWhiteSpace(command.ProjectExternalId))

@@ -6,6 +6,7 @@ namespace SalesTracking.Application.UseCases.ProjectNotes.Interfaces
     public interface IProjectNoteService
     {
         Task<AddProjectNoteResult> AddNoteAsync(AddProjectNoteCommand command);
+        Task<UpdateProjectNoteResult> UpdateNoteAsync(UpdateProjectNoteCommand command);
         Task<IReadOnlyList<ProjectNoteResult>> GetNotesAsync(GetProjectNotesCommand command);
     }
 }
