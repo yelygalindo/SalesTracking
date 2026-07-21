@@ -144,6 +144,68 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
             });
         }
 
+
+        public async Task<ConfirmDeliveryReceiptResult> ConfirmReceiptAsync(ConfirmDeliveryReceiptCommand command)
+        {
+            if (command == null || string.IsNullOrWhiteSpace(command.DeliveryExternalId))
+            {
+                return new ConfirmDeliveryReceiptResult
+                {
+                    Succeeded = false,
+                    Message = "La entrega es requerida."
+                };
+            }
+
+            IReadOnlyList<ConfirmDeliveryReceiptItemCommand> itemList = command.Items?.ToList()
+                ?? new List<ConfirmDeliveryReceiptItemCommand>();
+
+            if (itemList.Count == 0)
+            {
+                return new ConfirmDeliveryReceiptResult
+                {
+                    Succeeded = false,
+                    Message = "Debe registrar al menos un item recibido."
+                };
+            }
+
+            foreach (ConfirmDeliveryReceiptItemCommand item in itemList)
+            {
+                if (string.IsNullOrWhiteSpace(item.DeliveryItemExternalId))
+                {
+                    return new ConfirmDeliveryReceiptResult
+                    {
+                        Succeeded = false,
+                        Message = "El item de la entrega es requerido."
+                    };
+                }
+
+                if (item.ReceivedQuantity <= 0)
+                {
+                    return new ConfirmDeliveryReceiptResult
+                    {
+                        Succeeded = false,
+                        Message = "La cantidad recibida debe ser mayor que cero."
+                    };
+                }
+            }
+
+            ConfirmDeliveryReceiptCommand normalizedCommand = new ConfirmDeliveryReceiptCommand
+            {
+                DeliveryExternalId = command.DeliveryExternalId.Trim(),
+                ReceivedAtUtc = command.ReceivedAtUtc,
+                Notes = command.Notes?.Trim(),
+                Items = itemList
+                    .GroupBy(x => x.DeliveryItemExternalId.Trim())
+                    .Select(x => new ConfirmDeliveryReceiptItemCommand
+                    {
+                        DeliveryItemExternalId = x.Key,
+                        ReceivedQuantity = x.Sum(item => item.ReceivedQuantity)
+                    })
+                    .ToList()
+            };
+
+            return await _deliveryRepository.ConfirmReceiptAsync(normalizedCommand);
+        }
         public async Task<DeleteDeliveryResult> DeleteAsync(DeleteDeliveryCommand command)
         {
             if (command == null || string.IsNullOrWhiteSpace(command.ExternalId))

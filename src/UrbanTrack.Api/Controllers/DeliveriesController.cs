@@ -116,6 +116,28 @@ namespace UrbanTrack.Api.Controllers
             return Ok(new MessageResponse { Message = result.Message });
         }
 
+
+        [HttpPost("{deliveryExternalId}/receipts")]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<MessageResponse>> ConfirmReceipt(
+            string deliveryExternalId,
+            [FromBody] ConfirmDeliveryReceiptRequest request)
+        {
+            ConfirmDeliveryReceiptResult result = await _deliveryService.ConfirmReceiptAsync(
+                request.ToApplication(deliveryExternalId));
+
+            if (!result.Succeeded)
+            {
+                if (result.NotFound)
+                    return NotFound(new ErrorResponse { Error = result.Message });
+
+                return BadRequest(new ErrorResponse { Error = result.Message });
+            }
+
+            return Ok(new MessageResponse { Message = result.Message });
+        }
         [HttpDelete("{deliveryExternalId}")]
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

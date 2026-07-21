@@ -1,4 +1,4 @@
-using Dapper;
+﻿using Dapper;
 using SalesTracking.Application.Common.ExternalIds;
 using System.Data;
 
@@ -20,9 +20,11 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline
                     timelineEvent.EventTypeId,
                     timelineEvent.Title,
                     timelineEvent.Description,
+                    timelineEvent.OccurredAtUtc,
                     timelineEvent.CreatedByUserId,
                     timelineEvent.RelatedEntityType,
-                    timelineEvent.RelatedEntityId
+                    timelineEvent.RelatedEntityId,
+                    timelineEvent.MetadataJson
                 },
                 transaction);
         }

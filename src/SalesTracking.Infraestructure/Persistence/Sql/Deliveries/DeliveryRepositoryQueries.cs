@@ -206,6 +206,36 @@ SET
 WHERE ExternalId = @ExternalId
   AND IsDeleted = 0;";
 
+
+        public const string GetReceiptItemByExternalId = @"
+SELECT TOP 1
+    Id,
+    DeliveryId,
+    ExternalId,
+    Quantity,
+    DeliveredQuantity
+FROM DeliveryItems
+WHERE ExternalId = @ExternalId
+  AND DeliveryId = @DeliveryId
+  AND IsDeleted = 0;";
+
+        public const string UpdateItemDeliveredQuantity = @"
+UPDATE DeliveryItems
+SET
+    DeliveredQuantity = @DeliveredQuantity,
+    UpdatedAtUtc = SYSUTCDATETIME()
+WHERE Id = @Id
+  AND DeliveryId = @DeliveryId
+  AND IsDeleted = 0;";
+
+        public const string UpdateDeliveryReceiptState = @"
+UPDATE Deliveries
+SET
+    StatusId = @StatusId,
+    DeliveredDateUtc = @DeliveredDateUtc,
+    UpdatedAtUtc = SYSUTCDATETIME()
+WHERE Id = @Id
+  AND IsDeleted = 0;";
         public const string GetQuantitiesByDeliveryId = @"
 SELECT
     Quantity,

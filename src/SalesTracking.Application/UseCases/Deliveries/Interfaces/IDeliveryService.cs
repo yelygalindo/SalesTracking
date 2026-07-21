@@ -12,6 +12,7 @@ namespace SalesTracking.Application.UseCases.Deliveries.Interfaces
         Task<CreateDeliveryResult> CreateAsync(CreateDeliveryCommand command);
         Task<UpdateDeliveryResult> UpdateAsync(UpdateDeliveryCommand command);
         Task<ChangeDeliveryStatusResult> ChangeStatusAsync(ChangeDeliveryStatusCommand command);
+        Task<ConfirmDeliveryReceiptResult> ConfirmReceiptAsync(ConfirmDeliveryReceiptCommand command);
         Task<DeleteDeliveryResult> DeleteAsync(DeleteDeliveryCommand command);
     }
 }

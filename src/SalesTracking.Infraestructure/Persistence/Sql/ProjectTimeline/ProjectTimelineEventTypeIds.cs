@@ -9,5 +9,6 @@
         public const int NoteAdded = 6;
         public const int DeliveryCreated = 8;
         public const int DeliveryStatusChanged = 9;
+        public const int DeliveryReceiptConfirmed = 10;
     }
 }

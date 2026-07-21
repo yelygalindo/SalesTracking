@@ -13,6 +13,7 @@ INSERT INTO dbo.ProjectTimeline (
     CreatedByUserId,
     RelatedEntityType,
     RelatedEntityId,
+    MetadataJson,
     CreatedAtUtc,
     IsDeleted
 )
@@ -22,10 +23,11 @@ VALUES (
     @EventTypeId,
     @Title,
     @Description,
-    SYSUTCDATETIME(),
+    COALESCE(@OccurredAtUtc, SYSUTCDATETIME()),
     @CreatedByUserId,
     @RelatedEntityType,
     @RelatedEntityId,
+    @MetadataJson,
     SYSUTCDATETIME(),
     0
 );";
@@ -49,6 +51,7 @@ SELECT
         WHEN 6 THEN 'NoteAdded'
         WHEN 8 THEN 'DeliveryCreated'
         WHEN 9 THEN 'DeliveryStatusChanged'
+        WHEN 10 THEN 'DeliveryReceiptConfirmed'
         ELSE 'Unknown'
     END AS EventTypeName,
     pt.Title,

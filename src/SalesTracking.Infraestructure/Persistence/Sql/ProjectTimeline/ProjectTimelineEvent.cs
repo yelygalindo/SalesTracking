@@ -1,4 +1,4 @@
-namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline
+﻿namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline
 {
     internal sealed class ProjectTimelineEvent
     {
@@ -6,8 +6,10 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline
         public int EventTypeId { get; set; }
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public DateTime? OccurredAtUtc { get; set; }
         public int CreatedByUserId { get; set; }
         public string? RelatedEntityType { get; set; }
         public int? RelatedEntityId { get; set; }
+        public string? MetadataJson { get; set; }
     }
 }

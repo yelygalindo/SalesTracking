@@ -64,6 +64,21 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
             };
         }
 
+
+        public static ConfirmDeliveryReceiptCommand ToApplication(this ConfirmDeliveryReceiptRequest request, string deliveryExternalId)
+        {
+            return new ConfirmDeliveryReceiptCommand
+            {
+                DeliveryExternalId = deliveryExternalId,
+                ReceivedAtUtc = request.ReceivedAtUtc,
+                Notes = request.Notes,
+                Items = request.Items.Select(x => new ConfirmDeliveryReceiptItemCommand
+                {
+                    DeliveryItemExternalId = x.DeliveryItemExternalId,
+                    ReceivedQuantity = x.ReceivedQuantity
+                }).ToList()
+            };
+        }
         public static DeliveryStatusResponse ToResponse(this DeliveryStatusResult result)
         {
             return new DeliveryStatusResponse

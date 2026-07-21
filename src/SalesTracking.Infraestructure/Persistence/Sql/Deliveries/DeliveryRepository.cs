@@ -10,6 +10,7 @@ using SalesTracking.Infrastructure.Persistence.Sql.Deliveries.Mappers;
 using SalesTracking.Infrastructure.Persistence.Sql.Deliveries.Rows;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline;
 using System.Data;
+using System.Text.Json;
 
 namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
 {
@@ -364,6 +365,130 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
             }
         }
 
+
+        public async Task<ConfirmDeliveryReceiptResult> ConfirmReceiptAsync(ConfirmDeliveryReceiptCommand command)
+        {
+            using IDbConnection connection = CreateConnection();
+            connection.Open();
+            using IDbTransaction transaction = connection.BeginTransaction();
+
+            try
+            {
+                DeliveryInternalRow? delivery = await connection.QuerySingleOrDefaultAsync<DeliveryInternalRow>(
+                    DeliveryRepositoryQueries.GetDeliveryInternalByExternalId,
+                    new { ExternalId = command.DeliveryExternalId },
+                    transaction);
+
+                if (delivery == null)
+                    return RollbackConfirmReceipt(transaction, "Entrega no encontrada.", true);
+
+                decimal totalReceivedQuantity = 0;
+                foreach (ConfirmDeliveryReceiptItemCommand item in command.Items)
+                {
+                    DeliveryReceiptItemRow? deliveryItem = await connection.QuerySingleOrDefaultAsync<DeliveryReceiptItemRow>(
+                        DeliveryRepositoryQueries.GetReceiptItemByExternalId,
+                        new
+                        {
+                            ExternalId = item.DeliveryItemExternalId,
+                            DeliveryId = delivery.Id
+                        },
+                        transaction);
+
+                    if (deliveryItem == null)
+                        return RollbackConfirmReceipt(transaction, "Item de entrega no encontrado.", true);
+
+                    decimal newDeliveredQuantity = deliveryItem.DeliveredQuantity + item.ReceivedQuantity;
+                    if (newDeliveredQuantity > deliveryItem.Quantity)
+                    {
+                        return RollbackConfirmReceipt(
+                            transaction,
+                            "La cantidad acumulada no puede superar la cantidad comprometida.",
+                            false);
+                    }
+
+                    int affectedRows = await connection.ExecuteAsync(
+                        DeliveryRepositoryQueries.UpdateItemDeliveredQuantity,
+                        new
+                        {
+                            deliveryItem.Id,
+                            DeliveryId = delivery.Id,
+                            DeliveredQuantity = newDeliveredQuantity
+                        },
+                        transaction);
+
+                    if (affectedRows == 0)
+                        return RollbackConfirmReceipt(transaction, "No se pudo actualizar el item de la entrega.", false);
+
+                    totalReceivedQuantity += item.ReceivedQuantity;
+                }
+
+                var quantities = (await connection.QueryAsync<DeliveryQuantityRow>(
+                    DeliveryRepositoryQueries.GetQuantitiesByDeliveryId,
+                    new { DeliveryId = delivery.Id },
+                    transaction)).ToList();
+
+                int statusId = ResolveStatusId(quantities);
+                DateTime? deliveredDateUtc = statusId == DeliveredStatusId
+                    ? command.ReceivedAtUtc
+                    : (DateTime?)null;
+
+                await connection.ExecuteAsync(
+                    DeliveryRepositoryQueries.UpdateDeliveryReceiptState,
+                    new
+                    {
+                        delivery.Id,
+                        StatusId = statusId,
+                        DeliveredDateUtc = deliveredDateUtc
+                    },
+                    transaction);
+
+                string metadataJson = JsonSerializer.Serialize(new
+                {
+                    command.ReceivedAtUtc,
+                    command.Notes,
+                    Items = command.Items.Select(x => new
+                    {
+                        x.DeliveryItemExternalId,
+                        x.ReceivedQuantity
+                    }).ToList()
+                });
+
+                await ProjectTimelineWriter.InsertAsync(
+                    connection,
+                    transaction,
+                    new ProjectTimelineEvent
+                    {
+                        ProjectId = delivery.ProjectId,
+                        EventTypeId = ProjectTimelineEventTypeIds.DeliveryReceiptConfirmed,
+                        Title = "Recepcion de entrega registrada",
+                        Description = string.IsNullOrWhiteSpace(command.Notes)
+                            ? $"Se registro la recepcion de {totalReceivedQuantity} unidades."
+                            : command.Notes,
+                        OccurredAtUtc = command.ReceivedAtUtc,
+                        CreatedByUserId = delivery.SellerId,
+                        RelatedEntityType = RelatedEntityType,
+                        RelatedEntityId = delivery.Id,
+                        MetadataJson = metadataJson
+                    });
+
+                transaction.Commit();
+
+                return new ConfirmDeliveryReceiptResult
+                {
+                    Succeeded = true,
+                    Message = "Recepcion de entrega registrada correctamente."
+                };
+            }
+            catch
+            {
+                transaction.Rollback();
+                return new ConfirmDeliveryReceiptResult
+                {
+                    Succeeded = false,
+                    Message = "Ocurrio un error al registrar la recepcion de la entrega."
+                };
+            }
+        }
         public async Task<DeleteDeliveryResult> DeleteAsync(string externalId)
         {
             using IDbConnection connection = CreateConnection();
@@ -525,6 +650,17 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
             };
         }
 
+
+        private static ConfirmDeliveryReceiptResult RollbackConfirmReceipt(IDbTransaction transaction, string message, bool notFound)
+        {
+            transaction.Rollback();
+            return new ConfirmDeliveryReceiptResult
+            {
+                Succeeded = false,
+                NotFound = notFound,
+                Message = message
+            };
+        }
         private static DeleteDeliveryResult RollbackDelete(IDbTransaction transaction, string message, bool notFound)
         {
             transaction.Rollback();
