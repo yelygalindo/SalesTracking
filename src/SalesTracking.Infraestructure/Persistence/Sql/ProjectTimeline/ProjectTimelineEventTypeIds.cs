@@ -6,6 +6,7 @@
         public const int ProjectUpdated = 2;
         public const int ProjectStatusChanged = 3;
         public const int ProjectProgressUpdated = 4;
+        public const int ProjectVisited = 5;
         public const int NoteAdded = 6;
         public const int AttachmentUploaded = 7;
         public const int DeliveryCreated = 8;

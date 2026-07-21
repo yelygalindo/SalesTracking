@@ -16,5 +16,6 @@
         public const string Project = "p";
         public const string ProjectNote = "pnote";
         public const string ProjectAttachment = "patt";
+        public const string ProjectVisit = "pvisit";
     }
 }
