@@ -1,4 +1,4 @@
-﻿using SalesTracking.Application.Common.ExternalIds;
+using SalesTracking.Application.Common.ExternalIds;
 using SalesTracking.Application.UseCases.CustomerNotes.Comands;
 using SalesTracking.Application.UseCases.CustomerNotes.Interfaces;
 using SalesTracking.Application.UseCases.CustomerNotes.Models;
@@ -45,7 +45,7 @@ namespace SalesTracking.Application.UseCases.CustomerNotes.Services
                 };
             }
 
-            if (string.IsNullOrWhiteSpace(command.AuthorExternalId))
+            if (command.AuthorUserId <= 0)
             {
                 return new AddCustomerNoteResult
                 {
@@ -59,7 +59,7 @@ namespace SalesTracking.Application.UseCases.CustomerNotes.Services
                 ExternalId = ExternalIdGenerator.New(ExternalIdPrefixes.CustomerNote),
                 CustomerExternalId = command.CustomerExternalId,
                 Text = command.Text.Trim(),
-                AuthorExternalId = command.AuthorExternalId
+                AuthorUserId = command.AuthorUserId
             };
 
             ResponseCreateCustomerNote created = await _repo.AddNoteAsync(note);

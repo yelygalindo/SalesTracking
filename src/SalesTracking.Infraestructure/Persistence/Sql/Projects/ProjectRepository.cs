@@ -27,7 +27,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
         private IDbConnection CreateConnection() =>
             new SqlConnection(_databaseOptions.ConnectionString);
 
-        public async Task<CreateProjectResult> CreateAsync(Project project)
+        public async Task<CreateProjectResult> CreateAsync(Project project, int createdByUserId)
         {
             using var connection = CreateConnection();
             connection.Open();
@@ -121,7 +121,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                         EventTypeId = ProjectTimelineEventTypeIds.ProjectCreated,
                         Title = "Proyecto creado",
                         Description = "Proyecto creado correctamente.",
-                        CreatedByUserId = createdProjectInfo.SellerId
+                        CreatedByUserId = createdByUserId
                     });
 
                 ProjectDetailRow? createdProject = await connection.QuerySingleOrDefaultAsync<ProjectDetailRow>(
@@ -303,7 +303,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                         EventTypeId = ProjectTimelineEventTypeIds.ProjectUpdated,
                         Title = "Proyecto actualizado",
                         Description = "Proyecto actualizado correctamente.",
-                        CreatedByUserId = sellerInternalId.Value
+                        CreatedByUserId = command.UpdatedByUserId
                     });
 
                 decimal newProgress = command.ProgressPercentage ?? 0;
@@ -318,7 +318,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                             EventTypeId = ProjectTimelineEventTypeIds.ProjectProgressUpdated,
                             Title = "Avance actualizado",
                             Description = $"Porcentaje de avance actualizado de {projectInfo.ProgressPercentage} a {newProgress}.",
-                            CreatedByUserId = sellerInternalId.Value
+                            CreatedByUserId = command.UpdatedByUserId
                         });
                 }
 
@@ -409,7 +409,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                         EventTypeId = ProjectTimelineEventTypeIds.ProjectStatusChanged,
                         Title = "Estado actualizado",
                         Description = $"Estado de proyecto actualizado de {projectInfo.StatusId} a {command.StatusId}.",
-                        CreatedByUserId = projectInfo.SellerId
+                        CreatedByUserId = command.ChangedByUserId
                     });
 
                 transaction.Commit();

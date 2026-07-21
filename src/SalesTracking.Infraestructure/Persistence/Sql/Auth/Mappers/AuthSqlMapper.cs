@@ -1,4 +1,4 @@
-﻿using SalesTracking.Domain.Entities;
+using SalesTracking.Domain.Entities;
 using SalesTracking.Infrastructure.Persistence.Sql.Auth.Rows;
 
 namespace SalesTracking.Infrastructure.Persistence.Sql.Auth.Mappers

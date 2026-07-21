@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Domain.Entities;
@@ -18,11 +18,15 @@ namespace SalesTracking.Infrastructure.Persistence.Security
         {
             _settings = options.Value;
         }
+
         public string GenerateAccessToken(User user, DateTime expiresAtUtc)
         {
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim("userExternalId", user.ExternalId ?? string.Empty),
+                new Claim(JwtRegisteredClaimNames.Name, user.FullName ?? user.Username ?? user.Email),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("companyId", user.Company.Id.ToString())
             };

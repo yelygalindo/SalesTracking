@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using SalesTracking.Application.UseCases.ProjectAttachments.Comands;
@@ -106,14 +106,6 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                 if (projectId == null)
                     return RollbackUpload(transaction, "Proyecto no encontrado.", true);
 
-                int? uploadedByUserId = await connection.QueryFirstOrDefaultAsync<int?>(
-                    ProjectAttachmentQueries.GetUserInternalIdByExternalId,
-                    new { ExternalId = attachment.UploadedByUserExternalId },
-                    transaction);
-
-                if (uploadedByUserId == null)
-                    return RollbackUpload(transaction, "Usuario no encontrado o inactivo.", true);
-
                 if (attachment.IsCover)
                 {
                     await connection.ExecuteAsync(
@@ -121,7 +113,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                         new
                         {
                             ProjectId = projectId.Value,
-                            UpdatedByUserId = uploadedByUserId.Value
+                            UpdatedByUserId = attachment.UploadedByUserId
                         },
                         transaction);
                 }
@@ -140,7 +132,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                         attachment.AttachmentType,
                         attachment.Caption,
                         attachment.IsCover,
-                        UploadedByUserId = uploadedByUserId.Value
+                        UploadedByUserId = attachment.UploadedByUserId
                     },
                     transaction);
 
@@ -162,7 +154,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                         EventTypeId = ProjectTimelineEventTypeIds.AttachmentUploaded,
                         Title = "Archivo agregado",
                         Description = "Archivo agregado al proyecto.",
-                        CreatedByUserId = uploadedByUserId.Value,
+                        CreatedByUserId = attachment.UploadedByUserId,
                         RelatedEntityType = RelatedEntityType,
                         RelatedEntityId = attachmentId,
                         MetadataJson = metadataJson
@@ -194,19 +186,6 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
 
             try
             {
-                int? deletedByUserId = await connection.QueryFirstOrDefaultAsync<int?>(
-                    ProjectAttachmentQueries.GetUserInternalIdByExternalId,
-                    new { ExternalId = command.DeletedByUserExternalId });
-
-                if (deletedByUserId == null)
-                {
-                    return new DeleteProjectAttachmentResult
-                    {
-                        Succeeded = false,
-                        NotFound = true,
-                        Message = "Usuario no encontrado o inactivo."
-                    };
-                }
 
                 int affectedRows = await connection.ExecuteAsync(
                     ProjectAttachmentQueries.Delete,
@@ -214,7 +193,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                     {
                         command.ProjectExternalId,
                         command.AttachmentExternalId,
-                        DeletedByUserId = deletedByUserId.Value
+                        DeletedByUserId = command.DeletedByUserId
                     });
 
                 if (affectedRows == 0)
@@ -251,13 +230,6 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
 
             try
             {
-                int? updatedByUserId = await connection.QueryFirstOrDefaultAsync<int?>(
-                    ProjectAttachmentQueries.GetUserInternalIdByExternalId,
-                    new { ExternalId = command.UpdatedByUserExternalId },
-                    transaction);
-
-                if (updatedByUserId == null)
-                    return RollbackSetCover(transaction, "Usuario no encontrado o inactivo.", true);
 
                 ProjectAttachmentInternalRow? attachment = await connection.QueryFirstOrDefaultAsync<ProjectAttachmentInternalRow>(
                     ProjectAttachmentQueries.GetAttachmentInternal,
@@ -276,7 +248,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                     new
                     {
                         attachment.ProjectId,
-                        UpdatedByUserId = updatedByUserId.Value
+                        UpdatedByUserId = command.UpdatedByUserId
                     },
                     transaction);
 
@@ -286,7 +258,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                     {
                         AttachmentId = attachment.Id,
                         attachment.ProjectId,
-                        UpdatedByUserId = updatedByUserId.Value
+                        UpdatedByUserId = command.UpdatedByUserId
                     },
                     transaction);
 

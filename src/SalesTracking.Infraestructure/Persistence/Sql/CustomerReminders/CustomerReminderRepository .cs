@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using SalesTracking.Application.Common.ExternalIds;
@@ -96,7 +96,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders
                         CustomerId = customerInternalId.Value,
                         EventType = "CustomerReminderCreated",
                         Description = "Recordatorio creado.",
-                        CreatedById = assignedToInternalId.Value
+                        CreatedById = reminder.CreatedByUserId
                     },
                     transaction);
 

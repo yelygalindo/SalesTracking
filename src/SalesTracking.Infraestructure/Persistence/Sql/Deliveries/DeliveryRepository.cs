@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using SalesTracking.Application.UseCases.Deliveries.Comands;
@@ -156,7 +156,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                         EventTypeId = ProjectTimelineEventTypeIds.DeliveryCreated,
                         Title = "Entrega creada",
                         Description = "Se creo una entrega para el proyecto.",
-                        CreatedByUserId = sellerId.Value,
+                        CreatedByUserId = delivery.CreatedByUserId,
                         RelatedEntityType = RelatedEntityType,
                         RelatedEntityId = deliveryId
                     });
@@ -341,7 +341,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                         EventTypeId = ProjectTimelineEventTypeIds.DeliveryStatusChanged,
                         Title = "Estado de entrega actualizado",
                         Description = $"Estado de entrega actualizado de {previousStatusName} a {newStatusName}.",
-                        CreatedByUserId = delivery.SellerId,
+                        CreatedByUserId = command.ChangedByUserId,
                         RelatedEntityType = RelatedEntityType,
                         RelatedEntityId = delivery.Id
                     });
@@ -465,7 +465,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                             ? $"Se registro la recepcion de {totalReceivedQuantity} unidades."
                             : command.Notes,
                         OccurredAtUtc = command.ReceivedAtUtc,
-                        CreatedByUserId = delivery.SellerId,
+                        CreatedByUserId = command.CreatedByUserId,
                         RelatedEntityType = RelatedEntityType,
                         RelatedEntityId = delivery.Id,
                         MetadataJson = metadataJson

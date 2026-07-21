@@ -7,27 +7,29 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
     {
         public static AddProjectNoteCommand ToApplication(
             this ProjectNoteRequest request,
-            string projectExternalId)
+            string projectExternalId,
+            int authorUserId)
         {
             return new AddProjectNoteCommand
             {
                 ProjectExternalId = projectExternalId,
                 Content = request.Content,
-                AuthorExternalId = request.AuthorExternalId
+                AuthorUserId = authorUserId
             };
         }
 
         public static UpdateProjectNoteCommand ToApplication(
             this UpdateProjectNoteRequest request,
             string projectExternalId,
-            string noteExternalId)
+            string noteExternalId,
+            int updatedByUserId)
         {
             return new UpdateProjectNoteCommand
             {
                 ProjectExternalId = projectExternalId,
                 NoteExternalId = noteExternalId,
                 Content = request.Content,
-                UpdatedByUserExternalId = request.UpdatedByUserExternalId
+                UpdatedByUserId = updatedByUserId
             };
         }
     }

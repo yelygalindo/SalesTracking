@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using SalesTracking.Application.Common.ExternalIds;
@@ -58,22 +58,6 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes
                     };
                 }
 
-                int? authorInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
-                    CustomerNoteRepositoryQueries.GetUserInternalIdByExternalId,
-                    new { ExternalId = note.AuthorExternalId },
-                    transaction);
-
-                if (authorInternalId == null)
-                {
-                    transaction.Rollback();
-                    return new ResponseCreateCustomerNote()
-                    {
-                        Succeeded = false,
-                        NotFound = true,
-                        Message = "Autor no encontrado o inactivo."
-                    };
-                }
-
                 await conn.ExecuteAsync(
                     CustomerNoteRepositoryQueries.AddNote,
                     new
@@ -81,7 +65,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes
                         note.ExternalId,
                         CustomerId = customerInternalId.Value,
                         note.Text,
-                        AuthorId = authorInternalId.Value
+                        AuthorId = note.AuthorUserId
                     },
                     transaction);
 
@@ -93,7 +77,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes
                         CustomerId = customerInternalId.Value,
                         EventType = "CustomerNoteAdded",
                         Description = "Nota agregada al cliente.",
-                        CreatedById = authorInternalId.Value
+                        CreatedById = note.AuthorUserId
                     },
                     transaction);
 

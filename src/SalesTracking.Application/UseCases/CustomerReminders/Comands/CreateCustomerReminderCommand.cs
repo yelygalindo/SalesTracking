@@ -1,4 +1,4 @@
-﻿namespace SalesTracking.Application.UseCases.CustomerReminders.Comands
+namespace SalesTracking.Application.UseCases.CustomerReminders.Comands
 {
     public class CreateCustomerReminderCommand
     {
@@ -6,5 +6,6 @@
         public string Text { get; set; }
         public DateTime ReminderAtUtc { get; set; }
         public string AssignedToId { get; set; }
+        public int CreatedByUserId { get; set; }
     }
 }

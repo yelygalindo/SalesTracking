@@ -1,11 +1,6 @@
-﻿using SalesTracking.Application.UseCases.Projects.Comands;
+using SalesTracking.Application.UseCases.Projects.Comands;
 using SalesTracking.Application.UseCases.Projects.Results;
 using SalesTracking.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UrbanTrack.Api.Controllers.Requests.Products;
 using UrbanTrack.Api.Controllers.Responses.Common;
 using UrbanTrack.Api.Controllers.Responses.Pagination;
@@ -15,7 +10,7 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
 {
     public static class ProjectApiMapper
     {
-        public static CreateProjectCommand ToApplication(this CreateProjectRequest request)
+        public static CreateProjectCommand ToApplication(this CreateProjectRequest request, int createdByUserId)
         {
             return new CreateProjectCommand(
                 request.Name,
@@ -29,7 +24,8 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 request.ActualCloseDateUtc,
                 request.Address,
                 request.Latitude,
-                request.Longitude);
+                request.Longitude,
+                createdByUserId);
         }
 
         public static GetProjectsCommand ToApplication(this GetProjectsRequest request)
@@ -44,7 +40,8 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
 
         public static UpdateProjectCommand ToApplication(
             this UpdateProjectRequest request,
-            string externalId)
+            string externalId,
+            int updatedByUserId)
         {
             return new UpdateProjectCommand
             {
@@ -60,18 +57,21 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 ActualCloseDateUtc = request.ActualCloseDateUtc,
                 Address = request.Address,
                 Latitude = request.Latitude,
-                Longitude = request.Longitude
+                Longitude = request.Longitude,
+                UpdatedByUserId = updatedByUserId
             };
         }
 
         public static ChangeProjectStatusCommand ToApplication(
             this ChangeProjectStatusRequest request,
-            string externalId)
+            string externalId,
+            int changedByUserId)
         {
             return new ChangeProjectStatusCommand
             {
                 ExternalId = externalId,
-                StatusId = request.StatusId
+                StatusId = request.StatusId,
+                ChangedByUserId = changedByUserId
             };
         }
 
@@ -134,8 +134,7 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
             };
         }
 
-        public static PagedResponse<ProjectSummaryResponse> ToResponse(
-            this ProjectPagedList result)
+        public static PagedResponse<ProjectSummaryResponse> ToResponse(this ProjectPagedList result)
         {
             return new PagedResponse<ProjectSummaryResponse>
             {

@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using UrbanTrack.Api.Controllers.Requests.AuthRequests;
-using UrbanTrack.Api.Controllers.Responses.AuthResponses;
-using SalesTracking.Application.UseCases.Authentication.Results;
-using UrbanTrack.Api.Controllers.Responses.Common;
+using Microsoft.AspNetCore.Mvc;
 using SalesTracking.Application.UseCases.Authentication.Interfaces;
+using SalesTracking.Application.UseCases.Authentication.Results;
+using UrbanTrack.Api.Controllers.Requests.AuthRequests;
 using UrbanTrack.Api.Controllers.Requests.Mappers;
+using UrbanTrack.Api.Controllers.Responses.AuthResponses;
+using UrbanTrack.Api.Controllers.Responses.Common;
 using UrbanTrack.Api.Controllers.Responses.Mappers;
 
 namespace UrbanTrack.Api.Controllers
@@ -21,7 +22,7 @@ namespace UrbanTrack.Api.Controllers
             _service = service;
         }
 
-
+        [AllowAnonymous]
         [HttpPost("login")]
         [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
         public async Task<ActionResult> Login([FromBody] LoginRequest request)
@@ -40,6 +41,7 @@ namespace UrbanTrack.Api.Controllers
             return Ok(resp.ToResponse());
         }
 
+        [AllowAnonymous]
         [HttpPost("refresh-token")]
         [ProducesResponseType(typeof(RefreshTokenResponse), StatusCodes.Status200OK)]
         public async Task<ActionResult<RefreshTokenResponse>> RefreshToken([FromBody] RefreshTokenRequest request)
@@ -49,6 +51,7 @@ namespace UrbanTrack.Api.Controllers
             return Ok(resp.ToResponse());
         }
 
+        [AllowAnonymous]
         [HttpPost("forgot-password")]
         [ProducesResponseType(typeof(ForgotPasswordResponse), StatusCodes.Status200OK)]
         public async Task<ActionResult<ForgotPasswordResponse>> ForgotPassword([FromBody] ForgotPasswordRequest request)
@@ -58,6 +61,7 @@ namespace UrbanTrack.Api.Controllers
             return Ok(resp.ToResponse());
         }
 
+        [AllowAnonymous]
         [HttpPost("reset-password")]
         [ProducesResponseType(typeof(ResetPasswordResponse), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResetPasswordResponse>> ResetPassword([FromBody] ResetPasswordRequest request)
@@ -65,6 +69,6 @@ namespace UrbanTrack.Api.Controllers
             ResetPasswordResult resp = await _service.ResetPasswordAsync(request.ToApplication());
             if (resp == null) return NotFound(new MessageResponse { Message = "Usuario no encontrado." });
             return Ok(resp.ToResponse());
-        }       
+        }
     }
 }

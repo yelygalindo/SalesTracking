@@ -1,4 +1,4 @@
-﻿using SalesTracking.Application.Common.ExternalIds;
+using SalesTracking.Application.Common.ExternalIds;
 using SalesTracking.Application.UseCases.CustomerReminders.Comands;
 using SalesTracking.Application.UseCases.CustomerReminders.Interfaces;
 using SalesTracking.Application.UseCases.CustomerReminders.Models;
@@ -88,7 +88,8 @@ namespace SalesTracking.Application.UseCases.CustomerReminders.Services
                 CustomerExternalId = command.CustomerExternalId,
                 Text = command.Text.Trim(),
                 ReminderAtUtc = command.ReminderAtUtc,
-                AssignedToId = command.AssignedToId
+                AssignedToId = command.AssignedToId,
+                CreatedByUserId = command.CreatedByUserId
             };
 
             CreateCustomerReminder created = await _repo.CreateReminderAsync(reminder);

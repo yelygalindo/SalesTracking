@@ -50,22 +50,6 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                     };
                 }
 
-                int? authorInternalId = await connection.QueryFirstOrDefaultAsync<int?>(
-                    ProjectNoteQueries.GetUserInternalIdByExternalId,
-                    new { ExternalId = note.AuthorExternalId },
-                    transaction);
-
-                if (authorInternalId == null)
-                {
-                    transaction.Rollback();
-                    return new ResponseCreateProjectNote
-                    {
-                        Succeeded = false,
-                        NotFound = true,
-                        Message = "Autor no encontrado o inactivo."
-                    };
-                }
-
                 int noteInternalId = await connection.QuerySingleAsync<int>(
                     ProjectNoteQueries.AddNote,
                     new
@@ -73,7 +57,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                         note.ExternalId,
                         ProjectId = projectInternalId.Value,
                         note.Content,
-                        AuthorId = authorInternalId.Value
+                        AuthorId = note.AuthorUserId
                     },
                     transaction);
 
@@ -86,7 +70,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                         EventTypeId = ProjectTimelineEventTypeIds.NoteAdded,
                         Title = "Nota agregada",
                         Description = "Nota agregada al proyecto.",
-                        CreatedByUserId = authorInternalId.Value,
+                        CreatedByUserId = note.AuthorUserId,
                         RelatedEntityType = "ProjectNote",
                         RelatedEntityId = noteInternalId
                     });
@@ -122,21 +106,6 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
 
             try
             {
-                int? updatedByUserId = await connection.QueryFirstOrDefaultAsync<int?>(
-                    ProjectNoteQueries.GetUserInternalIdByExternalId,
-                    new { ExternalId = note.UpdatedByUserExternalId },
-                    transaction);
-
-                if (updatedByUserId == null)
-                {
-                    transaction.Rollback();
-                    return new ResponseUpdateProjectNote
-                    {
-                        Succeeded = false,
-                        NotFound = true,
-                        Message = "Usuario no encontrado o inactivo."
-                    };
-                }
 
                 int affectedRows = await connection.ExecuteAsync(
                     ProjectNoteQueries.UpdateNote,
@@ -145,7 +114,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                         note.ProjectExternalId,
                         note.NoteExternalId,
                         note.Content,
-                        UpdatedByUserId = updatedByUserId.Value
+                        UpdatedByUserId = note.UpdatedByUserId
                     },
                     transaction);
 

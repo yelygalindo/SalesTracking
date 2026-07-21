@@ -1,4 +1,4 @@
-﻿using SalesTracking.Application.UseCases.Deliveries.Comands;
+using SalesTracking.Application.UseCases.Deliveries.Comands;
 using SalesTracking.Application.UseCases.Deliveries.Models;
 using SalesTracking.Application.UseCases.Deliveries.Results;
 using UrbanTrack.Api.Controllers.Requests.Deliveries;
@@ -15,7 +15,7 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
             return new GetDeliveriesCommand(request.Page, request.PageSize);
         }
 
-        public static CreateDeliveryCommand ToApplication(this CreateDeliveryRequest request)
+        public static CreateDeliveryCommand ToApplication(this CreateDeliveryRequest request, int createdByUserId)
         {
             return new CreateDeliveryCommand
             {
@@ -24,6 +24,7 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 CommittedDateUtc = request.CommittedDateUtc,
                 DeliveredDateUtc = request.DeliveredDateUtc,
                 Notes = request.Notes,
+                CreatedByUserId = createdByUserId,
                 Items = request.Items.Select(x => new CreateDeliveryItemCommand
                 {
                     ProductExternalId = x.ProductExternalId,
@@ -54,24 +55,31 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
             };
         }
 
-        public static ChangeDeliveryStatusCommand ToApplication(this ChangeDeliveryStatusRequest request, string externalId)
+        public static ChangeDeliveryStatusCommand ToApplication(
+            this ChangeDeliveryStatusRequest request,
+            string externalId,
+            int changedByUserId)
         {
             return new ChangeDeliveryStatusCommand
             {
                 ExternalId = externalId,
                 StatusId = request.StatusId,
-                DeliveredDateUtc = request.DeliveredDateUtc
+                DeliveredDateUtc = request.DeliveredDateUtc,
+                ChangedByUserId = changedByUserId
             };
         }
 
-
-        public static ConfirmDeliveryReceiptCommand ToApplication(this ConfirmDeliveryReceiptRequest request, string deliveryExternalId)
+        public static ConfirmDeliveryReceiptCommand ToApplication(
+            this ConfirmDeliveryReceiptRequest request,
+            string deliveryExternalId,
+            int createdByUserId)
         {
             return new ConfirmDeliveryReceiptCommand
             {
                 DeliveryExternalId = deliveryExternalId,
                 ReceivedAtUtc = request.ReceivedAtUtc,
                 Notes = request.Notes,
+                CreatedByUserId = createdByUserId,
                 Items = request.Items.Select(x => new ConfirmDeliveryReceiptItemCommand
                 {
                     DeliveryItemExternalId = x.DeliveryItemExternalId,
@@ -79,6 +87,7 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 }).ToList()
             };
         }
+
         public static DeliveryStatusResponse ToResponse(this DeliveryStatusResult result)
         {
             return new DeliveryStatusResponse

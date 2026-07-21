@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.UseCases.ProjectNotes.Comands;
 using SalesTracking.Application.UseCases.ProjectNotes.Interfaces;
 using SalesTracking.Application.UseCases.ProjectNotes.Results;
@@ -16,10 +17,12 @@ namespace UrbanTrack.Api.Controllers
     public class ProjectNotesController : ControllerBase
     {
         private readonly IProjectNoteService _projectNoteService;
+        private readonly ICurrentUser _currentUser;
 
-        public ProjectNotesController(IProjectNoteService projectNoteService)
+        public ProjectNotesController(IProjectNoteService projectNoteService, ICurrentUser currentUser)
         {
             _projectNoteService = projectNoteService;
+            _currentUser = currentUser;
         }
 
         [HttpGet]
@@ -57,7 +60,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] ProjectNoteRequest request)
         {
             AddProjectNoteResult result = await _projectNoteService.AddNoteAsync(
-                request.ToApplication(projectExternalId));
+                request.ToApplication(projectExternalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {
@@ -80,7 +83,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] UpdateProjectNoteRequest request)
         {
             UpdateProjectNoteResult result = await _projectNoteService.UpdateNoteAsync(
-                request.ToApplication(projectExternalId, noteExternalId));
+                request.ToApplication(projectExternalId, noteExternalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {

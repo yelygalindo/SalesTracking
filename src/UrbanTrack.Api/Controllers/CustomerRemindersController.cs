@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.UseCases.CustomerReminders.Comands;
 using SalesTracking.Application.UseCases.CustomerReminders.Interfaces;
 using SalesTracking.Application.UseCases.CustomerReminders.Results;
@@ -16,10 +17,12 @@ namespace UrbanTrack.Api.Controllers
     public class CustomerRemindersController : ControllerBase
     {
         private readonly ICustomerReminderService _service;
+        private readonly ICurrentUser _currentUser;
 
-        public CustomerRemindersController(ICustomerReminderService service)
+        public CustomerRemindersController(ICustomerReminderService service, ICurrentUser currentUser)
         {
             _service = service;
+            _currentUser = currentUser;
         }
 
         [HttpGet]
@@ -41,7 +44,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] CustomerReminderRequest request)
         {
             CreateCustomerReminderResult result = await _service.CreateReminderAsync(
-                request.ToApplication(customerExternalId));
+                request.ToApplication(customerExternalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {

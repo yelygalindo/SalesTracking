@@ -1,4 +1,4 @@
-﻿namespace SalesTracking.Application.UseCases.ProjectAttachments.Models
+namespace SalesTracking.Application.UseCases.ProjectAttachments.Models
 {
     public sealed class CreateProjectAttachment
     {
@@ -12,6 +12,6 @@
         public string AttachmentType { get; set; } = string.Empty;
         public string? Caption { get; set; }
         public bool IsCover { get; set; }
-        public string UploadedByUserExternalId { get; set; } = string.Empty;
+        public int UploadedByUserId { get; set; }
     }
 }

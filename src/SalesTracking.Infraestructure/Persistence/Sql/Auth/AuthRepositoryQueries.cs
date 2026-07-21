@@ -1,4 +1,4 @@
-﻿namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
+namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
 {
     public static class AuthRepositoryQueries
     {

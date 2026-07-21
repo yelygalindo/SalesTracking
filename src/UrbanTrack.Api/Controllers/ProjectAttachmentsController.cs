@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.UseCases.ProjectAttachments.Comands;
 using SalesTracking.Application.UseCases.ProjectAttachments.Interfaces;
 using SalesTracking.Application.UseCases.ProjectAttachments.Results;
@@ -15,10 +16,12 @@ namespace UrbanTrack.Api.Controllers
     public sealed class ProjectAttachmentsController : ControllerBase
     {
         private readonly IProjectAttachmentService _projectAttachmentService;
+        private readonly ICurrentUser _currentUser;
 
-        public ProjectAttachmentsController(IProjectAttachmentService projectAttachmentService)
+        public ProjectAttachmentsController(IProjectAttachmentService projectAttachmentService, ICurrentUser currentUser)
         {
             _projectAttachmentService = projectAttachmentService;
+            _currentUser = currentUser;
         }
 
         [HttpGet]
@@ -71,7 +74,7 @@ namespace UrbanTrack.Api.Controllers
             [FromForm] UploadProjectAttachmentRequest request)
         {
             UploadProjectAttachmentResult result = await _projectAttachmentService.UploadAsync(
-                request.ToApplication(projectExternalId));
+                request.ToApplication(projectExternalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {
@@ -90,14 +93,10 @@ namespace UrbanTrack.Api.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<MessageResponse>> Delete(
             string projectExternalId,
-            string attachmentExternalId,
-            [FromQuery] string deletedByUserExternalId)
+            string attachmentExternalId)
         {
             DeleteProjectAttachmentResult result = await _projectAttachmentService.DeleteAsync(
-                new DeleteProjectAttachmentCommand(
-                    projectExternalId,
-                    attachmentExternalId,
-                    deletedByUserExternalId));
+                new DeleteProjectAttachmentCommand(projectExternalId, attachmentExternalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {
@@ -120,7 +119,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] SetProjectAttachmentCoverRequest request)
         {
             SetProjectAttachmentCoverResult result = await _projectAttachmentService.SetCoverAsync(
-                request.ToApplication(projectExternalId, attachmentExternalId));
+                request.ToApplication(projectExternalId, attachmentExternalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {

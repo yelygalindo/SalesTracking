@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 
 namespace UrbanTrack.Api.Controllers.Requests.ProjectAttachments
 {
@@ -8,6 +8,5 @@ namespace UrbanTrack.Api.Controllers.Requests.ProjectAttachments
         public string AttachmentType { get; set; } = string.Empty;
         public string? Caption { get; set; }
         public bool IsCover { get; set; }
-        public string UploadedByUserExternalId { get; set; } = string.Empty;
     }
 }

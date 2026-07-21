@@ -5,6 +5,6 @@ namespace SalesTracking.Application.UseCases.ProjectNotes.Models
         public string ProjectExternalId { get; set; }
         public string NoteExternalId { get; set; }
         public string Content { get; set; }
-        public string UpdatedByUserExternalId { get; set; }
+        public int UpdatedByUserId { get; set; }
     }
 }

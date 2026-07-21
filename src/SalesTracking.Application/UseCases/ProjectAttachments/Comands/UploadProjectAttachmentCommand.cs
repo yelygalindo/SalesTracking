@@ -1,4 +1,4 @@
-﻿namespace SalesTracking.Application.UseCases.ProjectAttachments.Comands
+namespace SalesTracking.Application.UseCases.ProjectAttachments.Comands
 {
     public sealed class UploadProjectAttachmentCommand
     {
@@ -10,6 +10,6 @@
         public string AttachmentType { get; set; } = string.Empty;
         public string? Caption { get; set; }
         public bool IsCover { get; set; }
-        public string UploadedByUserExternalId { get; set; } = string.Empty;
+        public int UploadedByUserId { get; set; }
     }
 }

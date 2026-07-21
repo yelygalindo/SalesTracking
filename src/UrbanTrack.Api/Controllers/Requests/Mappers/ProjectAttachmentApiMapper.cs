@@ -1,4 +1,4 @@
-﻿using SalesTracking.Application.UseCases.ProjectAttachments.Comands;
+using SalesTracking.Application.UseCases.ProjectAttachments.Comands;
 using SalesTracking.Application.UseCases.ProjectAttachments.Results;
 using UrbanTrack.Api.Controllers.Requests.ProjectAttachments;
 using UrbanTrack.Api.Controllers.Responses.Common;
@@ -10,7 +10,8 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
     {
         public static UploadProjectAttachmentCommand ToApplication(
             this UploadProjectAttachmentRequest request,
-            string projectExternalId)
+            string projectExternalId,
+            int uploadedByUserId)
         {
             return new UploadProjectAttachmentCommand
             {
@@ -22,19 +23,20 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 AttachmentType = request.AttachmentType,
                 Caption = request.Caption,
                 IsCover = request.IsCover,
-                UploadedByUserExternalId = request.UploadedByUserExternalId
+                UploadedByUserId = uploadedByUserId
             };
         }
 
         public static SetProjectAttachmentCoverCommand ToApplication(
             this SetProjectAttachmentCoverRequest request,
             string projectExternalId,
-            string attachmentExternalId)
+            string attachmentExternalId,
+            int updatedByUserId)
         {
             return new SetProjectAttachmentCoverCommand(
                 projectExternalId,
                 attachmentExternalId,
-                request.UpdatedByUserExternalId);
+                updatedByUserId);
         }
 
         public static ProjectAttachmentResponse ToResponse(this ProjectAttachmentResult result)

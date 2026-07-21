@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.UseCases.CustomerNotes.Comands;
 using SalesTracking.Application.UseCases.CustomerNotes.Interfaces;
 using SalesTracking.Application.UseCases.CustomerNotes.Results;
@@ -17,10 +18,12 @@ namespace UrbanTrack.Api.Controllers
     public class CustomerNotesController : ControllerBase
     {
         private readonly ICustomerNoteService _service;
+        private readonly ICurrentUser _currentUser;
 
-        public CustomerNotesController(ICustomerNoteService service)
+        public CustomerNotesController(ICustomerNoteService service, ICurrentUser currentUser)
         {
             _service = service;
+            _currentUser = currentUser;
         }
 
         [HttpGet]
@@ -41,7 +44,7 @@ namespace UrbanTrack.Api.Controllers
             string customerExternalId,
             [FromBody] CustomerNoteRequest request)
         {
-            AddCustomerNoteResult result = await _service.AddNoteAsync(request.ToApplication(customerExternalId));
+            AddCustomerNoteResult result = await _service.AddNoteAsync(request.ToApplication(customerExternalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.UseCases.Projects.Comands;
 using SalesTracking.Application.UseCases.Projects.Interfaces;
 using SalesTracking.Application.UseCases.Projects.Results;
@@ -17,10 +18,12 @@ namespace UrbanTrack.Api.Controllers
     {
 
         private readonly IProjectService _projectService;
+        private readonly ICurrentUser _currentUser;
 
-        public ProjectsController(IProjectService projectService)
+        public ProjectsController(IProjectService projectService, ICurrentUser currentUser)
         {
             _projectService = projectService;
+            _currentUser = currentUser;
         }
 
         [HttpPost]
@@ -28,7 +31,7 @@ namespace UrbanTrack.Api.Controllers
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ProjectDetailResponse>> Create([FromBody] CreateProjectRequest request)
         {
-            var result = await _projectService.CreateAsync(request.ToApplication());
+            var result = await _projectService.CreateAsync(request.ToApplication(_currentUser.UserId.GetValueOrDefault()));
 
             if (result == null || !result.Succeeded)
                 return BadRequest(new MessageResponse { Message = result?.Message ?? "No se pudo crear el proyecto." });
@@ -88,7 +91,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] UpdateProjectRequest request)
         {
             UpdateProjectResult result = await _projectService.UpdateAsync(
-                request.ToApplication(externalId));
+                request.ToApplication(externalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {
@@ -110,7 +113,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] ChangeProjectStatusRequest request)
         {
             ChangeProjectStatusResult result = await _projectService.ChangeStatusAsync(
-                request.ToApplication(externalId));
+                request.ToApplication(externalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {

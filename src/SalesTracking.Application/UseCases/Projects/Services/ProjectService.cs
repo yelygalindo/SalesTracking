@@ -1,4 +1,4 @@
-﻿using SalesTracking.Application.Common.ExternalIds;
+using SalesTracking.Application.Common.ExternalIds;
 using SalesTracking.Application.UseCases.Projects.Comands;
 using SalesTracking.Application.UseCases.Projects.Interfaces;
 using SalesTracking.Application.UseCases.Projects.Results;
@@ -97,7 +97,7 @@ namespace SalesTracking.Application.UseCases.Projects.Services
                 command.Latitude,
                 command.Longitude);
 
-            return await _projectRepository.CreateAsync(project);
+            return await _projectRepository.CreateAsync(project, command.CreatedByUserId);
         }       
 
         public async Task<ProjectPagedList> GetAsync(GetProjectsCommand command)
@@ -209,7 +209,8 @@ namespace SalesTracking.Application.UseCases.Projects.Services
                 ActualCloseDateUtc = command.ActualCloseDateUtc,
                 Address = command.Address?.Trim(),
                 Latitude = command.Latitude,
-                Longitude = command.Longitude
+                Longitude = command.Longitude,
+                UpdatedByUserId = command.UpdatedByUserId
             };
 
             return await _projectRepository.UpdateAsync(normalizedCommand);
@@ -238,7 +239,8 @@ namespace SalesTracking.Application.UseCases.Projects.Services
             var normalizedCommand = new ChangeProjectStatusCommand
             {
                 ExternalId = command.ExternalId.Trim(),
-                StatusId = command.StatusId
+                StatusId = command.StatusId,
+                ChangedByUserId = command.ChangedByUserId
             };
 
             return await _projectRepository.ChangeStatusAsync(normalizedCommand);

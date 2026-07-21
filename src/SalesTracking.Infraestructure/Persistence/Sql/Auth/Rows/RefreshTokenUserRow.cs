@@ -1,9 +1,10 @@
-﻿namespace SalesTracking.Infrastructure.Persistence.Sql.Auth.Rows
+namespace SalesTracking.Infrastructure.Persistence.Sql.Auth.Rows
 {
     public class RefreshTokenUserRow
     {
         public int RefreshTokenId { get; set; }
         public int UserId { get; set; }
+        public string ExternalId { get; set; }
         public string Username { get; set; }
         public string Email { get; set; }
         public string FullName { get; set; }

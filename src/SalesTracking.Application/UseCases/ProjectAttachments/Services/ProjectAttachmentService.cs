@@ -1,4 +1,4 @@
-﻿using SalesTracking.Application.Common.ExternalIds;
+using SalesTracking.Application.Common.ExternalIds;
 using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.Common.Models;
 using SalesTracking.Application.UseCases.ProjectAttachments.Comands;
@@ -115,7 +115,7 @@ namespace SalesTracking.Application.UseCases.ProjectAttachments.Services
                 AttachmentType = NormalizeAttachmentType(command.AttachmentType),
                 Caption = command.Caption?.Trim(),
                 IsCover = command.IsCover,
-                UploadedByUserExternalId = command.UploadedByUserExternalId.Trim()
+                UploadedByUserId = command.UploadedByUserId
             };
 
             UploadProjectAttachmentResult result = await _projectAttachmentRepository.CreateAsync(attachment);
@@ -130,7 +130,7 @@ namespace SalesTracking.Application.UseCases.ProjectAttachments.Services
             if (command == null ||
                 string.IsNullOrWhiteSpace(command.ProjectExternalId) ||
                 string.IsNullOrWhiteSpace(command.AttachmentExternalId) ||
-                string.IsNullOrWhiteSpace(command.DeletedByUserExternalId))
+                command.DeletedByUserId <= 0)
             {
                 return new DeleteProjectAttachmentResult
                 {
@@ -142,7 +142,7 @@ namespace SalesTracking.Application.UseCases.ProjectAttachments.Services
             return await _projectAttachmentRepository.DeleteAsync(new DeleteProjectAttachmentCommand(
                 command.ProjectExternalId.Trim(),
                 command.AttachmentExternalId.Trim(),
-                command.DeletedByUserExternalId.Trim()));
+                command.DeletedByUserId));
         }
 
         public async Task<SetProjectAttachmentCoverResult> SetCoverAsync(SetProjectAttachmentCoverCommand command)
@@ -150,7 +150,7 @@ namespace SalesTracking.Application.UseCases.ProjectAttachments.Services
             if (command == null ||
                 string.IsNullOrWhiteSpace(command.ProjectExternalId) ||
                 string.IsNullOrWhiteSpace(command.AttachmentExternalId) ||
-                string.IsNullOrWhiteSpace(command.UpdatedByUserExternalId))
+                command.UpdatedByUserId <= 0)
             {
                 return new SetProjectAttachmentCoverResult
                 {
@@ -162,7 +162,7 @@ namespace SalesTracking.Application.UseCases.ProjectAttachments.Services
             return await _projectAttachmentRepository.SetCoverAsync(new SetProjectAttachmentCoverCommand(
                 command.ProjectExternalId.Trim(),
                 command.AttachmentExternalId.Trim(),
-                command.UpdatedByUserExternalId.Trim()));
+                command.UpdatedByUserId));
         }
 
         private static UploadProjectAttachmentResult? ValidateUpload(UploadProjectAttachmentCommand command)
@@ -173,7 +173,7 @@ namespace SalesTracking.Application.UseCases.ProjectAttachments.Services
             if (string.IsNullOrWhiteSpace(command.ProjectExternalId))
                 return FailedUpload("El proyecto es requerido.");
 
-            if (string.IsNullOrWhiteSpace(command.UploadedByUserExternalId))
+            if (command.UploadedByUserId <= 0)
                 return FailedUpload("El usuario que sube el archivo es requerido.");
 
             if (command.Content == null || command.Content == Stream.Null || command.SizeBytes <= 0)

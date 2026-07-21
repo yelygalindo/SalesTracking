@@ -44,7 +44,7 @@ namespace SalesTracking.Application.UseCases.ProjectNotes.Services
                 };
             }
 
-            if (string.IsNullOrWhiteSpace(command.AuthorExternalId))
+            if (command.AuthorUserId <= 0)
             {
                 return new AddProjectNoteResult
                 {
@@ -58,7 +58,7 @@ namespace SalesTracking.Application.UseCases.ProjectNotes.Services
                 ExternalId = ExternalIdGenerator.New(ExternalIdPrefixes.ProjectNote),
                 ProjectExternalId = command.ProjectExternalId.Trim(),
                 Content = command.Content.Trim(),
-                AuthorExternalId = command.AuthorExternalId.Trim()
+                AuthorUserId = command.AuthorUserId
             };
 
             ResponseCreateProjectNote created = await _projectNoteRepository.AddNoteAsync(note);
@@ -119,7 +119,7 @@ namespace SalesTracking.Application.UseCases.ProjectNotes.Services
                 };
             }
 
-            if (string.IsNullOrWhiteSpace(command.UpdatedByUserExternalId))
+            if (command.UpdatedByUserId <= 0)
             {
                 return new UpdateProjectNoteResult
                 {
@@ -133,7 +133,7 @@ namespace SalesTracking.Application.UseCases.ProjectNotes.Services
                 ProjectExternalId = command.ProjectExternalId.Trim(),
                 NoteExternalId = command.NoteExternalId.Trim(),
                 Content = command.Content.Trim(),
-                UpdatedByUserExternalId = command.UpdatedByUserExternalId.Trim()
+                UpdatedByUserId = command.UpdatedByUserId
             };
 
             ResponseUpdateProjectNote updated = await _projectNoteRepository.UpdateNoteAsync(note);

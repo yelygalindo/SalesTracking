@@ -4,6 +4,6 @@ namespace SalesTracking.Application.UseCases.ProjectNotes.Comands
     {
         public string ProjectExternalId { get; set; }
         public string Content { get; set; }
-        public string AuthorExternalId { get; set; }
+        public int AuthorUserId { get; set; }
     }
 }

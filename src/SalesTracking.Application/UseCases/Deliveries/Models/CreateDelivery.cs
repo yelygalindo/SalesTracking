@@ -9,6 +9,7 @@ namespace SalesTracking.Application.UseCases.Deliveries.Models
         public DateTime CommittedDateUtc { get; set; }
         public DateTime? DeliveredDateUtc { get; set; }
         public string? Notes { get; set; }
+        public int CreatedByUserId { get; set; }
         public IReadOnlyList<CreateDeliveryItem> Items { get; set; } = new List<CreateDeliveryItem>();
     }
 

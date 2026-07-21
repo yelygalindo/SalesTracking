@@ -1,4 +1,4 @@
-﻿using SalesTracking.Application.Common.ExternalIds;
+using SalesTracking.Application.Common.ExternalIds;
 using SalesTracking.Application.UseCases.Deliveries.Comands;
 using SalesTracking.Application.UseCases.Deliveries.Interfaces;
 using SalesTracking.Application.UseCases.Deliveries.Models;
@@ -59,6 +59,7 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
                 CommittedDateUtc = command.CommittedDateUtc,
                 DeliveredDateUtc = NormalizeDeliveredDate(statusId, command.DeliveredDateUtc),
                 Notes = command.Notes?.Trim(),
+                CreatedByUserId = command.CreatedByUserId,
                 Items = command.Items.Select(x => new CreateDeliveryItem
                 {
                     ExternalId = ExternalIdGenerator.New(ExternalIdPrefixes.DeliveryItem),
@@ -140,7 +141,8 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
             {
                 ExternalId = command.ExternalId.Trim(),
                 StatusId = command.StatusId,
-                DeliveredDateUtc = NormalizeDeliveredDate(command.StatusId, command.DeliveredDateUtc)
+                DeliveredDateUtc = NormalizeDeliveredDate(command.StatusId, command.DeliveredDateUtc),
+                ChangedByUserId = command.ChangedByUserId
             });
         }
 
@@ -194,6 +196,7 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
                 DeliveryExternalId = command.DeliveryExternalId.Trim(),
                 ReceivedAtUtc = command.ReceivedAtUtc,
                 Notes = command.Notes?.Trim(),
+                CreatedByUserId = command.CreatedByUserId,
                 Items = itemList
                     .GroupBy(x => x.DeliveryItemExternalId.Trim())
                     .Select(x => new ConfirmDeliveryReceiptItemCommand

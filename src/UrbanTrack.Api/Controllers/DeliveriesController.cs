@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.UseCases.Deliveries.Comands;
 using SalesTracking.Application.UseCases.Deliveries.Interfaces;
 using SalesTracking.Application.UseCases.Deliveries.Models;
@@ -17,10 +18,12 @@ namespace UrbanTrack.Api.Controllers
     public sealed class DeliveriesController : ControllerBase
     {
         private readonly IDeliveryService _deliveryService;
+        private readonly ICurrentUser _currentUser;
 
-        public DeliveriesController(IDeliveryService deliveryService)
+        public DeliveriesController(IDeliveryService deliveryService, ICurrentUser currentUser)
         {
             _deliveryService = deliveryService;
+            _currentUser = currentUser;
         }
 
         [HttpGet]
@@ -59,7 +62,7 @@ namespace UrbanTrack.Api.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IdMessageResponse>> Create([FromBody] CreateDeliveryRequest request)
         {
-            CreateDeliveryResult result = await _deliveryService.CreateAsync(request.ToApplication());
+            CreateDeliveryResult result = await _deliveryService.CreateAsync(request.ToApplication(_currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {
@@ -103,7 +106,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] ChangeDeliveryStatusRequest request)
         {
             ChangeDeliveryStatusResult result = await _deliveryService.ChangeStatusAsync(
-                request.ToApplication(deliveryExternalId));
+                request.ToApplication(deliveryExternalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {
@@ -126,7 +129,7 @@ namespace UrbanTrack.Api.Controllers
             [FromBody] ConfirmDeliveryReceiptRequest request)
         {
             ConfirmDeliveryReceiptResult result = await _deliveryService.ConfirmReceiptAsync(
-                request.ToApplication(deliveryExternalId));
+                request.ToApplication(deliveryExternalId, _currentUser.UserId.GetValueOrDefault()));
 
             if (!result.Succeeded)
             {
