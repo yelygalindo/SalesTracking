@@ -1,7 +1,9 @@
-﻿namespace UrbanTrack.Api.Controllers.Requests.AuthRequests
+using System.ComponentModel.DataAnnotations;
+
+namespace UrbanTrack.Api.Controllers.Requests.AuthRequests;
+
+public class RefreshTokenRequest
 {
-    public class RefreshTokenRequest
-    {
-        public string RefreshToken { get; set; }
-    }
+    [Required]
+    public string RefreshToken { get; set; } = string.Empty;
 }

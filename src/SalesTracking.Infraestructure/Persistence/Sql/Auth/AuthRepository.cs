@@ -6,6 +6,7 @@ using SalesTracking.Application.UseCases.Authentication.Interfaces;
 using SalesTracking.Application.UseCases.Authentication.Models;
 using SalesTracking.Domain.Entities;
 using SalesTracking.Infrastructure.Persistence.Settings;
+using SalesTracking.Infrastructure.Persistence.Security;
 using SalesTracking.Infrastructure.Persistence.Sql.Auth.Mappers;
 using SalesTracking.Infrastructure.Persistence.Sql.Auth.Rows;
 using System.Data;
@@ -58,7 +59,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
             using var conn = CreateConnection();
             var affectedRows = await conn.ExecuteAsync(AuthRepositoryQueries.RevokeRefreshToken, new
             {
-                TokenHash = refreshToken
+                TokenHash = TokenHasher.Hash(refreshToken.Trim())
             });
 
             return affectedRows > 0;
@@ -68,18 +69,25 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
         {
             if (string.IsNullOrWhiteSpace(lastToken))
                 return null;
-            using var conn = CreateConnection();
+            using var conn = (SqlConnection)CreateConnection();
+            await conn.OpenAsync();
+            using SqlTransaction transaction = conn.BeginTransaction(IsolationLevel.Serializable);
 
             RefreshTokenUserRow? existingToken = await conn.QueryFirstOrDefaultAsync<RefreshTokenUserRow>(
                 AuthRepositoryQueries.SelectRefreshTokenWithUser,
-                new { TokenHash = lastToken });
+                new { TokenHash = TokenHasher.Hash(lastToken.Trim()) },
+                transaction);
 
             if (existingToken == null)
+            {
+                transaction.Rollback();
                 return null;
+            }
 
             if (existingToken.RevokedAtUtc != null ||
                 existingToken.ExpiresAtUtc <= DateTime.UtcNow)
             {
+                transaction.Rollback();
                 return null;
             }
 
@@ -90,19 +98,28 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
 
             var accessToken = _tokenGenerator.GenerateAccessToken(user, accessTokenExpiresAtUtc);
             var refreshToken = _tokenGenerator.GenerateRefreshToken();
+            string refreshTokenHash = TokenHasher.Hash(refreshToken);
 
-            await conn.ExecuteAsync(AuthRepositoryQueries.UpdateOldRefreshToken, new
+            int rotated = await conn.ExecuteAsync(AuthRepositoryQueries.UpdateOldRefreshToken, new
             {
                 RefreshTokenId = existingToken.RefreshTokenId,
-                NewTokenHash = refreshToken
-            });
+                NewTokenHash = refreshTokenHash
+            }, transaction);
+
+            if (rotated != 1)
+            {
+                transaction.Rollback();
+                return null;
+            }
 
             await conn.ExecuteAsync(AuthRepositoryQueries.InsertNewRefreshToken, new
             {
                 existingToken.UserId,
-                TokenHash = refreshToken,
+                TokenHash = refreshTokenHash,
                 ExpiresAtUtc = refreshTokenExpiresAtUtc
-            });
+            }, transaction);
+
+            transaction.Commit();
 
             return new AuthTokens
             {
@@ -129,12 +146,12 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
                 return null;
 
             string token = _tokenGenerator.GeneratePasswordResetToken();
-            DateTime expiresAtUtc = DateTime.UtcNow.AddDays(_authSettings.RefreshTokenExpirationDays);
+            DateTime expiresAtUtc = DateTime.UtcNow.AddHours(_authSettings.PasswordResetTokenExpirationHours);
 
             await conn.ExecuteAsync(AuthRepositoryQueries.InsertPasswordResetToken, new
             {
                 UserId = userId.Value,
-                TokenHash = token,
+                TokenHash = TokenHasher.Hash(token),
                 ExpiresAtUtc = expiresAtUtc
             });
 
@@ -151,34 +168,57 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
             if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(newPassword))
                 return false;
 
-            using var conn = CreateConnection();
+            using var conn = (SqlConnection)CreateConnection();
+            await conn.OpenAsync();
+            using SqlTransaction transaction = conn.BeginTransaction(IsolationLevel.Serializable);
             PasswordResetTokenRow? resetToken = await conn.QueryFirstOrDefaultAsync<PasswordResetTokenRow>(
                 AuthRepositoryQueries.SelectPasswordResetToken,
-                new { TokenHash = token });
+                new { TokenHash = TokenHasher.Hash(token.Trim()) },
+                transaction);
 
             if (resetToken == null)
+            {
+                transaction.Rollback();
                 return false;
+            }
 
             if (resetToken.UsedAtUtc != null ||
                 resetToken.ExpiresAtUtc <= DateTime.UtcNow)
             {
+                transaction.Rollback();
                 return false;
             }
 
             string passwordHash = _passwordHasher.Hash(newPassword);
+            int consumed = await conn.ExecuteAsync(AuthRepositoryQueries.MarkPasswordResetTokenUsed, new
+            {
+                resetToken.Id
+            }, transaction);
+
+            if (consumed != 1)
+            {
+                transaction.Rollback();
+                return false;
+            }
+
             var affectedUsers = await conn.ExecuteAsync(AuthRepositoryQueries.UpdateUserPassword, new
             {
                 resetToken.UserId,
                 PasswordHash = passwordHash
-            });
+            }, transaction);
 
             if (affectedUsers == 0)
-                return false;
-
-            await conn.ExecuteAsync(AuthRepositoryQueries.MarkPasswordResetTokenUsed, new
             {
-                resetToken.Id
-            });
+                transaction.Rollback();
+                return false;
+            }
+
+            await conn.ExecuteAsync(
+                AuthRepositoryQueries.RevokeUserRefreshTokens,
+                new { resetToken.UserId },
+                transaction);
+
+            transaction.Commit();
 
             return true;
         }             
@@ -200,7 +240,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
             await conn.ExecuteAsync(AuthRepositoryQueries.InsertRefreshToken, new
             {
                 UserId = user.Id,
-                TokenHash = refreshToken,
+                TokenHash = TokenHasher.Hash(refreshToken),
                 ExpiresAtUtc = refreshTokenExpiresAtUtc
             });
 

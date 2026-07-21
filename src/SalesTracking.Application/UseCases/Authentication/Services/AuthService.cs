@@ -13,9 +13,12 @@ namespace SalesTracking.Application.UseCases.Authentication.Services
             _repo = repo;
         }
 
-        public async Task<LoginResult> LoginAsync(LoginCommand loginCommand)
+        public async Task<LoginResult?> LoginAsync(LoginCommand loginCommand)
         {
-            var auth = await _repo.ValidateCredentialsAsync(loginCommand.Email, loginCommand.Password);
+            if (loginCommand == null || string.IsNullOrWhiteSpace(loginCommand.Email) || string.IsNullOrWhiteSpace(loginCommand.Password))
+                return null;
+
+            var auth = await _repo.ValidateCredentialsAsync(loginCommand.Email.Trim(), loginCommand.Password);
             if (auth == null)
                 return null;
 
@@ -45,13 +48,19 @@ namespace SalesTracking.Application.UseCases.Authentication.Services
 
         public async Task<LogoutResult> LogoutAsync(LogoutComand logoutComand)
         {
-            var ok = await _repo.RevokeRefreshTokenAsync(logoutComand.RefreshToken);
+            if (logoutComand == null || string.IsNullOrWhiteSpace(logoutComand.RefreshToken))
+                return new LogoutResult { Message = "El refresh token es requerido." };
+
+            var ok = await _repo.RevokeRefreshTokenAsync(logoutComand.RefreshToken.Trim());
             return new LogoutResult { Message = ok ? "Sesión cerrada" : "Token no encontrado" };
         }
 
-        public async Task<RefreshTokenResult> RefreshTokenAsync(RefreshTokenComand refreshTokenComand)
+        public async Task<RefreshTokenResult?> RefreshTokenAsync(RefreshTokenComand refreshTokenComand)
         {
-            var tokenResult = await _repo.RefreshTokensAsync(refreshTokenComand.RefreshToken);
+            if (refreshTokenComand == null || string.IsNullOrWhiteSpace(refreshTokenComand.RefreshToken))
+                return null;
+
+            var tokenResult = await _repo.RefreshTokensAsync(refreshTokenComand.RefreshToken.Trim());
             if (tokenResult == null)
                 return null;
 
@@ -65,17 +74,29 @@ namespace SalesTracking.Application.UseCases.Authentication.Services
 
         public async Task<ResetPasswordResult> ResetPasswordAsync(ResetPasswordComand resetPasswordComand)
         {
-            var ok = await _repo.ResetPasswordAsync(resetPasswordComand.Token, resetPasswordComand.NewPassword);
-            return new ResetPasswordResult { Message = ok ? "Contraseña restablecida" : "Token inválido o expirado" };
+            if (resetPasswordComand == null || string.IsNullOrWhiteSpace(resetPasswordComand.Token))
+                return new ResetPasswordResult { Succeeded = false, Message = "Token inválido o expirado" };
+
+            if (string.IsNullOrWhiteSpace(resetPasswordComand.NewPassword) || resetPasswordComand.NewPassword.Length < 8)
+                return new ResetPasswordResult { Succeeded = false, Message = "La contraseña debe tener al menos 8 caracteres" };
+
+            var ok = await _repo.ResetPasswordAsync(resetPasswordComand.Token.Trim(), resetPasswordComand.NewPassword);
+            return new ResetPasswordResult
+            {
+                Succeeded = ok,
+                Message = ok ? "Contraseña restablecida" : "Token inválido o expirado"
+            };
         }
 
         public async Task<ForgotPasswordResult> ForgotPasswordAsync(ForgotPasswordComand forgotPasswordComand)
         {
-            var result = await _repo.SendForgotPasswordAsync(forgotPasswordComand.Email);
-            if (result == null)
-                return new ForgotPasswordResult { Message = "No se pudo procesar la solicitud" };
-            //enviar el correo con el tokenHash para que el usuario pueda resetear la contraseña.
-            return new ForgotPasswordResult { Message = $"Instrucciones enviada, token : {result.Token}" };
+            const string message = "Si el correo está registrado, recibirás instrucciones para restablecer tu contraseña.";
+
+            if (forgotPasswordComand == null || string.IsNullOrWhiteSpace(forgotPasswordComand.Email))
+                return new ForgotPasswordResult { Message = message };
+
+            await _repo.SendForgotPasswordAsync(forgotPasswordComand.Email.Trim());
+            return new ForgotPasswordResult { Message = message };
         }
     }
 }

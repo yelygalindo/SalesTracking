@@ -1,7 +1,10 @@
-﻿namespace UrbanTrack.Api.Controllers.Requests.AuthRequests
+using System.ComponentModel.DataAnnotations;
+
+namespace UrbanTrack.Api.Controllers.Requests.AuthRequests;
+
+public class ForgotPasswordRequest
 {
-    public class ForgotPasswordRequest
-    {
-        public string Email { get; set; }
-    }
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
 }

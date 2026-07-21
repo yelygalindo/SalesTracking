@@ -64,8 +64,7 @@ namespace SalesTracking.Infrastructure.Persistence.Security
         private static string GenerateSecureToken()
         {
             var bytes = RandomNumberGenerator.GetBytes(64);
-
-            return Convert.ToBase64String(bytes);
+            return Base64UrlEncoder.Encode(bytes);
         }
     }
 }

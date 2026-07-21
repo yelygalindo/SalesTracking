@@ -21,10 +21,12 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
                     c.Id AS CompanyId,
                     c.ExternalId AS CompanyExternalId,
                     c.Name AS CompanyName
-                FROM RefreshTokens rt
+                FROM RefreshTokens rt WITH (UPDLOCK, ROWLOCK)
                 INNER JOIN Users u ON rt.UserId = u.Id
                 LEFT JOIN Companies c ON u.CompanyId = c.Id
                 WHERE rt.TokenHash = @TokenHash
+                  AND rt.RevokedAtUtc IS NULL
+                  AND rt.ExpiresAtUtc > SYSUTCDATETIME()
                   AND u.IsActive = 1;";
 
         public const string UpdateOldRefreshToken = @"
@@ -32,7 +34,14 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
                 SET 
                     RevokedAtUtc = SYSUTCDATETIME(),
                     ReplacedByTokenHash = @NewTokenHash
-                WHERE Id = @RefreshTokenId;";
+                WHERE Id = @RefreshTokenId
+                  AND RevokedAtUtc IS NULL;";
+
+        public const string RevokeUserRefreshTokens = @"
+                UPDATE RefreshTokens
+                SET RevokedAtUtc = SYSUTCDATETIME()
+                WHERE UserId = @UserId
+                  AND RevokedAtUtc IS NULL;";
 
         public const string InsertNewRefreshToken = @"
                 INSERT INTO RefreshTokens (
@@ -55,6 +64,11 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
                   AND IsActive = 1;";
 
         public const string InsertPasswordResetToken = @"
+                UPDATE PasswordResetTokens
+                SET UsedAtUtc = SYSUTCDATETIME()
+                WHERE UserId = @UserId
+                  AND UsedAtUtc IS NULL;
+
                 INSERT INTO PasswordResetTokens (
                     UserId,
                     TokenHash,
@@ -74,8 +88,10 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
                     UserId,
                     ExpiresAtUtc,
                     UsedAtUtc
-                FROM PasswordResetTokens
-                WHERE TokenHash = @TokenHash;";
+                FROM PasswordResetTokens WITH (UPDLOCK, ROWLOCK)
+                WHERE TokenHash = @TokenHash
+                  AND UsedAtUtc IS NULL
+                  AND ExpiresAtUtc > SYSUTCDATETIME();";
 
         public const string UpdateUserPassword = @"
                 UPDATE Users
@@ -86,7 +102,9 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
         public const string MarkPasswordResetTokenUsed = @"
                 UPDATE PasswordResetTokens
                 SET UsedAtUtc = SYSUTCDATETIME()
-                WHERE Id = @Id;";
+                WHERE Id = @Id
+                  AND UsedAtUtc IS NULL
+                  AND ExpiresAtUtc > SYSUTCDATETIME();";
 
         public const string GetUserById = @"
                 SELECT 

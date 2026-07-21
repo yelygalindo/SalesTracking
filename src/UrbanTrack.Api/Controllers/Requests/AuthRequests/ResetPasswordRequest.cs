@@ -1,9 +1,17 @@
-﻿namespace UrbanTrack.Api.Controllers.Requests.AuthRequests
+using System.ComponentModel.DataAnnotations;
+
+namespace UrbanTrack.Api.Controllers.Requests.AuthRequests;
+
+public class ResetPasswordRequest
 {
-    public class ResetPasswordRequest
-    {
-        public string Token { get; set; }
-        public string NewPassword { get; set; }
-        public string ConfirmPassword { get; set; }
-    }
+    [Required]
+    public string Token { get; set; } = string.Empty;
+
+    [Required]
+    [MinLength(8)]
+    public string NewPassword { get; set; } = string.Empty;
+
+    [Required]
+    [Compare(nameof(NewPassword))]
+    public string ConfirmPassword { get; set; } = string.Empty;
 }

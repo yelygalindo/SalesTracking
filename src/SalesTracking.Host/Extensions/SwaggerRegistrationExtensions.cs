@@ -15,8 +15,8 @@ namespace SalesTracking.Host.Extensions
                              new OpenApiInfo
                              {
                                  Version = "v1",
-                                 Title = "Voltron API",
-                                 Description = "Voltron Web Api."
+                                 Title = "SalesTracking API",
+                                 Description = "SalesTracking Web API."
                              });
 
                 options.TagActionsBy(api =>

@@ -12,6 +12,7 @@ using UrbanTrack.Api.Controllers.Responses.Mappers;
 namespace UrbanTrack.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/auth")]
     public class AuthController : ControllerBase
     {
@@ -27,8 +28,8 @@ namespace UrbanTrack.Api.Controllers
         [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
         public async Task<ActionResult> Login([FromBody] LoginRequest request)
         {
-            LoginResult resp = await _service.LoginAsync(request.ToApplication());
-            if (resp == null) return NotFound(new MessageResponse { Message = "Usuario no encontrado." });
+            LoginResult? resp = await _service.LoginAsync(request.ToApplication());
+            if (resp == null) return StatusCode(StatusCodes.Status401Unauthorized, new MessageResponse { Message = "Credenciales inválidas." });
             return Ok(resp.ToResponse());
         }
 
@@ -46,8 +47,8 @@ namespace UrbanTrack.Api.Controllers
         [ProducesResponseType(typeof(RefreshTokenResponse), StatusCodes.Status200OK)]
         public async Task<ActionResult<RefreshTokenResponse>> RefreshToken([FromBody] RefreshTokenRequest request)
         {
-            RefreshTokenResult resp = await _service.RefreshTokenAsync(request.ToApplication());
-            if (resp == null) return NotFound(new MessageResponse { Message = "Usuario no encontrado." });
+            RefreshTokenResult? resp = await _service.RefreshTokenAsync(request.ToApplication());
+            if (resp == null) return StatusCode(StatusCodes.Status401Unauthorized, new MessageResponse { Message = "Refresh token inválido o expirado." });
             return Ok(resp.ToResponse());
         }
 
@@ -66,8 +67,13 @@ namespace UrbanTrack.Api.Controllers
         [ProducesResponseType(typeof(ResetPasswordResponse), StatusCodes.Status200OK)]
         public async Task<ActionResult<ResetPasswordResponse>> ResetPassword([FromBody] ResetPasswordRequest request)
         {
+            if (request.NewPassword != request.ConfirmPassword)
+                return BadRequest(new MessageResponse { Message = "Las contraseñas no coinciden." });
+
             ResetPasswordResult resp = await _service.ResetPasswordAsync(request.ToApplication());
-            if (resp == null) return NotFound(new MessageResponse { Message = "Usuario no encontrado." });
+            if (!resp.Succeeded)
+                return BadRequest(resp.ToResponse());
+
             return Ok(resp.ToResponse());
         }
     }
