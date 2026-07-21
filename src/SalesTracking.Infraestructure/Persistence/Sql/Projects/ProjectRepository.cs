@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using SalesTracking.Application.UseCases.Projects.Comands;
 using SalesTracking.Application.UseCases.Projects.Interfaces;
 using SalesTracking.Application.UseCases.Projects.Results;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Domain.Entities;
 using SalesTracking.Domain.Enums;
 using SalesTracking.Infrastructure.Persistence.Settings;
@@ -17,12 +18,16 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
     public sealed class ProjectRepository : IProjectRepository
     {
         private readonly DatabaseSettings _databaseOptions;
+        private readonly ICurrentUser _currentUser;
 
-        public ProjectRepository(IOptions<DatabaseSettings> databaseOptions)
+        public ProjectRepository(IOptions<DatabaseSettings> databaseOptions, ICurrentUser currentUser)
         {
             _databaseOptions = databaseOptions.Value
                 ?? throw new ArgumentNullException(nameof(databaseOptions));
+            _currentUser = currentUser;
         }
+
+        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
 
         private IDbConnection CreateConnection() =>
             new SqlConnection(_databaseOptions.ConnectionString);
@@ -38,7 +43,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
             {
                 int customerExists = await connection.ExecuteScalarAsync<int>(
                     ProjectQueries.CustomerExistsByExternalId,
-                    new { CustomerExternalId = project.CustomerExternalId },
+                    new { CustomerExternalId = project.CustomerExternalId, CompanyId },
                     transaction);
 
                 if (customerExists == 0)
@@ -53,7 +58,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
 
                 int sellerExists = await connection.ExecuteScalarAsync<int>(
                     ProjectQueries.SellerExistsByExternalId,
-                    new { SellerExternalId = project.SellerExternalId },
+                    new { SellerExternalId = project.SellerExternalId, CompanyId },
                     transaction);
 
                 if (sellerExists == 0)
@@ -83,7 +88,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                         project.ActualCloseDateUtc,
                         project.Address,
                         project.Latitude,
-                        project.Longitude
+                        project.Longitude,
+                        CompanyId
                     },
                     transaction);
 
@@ -99,7 +105,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
 
                 ProjectTimelineProjectRow? createdProjectInfo = await connection.QuerySingleOrDefaultAsync<ProjectTimelineProjectRow>(
                     ProjectQueries.GetTimelineProjectByExternalId,
-                    new { ExternalId = createdId },
+                    new { ExternalId = createdId, CompanyId },
                     transaction);
 
                 if (createdProjectInfo == null)
@@ -126,7 +132,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
 
                 ProjectDetailRow? createdProject = await connection.QuerySingleOrDefaultAsync<ProjectDetailRow>(
                     ProjectQueries.GetByExternalId,
-                    new { ExternalId = createdId },
+                    new { ExternalId = createdId, CompanyId },
                     transaction);
 
                 transaction.Commit();
@@ -180,7 +186,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
 
                     StatusId = statusId,
                     Offset = (command.Page - 1) * command.PageSize,
-                    PageSize = command.PageSize
+                    PageSize = command.PageSize,
+                    CompanyId
                 })).ToList();
 
             var totalItems = rows.FirstOrDefault()?.TotalCount ?? 0;
@@ -203,7 +210,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
 
             ProjectDetailRow? row = await connection.QuerySingleOrDefaultAsync<ProjectDetailRow>(
                 ProjectQueries.GetByExternalId,
-                new { command.ExternalId });
+                new { command.ExternalId, CompanyId });
 
             return row?.ToResult();
         }
@@ -219,7 +226,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
             {
                 ProjectTimelineProjectRow? projectInfo = await connection.QuerySingleOrDefaultAsync<ProjectTimelineProjectRow>(
                     ProjectQueries.GetTimelineProjectByExternalId,
-                    new { command.ExternalId },
+                    new { command.ExternalId, CompanyId },
                     transaction);
 
                 if (projectInfo == null)
@@ -235,7 +242,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
 
                 int customerExists = await connection.ExecuteScalarAsync<int>(
                     ProjectQueries.CustomerExistsByExternalId,
-                    new { command.CustomerExternalId },
+                    new { command.CustomerExternalId, CompanyId },
                     transaction);
 
                 if (customerExists == 0)
@@ -250,7 +257,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
 
                 int? sellerInternalId = await connection.QueryFirstOrDefaultAsync<int?>(
                     ProjectQueries.GetUserInternalIdByExternalId,
-                    new { ExternalId = command.SellerExternalId },
+                    new { ExternalId = command.SellerExternalId, CompanyId },
                     transaction);
 
                 if (sellerInternalId == null)
@@ -279,7 +286,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                         command.ActualCloseDateUtc,
                         command.Address,
                         command.Latitude,
-                        command.Longitude
+                        command.Longitude,
+                        CompanyId
                     },
                     transaction);
 
@@ -351,7 +359,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
             {
                 ProjectTimelineProjectRow? projectInfo = await connection.QuerySingleOrDefaultAsync<ProjectTimelineProjectRow>(
                     ProjectQueries.GetTimelineProjectByExternalId,
-                    new { command.ExternalId },
+                    new { command.ExternalId, CompanyId },
                     transaction);
 
                 if (projectInfo == null)
@@ -385,7 +393,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                     new
                     {
                         command.ExternalId,
-                        command.StatusId
+                        command.StatusId,
+                        CompanyId
                     },
                     transaction);
 
@@ -438,7 +447,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
 
             ProjectTimelineProjectRow? project = await connection.QuerySingleOrDefaultAsync<ProjectTimelineProjectRow>(
                 ProjectQueries.GetTimelineProjectByExternalId,
-                new { command.ExternalId },
+                new { command.ExternalId, CompanyId },
                 transaction);
 
             if (project == null)
@@ -454,7 +463,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
 
             await connection.ExecuteAsync(
                 ProjectQueries.Delete,
-                new { command.ExternalId },
+                new { command.ExternalId, CompanyId },
                 transaction);
 
             await ProjectTimelineWriter.InsertAsync(

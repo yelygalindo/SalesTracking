@@ -5,6 +5,7 @@ using SalesTracking.Application.UseCases.Reports.Comands;
 using SalesTracking.Application.UseCases.Reports.Interfaces;
 using SalesTracking.Application.UseCases.Reports.Models;
 using SalesTracking.Application.UseCases.Reports.Results;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.Reports.Mappers;
 using SalesTracking.Infrastructure.Persistence.Sql.Reports.Rows;
@@ -15,11 +16,13 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Reports
     public sealed class ReportRepository : IReportRepository
     {
         private readonly DatabaseSettings _databaseOptions;
+        private readonly ICurrentUser _currentUser;
 
-        public ReportRepository(IOptions<DatabaseSettings> databaseOptions)
+        public ReportRepository(IOptions<DatabaseSettings> databaseOptions, ICurrentUser currentUser)
         {
             _databaseOptions = databaseOptions.Value
                 ?? throw new ArgumentNullException(nameof(databaseOptions));
+            _currentUser = currentUser;
         }
 
         private IDbConnection CreateConnection() =>
@@ -69,7 +72,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Reports
             return ToPagedList(rows.Select(x => x.ToResult()).ToList(), command, rows.FirstOrDefault()?.TotalCount ?? 0);
         }
 
-        private static object ToParameters(GetReportCommand command)
+        private object ToParameters(GetReportCommand command)
         {
             return new
             {
@@ -78,7 +81,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Reports
                 command.SellerExternalId,
                 command.StatusId,
                 Offset = (command.Page - 1) * command.PageSize,
-                command.PageSize
+                command.PageSize,
+                CompanyId = _currentUser.CompanyId.GetValueOrDefault()
             };
         }
 

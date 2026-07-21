@@ -16,6 +16,7 @@ SELECT
     COUNT(1) OVER() AS TotalCount
 FROM Units u
 WHERE u.IsDeleted = 0
+  AND u.CompanyId = @CompanyId
   AND (
       @Search IS NULL
       OR u.Name LIKE '%' + @Search + '%'
@@ -39,6 +40,7 @@ SELECT TOP 1
     u.UpdatedAtUtc
 FROM Units u
 WHERE u.IsDeleted = 0
+  AND u.CompanyId = @CompanyId
   AND u.ExternalId = @ExternalId;";
 
         public const string Create = @"
@@ -51,6 +53,7 @@ INSERT INTO Units (
     IsActive,
     CreatedAtUtc,
     IsDeleted
+    ,CompanyId
 )
 OUTPUT INSERTED.ExternalId
 VALUES (
@@ -61,7 +64,8 @@ VALUES (
     @AllowsDecimals,
     @IsActive,
     SYSUTCDATETIME(),
-    0
+    0,
+    @CompanyId
 );";
 
         public const string Update = @"
@@ -74,6 +78,7 @@ SET
     IsActive = @IsActive,
     UpdatedAtUtc = SYSUTCDATETIME()
 WHERE IsDeleted = 0
+  AND CompanyId = @CompanyId
   AND ExternalId = @ExternalId;";
 
         public const string Delete = @"
@@ -82,6 +87,7 @@ SET
     IsDeleted = 1,
     UpdatedAtUtc = SYSUTCDATETIME()
 WHERE IsDeleted = 0
+  AND CompanyId = @CompanyId
   AND ExternalId = @ExternalId;";
     }
 }

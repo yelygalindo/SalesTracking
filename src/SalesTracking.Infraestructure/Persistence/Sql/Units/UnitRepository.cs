@@ -5,6 +5,7 @@ using SalesTracking.Application.UseCases.Units.Comands;
 using SalesTracking.Application.UseCases.Units.Interfaces;
 using SalesTracking.Application.UseCases.Units.Models;
 using SalesTracking.Application.UseCases.Units.Results;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.Units.Mappers;
 using SalesTracking.Infrastructure.Persistence.Sql.Units.Rows;
@@ -15,12 +16,16 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Units
     public sealed class UnitRepository : IUnitRepository
     {
         private readonly DatabaseSettings _databaseOptions;
+        private readonly ICurrentUser _currentUser;
 
-        public UnitRepository(IOptions<DatabaseSettings> databaseOptions)
+        public UnitRepository(IOptions<DatabaseSettings> databaseOptions, ICurrentUser currentUser)
         {
             _databaseOptions = databaseOptions.Value
                 ?? throw new ArgumentNullException(nameof(databaseOptions));
+            _currentUser = currentUser;
         }
+
+        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
 
         private IDbConnection CreateConnection() =>
             new SqlConnection(_databaseOptions.ConnectionString);
@@ -35,7 +40,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Units
                 {
                     command.Search,
                     Offset = (command.Page - 1) * command.PageSize,
-                    command.PageSize
+                    command.PageSize,
+                    CompanyId
                 })).ToList();
 
             int totalItems = rows.FirstOrDefault()?.TotalCount ?? 0;
@@ -58,7 +64,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Units
 
             UnitRow? row = await connection.QuerySingleOrDefaultAsync<UnitRow>(
                 UnitRepositoryQueries.GetByExternalId,
-                new { ExternalId = externalId });
+                new { ExternalId = externalId, CompanyId });
 
             return row?.ToResult();
         }
@@ -71,7 +77,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Units
             {
                 string? externalId = await connection.QuerySingleOrDefaultAsync<string>(
                     UnitRepositoryQueries.Create,
-                    unit);
+                    TenantParameters(unit));
 
                 if (string.IsNullOrWhiteSpace(externalId))
                 {
@@ -107,7 +113,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Units
             {
                 int affectedRows = await connection.ExecuteAsync(
                     UnitRepositoryQueries.Update,
-                    command);
+                    TenantParameters(command));
 
                 if (affectedRows == 0)
                 {
@@ -143,7 +149,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Units
             {
                 int affectedRows = await connection.ExecuteAsync(
                     UnitRepositoryQueries.Delete,
-                    new { ExternalId = externalId });
+                    new { ExternalId = externalId, CompanyId });
 
                 if (affectedRows == 0)
                 {
@@ -169,6 +175,13 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Units
                     Message = "Ocurrió un error al eliminar la unidad."
                 };
             }
+        }
+
+        private DynamicParameters TenantParameters(object value)
+        {
+            var parameters = new DynamicParameters(value);
+            parameters.Add(nameof(CompanyId), CompanyId);
+            return parameters;
         }
     }
 }

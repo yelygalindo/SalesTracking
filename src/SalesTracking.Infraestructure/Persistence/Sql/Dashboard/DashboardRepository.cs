@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using SalesTracking.Application.UseCases.Dashboard.Comands;
 using SalesTracking.Application.UseCases.Dashboard.Interfaces;
 using SalesTracking.Application.UseCases.Dashboard.Results;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.Dashboard.Mappers;
 using SalesTracking.Infrastructure.Persistence.Sql.Dashboard.Rows;
@@ -14,12 +15,16 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Dashboard
     public sealed class DashboardRepository : IDashboardRepository
     {
         private readonly DatabaseSettings _databaseOptions;
+        private readonly ICurrentUser _currentUser;
 
-        public DashboardRepository(IOptions<DatabaseSettings> databaseOptions)
+        public DashboardRepository(IOptions<DatabaseSettings> databaseOptions, ICurrentUser currentUser)
         {
             _databaseOptions = databaseOptions.Value
                 ?? throw new ArgumentNullException(nameof(databaseOptions));
+            _currentUser = currentUser;
         }
+
+        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
 
         private IDbConnection CreateConnection() =>
             new SqlConnection(_databaseOptions.ConnectionString);
@@ -31,7 +36,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Dashboard
             var parameters = new
             {
                 command.SellerExternalId,
-                command.StatusId
+                command.StatusId,
+                CompanyId
             };
 
             DashboardMetricsRow metrics = await connection.QuerySingleAsync<DashboardMetricsRow>(

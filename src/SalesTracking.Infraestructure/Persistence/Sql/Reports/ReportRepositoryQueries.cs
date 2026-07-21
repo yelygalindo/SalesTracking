@@ -28,6 +28,8 @@ INNER JOIN Users u ON u.Id = d.SellerId
 INNER JOIN DeliveryStatus ds ON ds.DeliveryStatusId = d.StatusId
 LEFT JOIN DeliveryItems di ON di.DeliveryId = d.Id AND di.IsDeleted = 0
 WHERE d.IsDeleted = 0
+  AND d.CompanyId = @CompanyId AND p.CompanyId = @CompanyId
+  AND (@CompanyId IS NULL OR di.CompanyId IS NULL OR di.CompanyId = @CompanyId)
   AND p.IsDeleted = 0
   AND (@From IS NULL OR d.CommittedDateUtc >= @From)
   AND (@To IS NULL OR d.CommittedDateUtc <= @To)
@@ -72,6 +74,7 @@ INNER JOIN Customers c ON c.Id = r.CustomerId
 LEFT JOIN Users seller ON seller.Id = c.SellerId
 INNER JOIN Users assigned ON assigned.Id = r.AssignedToId
 WHERE c.IsDeleted = 0
+  AND c.CompanyId = @CompanyId AND r.CompanyId = @CompanyId
   AND r.Completed = 0
   AND (@From IS NULL OR r.ReminderAtUtc >= @From)
   AND (@To IS NULL OR r.ReminderAtUtc <= @To)
@@ -107,6 +110,7 @@ INNER JOIN ProjectStatus ps ON ps.ProjectStatusId = p.StatusId
 INNER JOIN Customers c ON c.Id = p.CustomerId
 INNER JOIN Users u ON u.Id = p.SellerId
 WHERE p.IsDeleted = 0
+  AND p.CompanyId = @CompanyId AND c.CompanyId = @CompanyId
   AND (@From IS NULL OR p.CreatedAtUtc >= @From)
   AND (@To IS NULL OR p.CreatedAtUtc <= @To)
   AND (@SellerExternalId IS NULL OR u.ExternalId = @SellerExternalId)
@@ -160,6 +164,7 @@ INNER JOIN ProjectStatus ps ON ps.ProjectStatusId = p.StatusId
 LEFT JOIN Users seller ON seller.Id = p.SellerId
 LEFT JOIN Users createdBy ON createdBy.Id = pt.CreatedByUserId
 WHERE pt.IsDeleted = 0
+  AND pt.CompanyId = @CompanyId AND p.CompanyId = @CompanyId
   AND p.IsDeleted = 0
   AND (@From IS NULL OR pt.OccurredAtUtc >= @From)
   AND (@To IS NULL OR pt.OccurredAtUtc <= @To)

@@ -8,7 +8,7 @@ SELECT
         SELECT COUNT(1)
         FROM Customers c
         LEFT JOIN Users u ON u.Id = c.SellerId
-        WHERE c.IsDeleted = 0
+        WHERE c.IsDeleted = 0 AND c.CompanyId = @CompanyId
           AND c.StatusId = 1
           AND (@SellerExternalId IS NULL OR u.ExternalId = @SellerExternalId)
     ),
@@ -16,7 +16,7 @@ SELECT
         SELECT COUNT(1)
         FROM Customers c
         LEFT JOIN Users u ON u.Id = c.SellerId
-        WHERE c.IsDeleted = 0
+        WHERE c.IsDeleted = 0 AND c.CompanyId = @CompanyId
           AND c.StatusId = 2
           AND (@SellerExternalId IS NULL OR u.ExternalId = @SellerExternalId)
     ),
@@ -24,7 +24,7 @@ SELECT
         SELECT COUNT(1)
         FROM Projects p
         INNER JOIN Users u ON u.Id = p.SellerId
-        WHERE p.IsDeleted = 0
+        WHERE p.IsDeleted = 0 AND p.CompanyId = @CompanyId
           AND p.ActualCloseDateUtc IS NULL
           AND (@SellerExternalId IS NULL OR u.ExternalId = @SellerExternalId)
           AND (@StatusId IS NULL OR p.StatusId = @StatusId)
@@ -34,7 +34,7 @@ SELECT
         FROM Deliveries d
         INNER JOIN Projects p ON p.Id = d.ProjectId
         INNER JOIN Users u ON u.Id = d.SellerId
-        WHERE d.IsDeleted = 0
+        WHERE d.IsDeleted = 0 AND d.CompanyId = @CompanyId AND p.CompanyId = @CompanyId
           AND p.IsDeleted = 0
           AND d.StatusId = 1
           AND (@SellerExternalId IS NULL OR u.ExternalId = @SellerExternalId)
@@ -45,7 +45,7 @@ SELECT
         FROM Deliveries d
         INNER JOIN Projects p ON p.Id = d.ProjectId
         INNER JOIN Users u ON u.Id = d.SellerId
-        WHERE d.IsDeleted = 0
+        WHERE d.IsDeleted = 0 AND d.CompanyId = @CompanyId AND p.CompanyId = @CompanyId
           AND p.IsDeleted = 0
           AND d.StatusId <> 3
           AND d.CommittedDateUtc < SYSUTCDATETIME()
@@ -57,7 +57,7 @@ SELECT
         FROM CustomerReminders r
         INNER JOIN Customers c ON c.Id = r.CustomerId
         LEFT JOIN Users u ON u.Id = c.SellerId
-        WHERE c.IsDeleted = 0
+        WHERE c.IsDeleted = 0 AND c.CompanyId = @CompanyId AND r.CompanyId = @CompanyId
           AND r.Completed = 0
           AND CONVERT(date, r.ReminderAtUtc) = CONVERT(date, SYSUTCDATETIME())
           AND (@SellerExternalId IS NULL OR u.ExternalId = @SellerExternalId)
@@ -67,7 +67,7 @@ SELECT
         FROM Deliveries d
         INNER JOIN Projects p ON p.Id = d.ProjectId
         INNER JOIN Users u ON u.Id = d.SellerId
-        WHERE d.IsDeleted = 0
+        WHERE d.IsDeleted = 0 AND d.CompanyId = @CompanyId AND p.CompanyId = @CompanyId
           AND p.IsDeleted = 0
           AND d.StatusId = 3
           AND d.DeliveredDateUtc >= DATEFROMPARTS(YEAR(SYSUTCDATETIME()), MONTH(SYSUTCDATETIME()), 1)
@@ -93,6 +93,7 @@ INNER JOIN ProjectStatus ps ON ps.ProjectStatusId = p.StatusId
 INNER JOIN Customers c ON c.Id = p.CustomerId
 INNER JOIN Users u ON u.Id = p.SellerId
 WHERE p.IsDeleted = 0
+  AND p.CompanyId = @CompanyId AND c.CompanyId = @CompanyId
   AND p.Latitude IS NOT NULL
   AND p.Longitude IS NOT NULL
   AND (@SellerExternalId IS NULL OR u.ExternalId = @SellerExternalId)
@@ -124,6 +125,7 @@ FROM ProjectTimeline pt
 INNER JOIN Projects p ON p.Id = pt.ProjectId
 LEFT JOIN Users u ON u.Id = pt.CreatedByUserId
 WHERE pt.IsDeleted = 0
+  AND pt.CompanyId = @CompanyId AND p.CompanyId = @CompanyId
   AND p.IsDeleted = 0
   AND (@SellerExternalId IS NULL OR u.ExternalId = @SellerExternalId OR EXISTS (
       SELECT 1 FROM Users pu WHERE pu.Id = p.SellerId AND pu.ExternalId = @SellerExternalId
@@ -145,6 +147,7 @@ INNER JOIN Customers c ON c.Id = r.CustomerId
 INNER JOIN Users u ON u.Id = r.AssignedToId
 LEFT JOIN Users seller ON seller.Id = c.SellerId
 WHERE c.IsDeleted = 0
+  AND c.CompanyId = @CompanyId AND r.CompanyId = @CompanyId
   AND r.Completed = 0
   AND (@SellerExternalId IS NULL OR seller.ExternalId = @SellerExternalId)
 ORDER BY r.ReminderAtUtc ASC;";
@@ -164,6 +167,7 @@ INNER JOIN Projects p ON p.Id = d.ProjectId
 INNER JOIN Users u ON u.Id = d.SellerId
 INNER JOIN DeliveryStatus ds ON ds.DeliveryStatusId = d.StatusId
 WHERE d.IsDeleted = 0
+  AND d.CompanyId = @CompanyId AND p.CompanyId = @CompanyId
   AND p.IsDeleted = 0
   AND (d.StatusId IN (1, 2) OR (d.StatusId <> 3 AND d.CommittedDateUtc < SYSUTCDATETIME()))
   AND (@SellerExternalId IS NULL OR u.ExternalId = @SellerExternalId)

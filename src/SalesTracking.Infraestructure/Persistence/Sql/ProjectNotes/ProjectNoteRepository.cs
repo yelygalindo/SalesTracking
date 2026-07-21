@@ -5,6 +5,7 @@ using SalesTracking.Application.UseCases.ProjectNotes.Interfaces;
 using SalesTracking.Application.UseCases.ProjectNotes.Comands;
 using SalesTracking.Application.UseCases.ProjectNotes.Models;
 using SalesTracking.Application.UseCases.ProjectNotes.Results;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes.Mappers;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes.Rows;
@@ -16,12 +17,16 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
     public sealed class ProjectNoteRepository : IProjectNoteRepository
     {
         private readonly DatabaseSettings _databaseOptions;
+        private readonly ICurrentUser _currentUser;
 
-        public ProjectNoteRepository(IOptions<DatabaseSettings> databaseOptions)
+        public ProjectNoteRepository(IOptions<DatabaseSettings> databaseOptions, ICurrentUser currentUser)
         {
             _databaseOptions = databaseOptions.Value
                 ?? throw new ArgumentNullException(nameof(databaseOptions));
+            _currentUser = currentUser;
         }
+
+        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
 
         private IDbConnection CreateConnection() =>
             new SqlConnection(_databaseOptions.ConnectionString);
@@ -37,7 +42,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
             {
                 int? projectInternalId = await connection.QueryFirstOrDefaultAsync<int?>(
                     ProjectNoteQueries.GetProjectInternalIdByExternalId,
-                    new { ExternalId = note.ProjectExternalId },
+                    new { ExternalId = note.ProjectExternalId, CompanyId },
                     transaction);
 
                 if (projectInternalId == null)
@@ -58,7 +63,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                         note.ExternalId,
                         ProjectId = projectInternalId.Value,
                         note.Content,
-                        AuthorId = note.AuthorUserId
+                        AuthorId = note.AuthorUserId,
+                        CompanyId
                     },
                     transaction);
 
@@ -109,7 +115,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
             {
                 ProjectNoteInternalRow? internalNote = await connection.QueryFirstOrDefaultAsync<ProjectNoteInternalRow>(
                     ProjectNoteQueries.GetInternal,
-                    new { note.ProjectExternalId, note.NoteExternalId },
+                    new { note.ProjectExternalId, note.NoteExternalId, CompanyId },
                     transaction);
 
                 if (internalNote == null)
@@ -130,7 +136,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                         note.ProjectExternalId,
                         note.NoteExternalId,
                         note.Content,
-                        UpdatedByUserId = note.UpdatedByUserId
+                        UpdatedByUserId = note.UpdatedByUserId,
+                        CompanyId
                     },
                     transaction);
 
@@ -192,7 +199,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                     new
                     {
                         command.ProjectExternalId,
-                        command.NoteExternalId
+                        command.NoteExternalId,
+                        CompanyId
                     },
                     transaction);
 
@@ -212,7 +220,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                     new
                     {
                         command.ProjectExternalId,
-                        command.NoteExternalId
+                        command.NoteExternalId,
+                        CompanyId
                     },
                     transaction);
 
@@ -271,7 +280,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                 new
                 {
                     ProjectExternalId = projectExternalId,
-                    NoteExternalId = noteExternalId
+                    NoteExternalId = noteExternalId,
+                    CompanyId
                 });
 
             return row?.ToResult();
@@ -283,7 +293,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
 
             IEnumerable<ProjectNoteRow> rows = await connection.QueryAsync<ProjectNoteRow>(
                 ProjectNoteQueries.GetByProjectExternalId,
-                new { ProjectExternalId = projectExternalId });
+                new { ProjectExternalId = projectExternalId, CompanyId });
 
             return rows.Select(x => x.ToResult()).ToList();
         }

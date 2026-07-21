@@ -5,6 +5,7 @@ using SalesTracking.Application.UseCases.ProjectAttachments.Comands;
 using SalesTracking.Application.UseCases.ProjectAttachments.Interfaces;
 using SalesTracking.Application.UseCases.ProjectAttachments.Models;
 using SalesTracking.Application.UseCases.ProjectAttachments.Results;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments.Mappers;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments.Rows;
@@ -18,12 +19,16 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
     {
         private const string RelatedEntityType = "ProjectAttachment";
         private readonly DatabaseSettings _databaseOptions;
+        private readonly ICurrentUser _currentUser;
 
-        public ProjectAttachmentRepository(IOptions<DatabaseSettings> databaseOptions)
+        public ProjectAttachmentRepository(IOptions<DatabaseSettings> databaseOptions, ICurrentUser currentUser)
         {
             _databaseOptions = databaseOptions.Value
                 ?? throw new ArgumentNullException(nameof(databaseOptions));
+            _currentUser = currentUser;
         }
+
+        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
 
         private IDbConnection CreateConnection() =>
             new SqlConnection(_databaseOptions.ConnectionString);
@@ -34,7 +39,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
 
             bool projectExists = await connection.QuerySingleAsync<int>(
                 ProjectAttachmentQueries.ProjectExists,
-                new { ProjectExternalId = projectExternalId }) > 0;
+                new { ProjectExternalId = projectExternalId, CompanyId }) > 0;
 
             if (!projectExists)
             {
@@ -48,7 +53,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
 
             var rows = await connection.QueryAsync<ProjectAttachmentRow>(
                 ProjectAttachmentQueries.Get,
-                new { ProjectExternalId = projectExternalId });
+                new { ProjectExternalId = projectExternalId, CompanyId });
 
             return new GetProjectAttachmentsResult
             {
@@ -68,7 +73,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                 new
                 {
                     ProjectExternalId = projectExternalId,
-                    AttachmentExternalId = attachmentExternalId
+                    AttachmentExternalId = attachmentExternalId,
+                    CompanyId
                 });
 
             if (row == null)
@@ -100,7 +106,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
             {
                 int? projectId = await connection.QueryFirstOrDefaultAsync<int?>(
                     ProjectAttachmentQueries.GetProjectInternalIdByExternalId,
-                    new { ExternalId = attachment.ProjectExternalId },
+                    new { ExternalId = attachment.ProjectExternalId, CompanyId },
                     transaction);
 
                 if (projectId == null)
@@ -113,7 +119,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                         new
                         {
                             ProjectId = projectId.Value,
-                            UpdatedByUserId = attachment.UploadedByUserId
+                            UpdatedByUserId = attachment.UploadedByUserId,
+                            CompanyId
                         },
                         transaction);
                 }
@@ -132,7 +139,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                         attachment.AttachmentType,
                         attachment.Caption,
                         attachment.IsCover,
-                        UploadedByUserId = attachment.UploadedByUserId
+                        UploadedByUserId = attachment.UploadedByUserId,
+                        CompanyId
                     },
                     transaction);
 
@@ -190,7 +198,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
             {
                 ProjectAttachmentInternalRow? attachment = await connection.QueryFirstOrDefaultAsync<ProjectAttachmentInternalRow>(
                     ProjectAttachmentQueries.GetAttachmentInternal,
-                    new { command.ProjectExternalId, command.AttachmentExternalId },
+                    new { command.ProjectExternalId, command.AttachmentExternalId, CompanyId },
                     transaction);
 
                 int affectedRows = await connection.ExecuteAsync(
@@ -199,7 +207,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                     {
                         command.ProjectExternalId,
                         command.AttachmentExternalId,
-                        DeletedByUserId = command.DeletedByUserId
+                        DeletedByUserId = command.DeletedByUserId,
+                        CompanyId
                     },
                     transaction);
 
@@ -261,7 +270,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                     new
                     {
                         command.ProjectExternalId,
-                        command.AttachmentExternalId
+                        command.AttachmentExternalId,
+                        CompanyId
                     },
                     transaction);
 
@@ -273,7 +283,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                     new
                     {
                         attachment.ProjectId,
-                        UpdatedByUserId = command.UpdatedByUserId
+                        UpdatedByUserId = command.UpdatedByUserId,
+                        CompanyId
                     },
                     transaction);
 
@@ -283,7 +294,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                     {
                         AttachmentId = attachment.Id,
                         attachment.ProjectId,
-                        UpdatedByUserId = command.UpdatedByUserId
+                        UpdatedByUserId = command.UpdatedByUserId,
+                        CompanyId
                     },
                     transaction);
 

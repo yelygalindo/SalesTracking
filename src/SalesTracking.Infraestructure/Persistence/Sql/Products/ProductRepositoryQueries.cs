@@ -17,6 +17,7 @@ SELECT
     COUNT(1) OVER() AS TotalCount
 FROM Products p
 WHERE p.IsDeleted = 0
+  AND p.CompanyId = @CompanyId
   AND (
       @Search IS NULL
       OR p.Code LIKE '%' + @Search + '%'
@@ -41,6 +42,7 @@ SELECT TOP 1
     p.UpdatedAtUtc
 FROM Products p
 WHERE p.IsDeleted = 0
+  AND p.CompanyId = @CompanyId
   AND p.ExternalId = @ExternalId;";
 
         public const string Create = @"
@@ -54,6 +56,7 @@ INSERT INTO Products (
     IsActive,
     CreatedAtUtc,
     IsDeleted
+    ,CompanyId
 )
 OUTPUT INSERTED.ExternalId
 VALUES (
@@ -65,7 +68,8 @@ VALUES (
     @Price,
     @IsActive,
     SYSUTCDATETIME(),
-    0
+    0,
+    @CompanyId
 );";
 
         public const string Update = @"
@@ -79,6 +83,7 @@ SET
     IsActive = @IsActive,
     UpdatedAtUtc = SYSUTCDATETIME()
 WHERE IsDeleted = 0
+  AND CompanyId = @CompanyId
   AND ExternalId = @ExternalId;";
 
         public const string Delete = @"
@@ -87,6 +92,7 @@ SET
     IsDeleted = 1,
     UpdatedAtUtc = SYSUTCDATETIME()
 WHERE IsDeleted = 0
+  AND CompanyId = @CompanyId
   AND ExternalId = @ExternalId;";
     }
 }

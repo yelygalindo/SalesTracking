@@ -5,6 +5,7 @@ using SalesTracking.Application.UseCases.Products.Comands;
 using SalesTracking.Application.UseCases.Products.Interfaces;
 using SalesTracking.Application.UseCases.Products.Models;
 using SalesTracking.Application.UseCases.Products.Results;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.Products.Mappers;
 using SalesTracking.Infrastructure.Persistence.Sql.Products.Rows;
@@ -15,12 +16,16 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Products
     public sealed class ProductRepository : IProductRepository
     {
         private readonly DatabaseSettings _databaseOptions;
+        private readonly ICurrentUser _currentUser;
 
-        public ProductRepository(IOptions<DatabaseSettings> databaseOptions)
+        public ProductRepository(IOptions<DatabaseSettings> databaseOptions, ICurrentUser currentUser)
         {
             _databaseOptions = databaseOptions.Value
                 ?? throw new ArgumentNullException(nameof(databaseOptions));
+            _currentUser = currentUser;
         }
+
+        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
 
         private IDbConnection CreateConnection() =>
             new SqlConnection(_databaseOptions.ConnectionString);
@@ -35,7 +40,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Products
                 {
                     command.Search,
                     Offset = (command.Page - 1) * command.PageSize,
-                    command.PageSize
+                    command.PageSize,
+                    CompanyId
                 })).ToList();
 
             int totalItems = rows.FirstOrDefault()?.TotalCount ?? 0;
@@ -58,7 +64,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Products
 
             ProductRow? row = await connection.QuerySingleOrDefaultAsync<ProductRow>(
                 ProductRepositoryQueries.GetByExternalId,
-                new { ExternalId = externalId });
+                new { ExternalId = externalId, CompanyId });
 
             return row?.ToResult();
         }
@@ -71,7 +77,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Products
             {
                 string? externalId = await connection.QuerySingleOrDefaultAsync<string>(
                     ProductRepositoryQueries.Create,
-                    product);
+                    TenantParameters(product));
 
                 if (string.IsNullOrWhiteSpace(externalId))
                 {
@@ -107,7 +113,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Products
             {
                 int affectedRows = await connection.ExecuteAsync(
                     ProductRepositoryQueries.Update,
-                    command);
+                    TenantParameters(command));
 
                 if (affectedRows == 0)
                 {
@@ -143,7 +149,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Products
             {
                 int affectedRows = await connection.ExecuteAsync(
                     ProductRepositoryQueries.Delete,
-                    new { ExternalId = externalId });
+                    new { ExternalId = externalId, CompanyId });
 
                 if (affectedRows == 0)
                 {
@@ -169,6 +175,13 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Products
                     Message = "Ocurrió un error al eliminar el producto."
                 };
             }
+        }
+
+        private DynamicParameters TenantParameters(object value)
+        {
+            var parameters = new DynamicParameters(value);
+            parameters.Add(nameof(CompanyId), CompanyId);
+            return parameters;
         }
     }
 }

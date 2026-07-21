@@ -1,6 +1,7 @@
 using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.UseCases.CustomerTimeline.Comands;
 using SalesTracking.Application.UseCases.CustomerTimeline.Interfaces;
 using SalesTracking.Application.UseCases.CustomerTimeline.Models;
@@ -14,20 +15,23 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerTimeline;
 public sealed class CustomerTimelineRepository : ICustomerTimelineRepository
 {
     private readonly DatabaseSettings _settings;
+    private readonly ICurrentUser _currentUser;
 
-    public CustomerTimelineRepository(IOptions<DatabaseSettings> settings)
+    public CustomerTimelineRepository(IOptions<DatabaseSettings> settings, ICurrentUser currentUser)
     {
         _settings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
+        _currentUser = currentUser;
     }
 
     private IDbConnection CreateConnection() => new SqlConnection(_settings.ConnectionString);
+    private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
 
     public async Task<GetCustomerTimelineResult> GetAsync(GetCustomerTimelineCommand command)
     {
         using IDbConnection connection = CreateConnection();
         int? customerId = await connection.QueryFirstOrDefaultAsync<int?>(
             CustomerTimelineQueries.GetCustomerId,
-            new { command.CustomerExternalId });
+            new { command.CustomerExternalId, CompanyId });
 
         if (customerId == null)
         {
@@ -45,7 +49,8 @@ public sealed class CustomerTimelineRepository : ICustomerTimelineRepository
             {
                 CustomerId = customerId.Value,
                 Offset = (command.Page - 1) * command.PageSize,
-                command.PageSize
+                command.PageSize,
+                CompanyId
             })).ToList();
 
         int totalItems = rows.FirstOrDefault()?.TotalCount ?? 0;

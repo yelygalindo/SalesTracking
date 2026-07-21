@@ -6,18 +6,21 @@
 SELECT COUNT(1)
 FROM Projects
 WHERE ExternalId = @ProjectExternalId
+  AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
 
         public const string GetProjectInternalIdByExternalId = @"
 SELECT TOP 1 Id
 FROM Projects
 WHERE ExternalId = @ExternalId
+  AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
 
         public const string GetUserInternalIdByExternalId = @"
 SELECT TOP 1 Id
 FROM Users
 WHERE ExternalId = @ExternalId
+  AND CompanyId = @CompanyId
   AND IsActive = 1;";
 
         public const string Get = @"
@@ -38,6 +41,9 @@ FROM ProjectAttachments pa
 INNER JOIN Projects p ON p.Id = pa.ProjectId
 INNER JOIN Users u ON u.Id = pa.UploadedByUserId
 WHERE p.ExternalId = @ProjectExternalId
+  AND p.CompanyId = @CompanyId
+  AND pa.CompanyId = @CompanyId
+  AND u.CompanyId = @CompanyId
   AND p.IsDeleted = 0
   AND pa.IsDeleted = 0
 ORDER BY pa.IsCover DESC, pa.CreatedAtUtc DESC;";
@@ -50,6 +56,8 @@ SELECT TOP 1
 FROM ProjectAttachments pa
 INNER JOIN Projects p ON p.Id = pa.ProjectId
 WHERE p.ExternalId = @ProjectExternalId
+  AND p.CompanyId = @CompanyId
+  AND pa.CompanyId = @CompanyId
   AND p.IsDeleted = 0
   AND pa.ExternalId = @AttachmentExternalId
   AND pa.IsDeleted = 0;";
@@ -68,7 +76,8 @@ INSERT INTO ProjectAttachments (
     IsCover,
     UploadedByUserId,
     CreatedAtUtc,
-    IsDeleted
+    IsDeleted,
+    CompanyId
 )
 OUTPUT INSERTED.Id
 VALUES (
@@ -84,7 +93,8 @@ VALUES (
     @IsCover,
     @UploadedByUserId,
     SYSUTCDATETIME(),
-    0
+    0,
+    @CompanyId
 );";
 
         public const string ClearCover = @"
@@ -94,6 +104,7 @@ SET
     UpdatedByUserId = @UpdatedByUserId,
     UpdatedAtUtc = SYSUTCDATETIME()
 WHERE ProjectId = @ProjectId
+  AND CompanyId = @CompanyId
   AND IsDeleted = 0
   AND IsCover = 1;";
 
@@ -109,6 +120,8 @@ SET
 FROM ProjectAttachments pa
 INNER JOIN Projects p ON p.Id = pa.ProjectId
 WHERE p.ExternalId = @ProjectExternalId
+  AND p.CompanyId = @CompanyId
+  AND pa.CompanyId = @CompanyId
   AND p.IsDeleted = 0
   AND pa.ExternalId = @AttachmentExternalId
   AND pa.IsDeleted = 0;";
@@ -120,6 +133,8 @@ SELECT TOP 1
 FROM ProjectAttachments pa
 INNER JOIN Projects p ON p.Id = pa.ProjectId
 WHERE p.ExternalId = @ProjectExternalId
+  AND p.CompanyId = @CompanyId
+  AND pa.CompanyId = @CompanyId
   AND p.IsDeleted = 0
   AND pa.ExternalId = @AttachmentExternalId
   AND pa.IsDeleted = 0;";
@@ -131,6 +146,7 @@ SET
     UpdatedByUserId = @UpdatedByUserId,
     UpdatedAtUtc = SYSUTCDATETIME()
 WHERE Id = @AttachmentId
+  AND CompanyId = @CompanyId
   AND ProjectId = @ProjectId
   AND IsDeleted = 0;";
     }

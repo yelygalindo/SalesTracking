@@ -6,6 +6,7 @@ internal static class ProjectMaterialsQueries
 SELECT COUNT(1)
 FROM Projects
 WHERE ExternalId = @ProjectExternalId
+  AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
 
     public const string GetSummary = @"
@@ -26,6 +27,11 @@ INNER JOIN DeliveryItems item ON item.DeliveryId = delivery.Id AND item.IsDelete
 INNER JOIN Products product ON product.Id = item.ProductId
 INNER JOIN Units unit ON unit.Id = item.UnitId
 WHERE project.ExternalId = @ProjectExternalId
+  AND project.CompanyId = @CompanyId
+  AND delivery.CompanyId = @CompanyId
+  AND item.CompanyId = @CompanyId
+  AND product.CompanyId = @CompanyId
+  AND unit.CompanyId = @CompanyId
   AND delivery.IsDeleted = 0
 GROUP BY product.ExternalId, product.Name, unit.Id, unit.Name
 ORDER BY product.Name, unit.Name;";

@@ -6,6 +6,7 @@ internal static class ProjectVisitQueries
 SELECT TOP 1 Id
 FROM Projects
 WHERE ExternalId = @ProjectExternalId
+  AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
 
     public const string Get = @"
@@ -21,6 +22,8 @@ SELECT
 FROM dbo.ProjectTimeline pt
 INNER JOIN Users u ON u.Id = pt.CreatedByUserId
 WHERE pt.ProjectId = @ProjectId
+  AND pt.CompanyId = @CompanyId
+  AND u.CompanyId = @CompanyId
   AND pt.EventTypeId = 5
   AND pt.IsDeleted = 0
   AND (@SellerExternalId IS NULL OR u.ExternalId = @SellerExternalId)

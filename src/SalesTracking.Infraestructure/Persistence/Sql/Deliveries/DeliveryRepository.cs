@@ -5,6 +5,7 @@ using SalesTracking.Application.UseCases.Deliveries.Comands;
 using SalesTracking.Application.UseCases.Deliveries.Interfaces;
 using SalesTracking.Application.UseCases.Deliveries.Models;
 using SalesTracking.Application.UseCases.Deliveries.Results;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.Deliveries.Mappers;
 using SalesTracking.Infrastructure.Persistence.Sql.Deliveries.Rows;
@@ -22,12 +23,16 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
         private const string RelatedEntityType = "Delivery";
 
         private readonly DatabaseSettings _databaseOptions;
+        private readonly ICurrentUser _currentUser;
 
-        public DeliveryRepository(IOptions<DatabaseSettings> databaseOptions)
+        public DeliveryRepository(IOptions<DatabaseSettings> databaseOptions, ICurrentUser currentUser)
         {
             _databaseOptions = databaseOptions.Value
                 ?? throw new ArgumentNullException(nameof(databaseOptions));
+            _currentUser = currentUser;
         }
+
+        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
 
         private IDbConnection CreateConnection() =>
             new SqlConnection(_databaseOptions.ConnectionString);
@@ -58,7 +63,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     command.StatusId,
                     FromUtc = command.From?.UtcDateTime,
                     ToUtc = command.To?.UtcDateTime,
-                    command.Overdue
+                    command.Overdue,
+                    CompanyId
                 })).ToList();
 
             var items = await GetItemsAsync(connection, rows.Select(x => x.Id).ToList());
@@ -82,7 +88,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
 
             DeliveryRow? row = await connection.QuerySingleOrDefaultAsync<DeliveryRow>(
                 DeliveryRepositoryQueries.GetByExternalId,
-                new { ExternalId = externalId });
+                new { ExternalId = externalId, CompanyId });
 
             if (row == null)
                 return null;
@@ -127,7 +133,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                         delivery.StatusId,
                         delivery.CommittedDateUtc,
                         delivery.DeliveredDateUtc,
-                        delivery.Notes
+                        delivery.Notes,
+                        CompanyId
                     },
                     transaction);
 
@@ -198,7 +205,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
             {
                 DeliveryInternalRow? existing = await connection.QuerySingleOrDefaultAsync<DeliveryInternalRow>(
                     DeliveryRepositoryQueries.GetDeliveryInternalByExternalId,
-                    new { delivery.ExternalId },
+                    new { delivery.ExternalId, CompanyId },
                     transaction);
 
                 if (existing == null)
@@ -232,7 +239,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                         delivery.StatusId,
                         delivery.CommittedDateUtc,
                         delivery.DeliveredDateUtc,
-                        delivery.Notes
+                        delivery.Notes,
+                        CompanyId
                     },
                     transaction);
 
@@ -241,7 +249,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
 
                 await connection.ExecuteAsync(
                     DeliveryRepositoryQueries.SoftDeleteItems,
-                    new { DeliveryId = existing.Id },
+                    new { DeliveryId = existing.Id, CompanyId },
                     transaction);
 
                 foreach (CreateDeliveryItem item in delivery.Items)
@@ -310,7 +318,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
             {
                 DeliveryInternalRow? delivery = await connection.QuerySingleOrDefaultAsync<DeliveryInternalRow>(
                     DeliveryRepositoryQueries.GetDeliveryInternalByExternalId,
-                    new { command.ExternalId },
+                    new { command.ExternalId, CompanyId },
                     transaction);
 
                 if (delivery == null)
@@ -326,7 +334,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
 
                 var quantities = (await connection.QueryAsync<DeliveryQuantityRow>(
                     DeliveryRepositoryQueries.GetQuantitiesByDeliveryId,
-                    new { DeliveryId = delivery.Id },
+                    new { DeliveryId = delivery.Id, CompanyId },
                     transaction)).ToList();
 
                 int expectedStatusId = ResolveStatusId(quantities);
@@ -346,7 +354,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                         command.StatusId,
                         DeliveredDateUtc = command.StatusId == DeliveredStatusId
                             ? command.DeliveredDateUtc ?? DateTime.UtcNow
-                            : (DateTime?)null
+                            : (DateTime?)null,
+                        CompanyId
                     },
                     transaction);
 
@@ -415,7 +424,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
             {
                 DeliveryInternalRow? delivery = await connection.QuerySingleOrDefaultAsync<DeliveryInternalRow>(
                     DeliveryRepositoryQueries.GetDeliveryInternalByExternalId,
-                    new { ExternalId = command.DeliveryExternalId },
+                    new { ExternalId = command.DeliveryExternalId, CompanyId },
                     transaction);
 
                 if (delivery == null)
@@ -429,7 +438,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                         new
                         {
                             ExternalId = item.DeliveryItemExternalId,
-                            DeliveryId = delivery.Id
+                            DeliveryId = delivery.Id,
+                            CompanyId
                         },
                         transaction);
 
@@ -451,7 +461,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                         {
                             deliveryItem.Id,
                             DeliveryId = delivery.Id,
-                            DeliveredQuantity = newDeliveredQuantity
+                            DeliveredQuantity = newDeliveredQuantity,
+                            CompanyId
                         },
                         transaction);
 
@@ -463,7 +474,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
 
                 var quantities = (await connection.QueryAsync<DeliveryQuantityRow>(
                     DeliveryRepositoryQueries.GetQuantitiesByDeliveryId,
-                    new { DeliveryId = delivery.Id },
+                    new { DeliveryId = delivery.Id, CompanyId },
                     transaction)).ToList();
 
                 int statusId = ResolveStatusId(quantities);
@@ -477,7 +488,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     {
                         delivery.Id,
                         StatusId = statusId,
-                        DeliveredDateUtc = deliveredDateUtc
+                        DeliveredDateUtc = deliveredDateUtc,
+                        CompanyId
                     },
                     transaction);
 
@@ -557,7 +569,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
             {
                 DeliveryInternalRow? delivery = await connection.QuerySingleOrDefaultAsync<DeliveryInternalRow>(
                     DeliveryRepositoryQueries.GetDeliveryInternalByExternalId,
-                    new { command.ExternalId },
+                    new { command.ExternalId, CompanyId },
                     transaction);
 
                 if (delivery == null)
@@ -565,7 +577,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
 
                 int affectedRows = await connection.ExecuteAsync(
                     DeliveryRepositoryQueries.DeleteDelivery,
-                    new { command.ExternalId },
+                    new { command.ExternalId, CompanyId },
                     transaction);
 
                 if (affectedRows == 0)
@@ -573,7 +585,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
 
                 await connection.ExecuteAsync(
                     DeliveryRepositoryQueries.SoftDeleteItems,
-                    new { DeliveryId = delivery.Id },
+                    new { DeliveryId = delivery.Id, CompanyId },
                     transaction);
 
                 await ProjectTimelineWriter.InsertAsync(
@@ -609,7 +621,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
             }
         }
 
-        private static async Task<IReadOnlyList<DeliveryItemRow>> GetItemsAsync(
+        private async Task<IReadOnlyList<DeliveryItemRow>> GetItemsAsync(
             IDbConnection connection,
             IReadOnlyCollection<int> deliveryIds)
         {
@@ -618,7 +630,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
 
             var rows = await connection.QueryAsync<DeliveryItemRow>(
                 DeliveryRepositoryQueries.GetItemsByDeliveryIds,
-                new { DeliveryIds = deliveryIds });
+                new { DeliveryIds = deliveryIds, CompanyId });
 
             return rows.ToList();
         }
@@ -633,7 +645,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                 .ToList();
         }
 
-        private static async Task<int?> GetInternalIdAsync(
+        private async Task<int?> GetInternalIdAsync(
             IDbConnection connection,
             IDbTransaction transaction,
             string query,
@@ -641,11 +653,11 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
         {
             return await connection.QuerySingleOrDefaultAsync<int?>(
                 query,
-                new { ExternalId = externalId },
+                new { ExternalId = externalId, CompanyId },
                 transaction);
         }
 
-        private static async Task InsertItemAsync(
+        private async Task InsertItemAsync(
             IDbConnection connection,
             IDbTransaction transaction,
             int deliveryId,
@@ -662,7 +674,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     ProductId = productId,
                     UnitId = unitId,
                     item.Quantity,
-                    item.DeliveredQuantity
+                    item.DeliveredQuantity,
+                    CompanyId
                 },
                 transaction);
         }

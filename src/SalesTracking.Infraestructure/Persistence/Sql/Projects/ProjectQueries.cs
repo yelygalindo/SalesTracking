@@ -19,7 +19,8 @@ INSERT INTO Projects (
     Latitude,
     Longitude,
     CreatedAtUtc,
-    IsDeleted
+    IsDeleted,
+    CompanyId
 )
 OUTPUT INSERTED.ExternalId
 SELECT
@@ -38,10 +39,12 @@ SELECT
     @Latitude,
     @Longitude,
     SYSUTCDATETIME(),
-    0
+    0,
+    @CompanyId
 FROM Customers c
-INNER JOIN Users u ON u.ExternalId = @SellerExternalId AND u.IsActive = 1
+INNER JOIN Users u ON u.ExternalId = @SellerExternalId AND u.IsActive = 1 AND u.CompanyId = @CompanyId
 WHERE c.ExternalId = @CustomerExternalId
+  AND c.CompanyId = @CompanyId
   AND c.IsDeleted = 0;";
 
         public const string Get = @"
@@ -71,6 +74,9 @@ INNER JOIN Customers c ON c.Id = p.CustomerId
 INNER JOIN Users u ON u.Id = p.SellerId
 INNER JOIN ProjectStatus ps ON ps.ProjectStatusId = p.StatusId
 WHERE p.IsDeleted = 0
+  AND p.CompanyId = @CompanyId
+  AND c.CompanyId = @CompanyId
+  AND u.CompanyId = @CompanyId
   AND (@CustomerExternalId IS NULL OR c.ExternalId = @CustomerExternalId)
   AND (@SellerExternalId IS NULL OR u.ExternalId = @SellerExternalId)
   AND (@StatusId IS NULL OR p.StatusId = @StatusId)
@@ -104,6 +110,9 @@ INNER JOIN Customers c ON c.Id = p.CustomerId
 INNER JOIN Users u ON u.Id = p.SellerId
 INNER JOIN ProjectStatus ps ON ps.ProjectStatusId = p.StatusId
 WHERE p.IsDeleted = 0
+  AND p.CompanyId = @CompanyId
+  AND c.CompanyId = @CompanyId
+  AND u.CompanyId = @CompanyId
   AND p.ExternalId = @ExternalId;";
 
         public const string GetTimelineProjectByExternalId = @"
@@ -114,12 +123,14 @@ SELECT TOP 1
     p.ProgressPercentage
 FROM Projects p
 WHERE p.IsDeleted = 0
+  AND p.CompanyId = @CompanyId
   AND p.ExternalId = @ExternalId;";
 
         public const string ProjectExistsByExternalId = @"
 SELECT COUNT(1)
 FROM Projects p
 WHERE p.IsDeleted = 0
+  AND p.CompanyId = @CompanyId
   AND p.ExternalId = @ExternalId;";
 
         public const string ProjectStatusExists = @"
@@ -131,12 +142,14 @@ WHERE ps.ProjectStatusId = @StatusId;";
 SELECT COUNT(1)
 FROM Customers c
 WHERE c.IsDeleted = 0
+  AND c.CompanyId = @CompanyId
   AND c.ExternalId = @CustomerExternalId;";
 
         public const string SellerExistsByExternalId = @"
 SELECT COUNT(1)
 FROM Users u
 WHERE u.IsActive = 1
+  AND u.CompanyId = @CompanyId
   AND u.ExternalId = @SellerExternalId;";
 
         public const string GetUserInternalIdByExternalId = @"
@@ -144,6 +157,7 @@ SELECT TOP 1
     Id
 FROM Users
 WHERE IsActive = 1
+  AND CompanyId = @CompanyId
   AND ExternalId = @ExternalId;";
 
         public const string Update = @"
@@ -163,9 +177,10 @@ SET
     p.Longitude = @Longitude,
     p.UpdatedAtUtc = SYSUTCDATETIME()
 FROM Projects p
-INNER JOIN Customers c ON c.ExternalId = @CustomerExternalId AND c.IsDeleted = 0
-INNER JOIN Users u ON u.ExternalId = @SellerExternalId AND u.IsActive = 1
+INNER JOIN Customers c ON c.ExternalId = @CustomerExternalId AND c.IsDeleted = 0 AND c.CompanyId = @CompanyId
+INNER JOIN Users u ON u.ExternalId = @SellerExternalId AND u.IsActive = 1 AND u.CompanyId = @CompanyId
 WHERE p.IsDeleted = 0
+  AND p.CompanyId = @CompanyId
   AND p.ExternalId = @ExternalId;";
 
         public const string ChangeStatus = @"
@@ -173,6 +188,7 @@ UPDATE Projects
 SET StatusId = @StatusId,
     UpdatedAtUtc = SYSUTCDATETIME()
 WHERE IsDeleted = 0
+  AND CompanyId = @CompanyId
   AND ExternalId = @ExternalId;";
 
         public const string Delete = @"
@@ -180,6 +196,7 @@ UPDATE Projects
 SET IsDeleted = 1,
     UpdatedAtUtc = SYSUTCDATETIME()
 WHERE IsDeleted = 0
+  AND CompanyId = @CompanyId
   AND ExternalId = @ExternalId;";
     }
 }

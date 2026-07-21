@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using SalesTracking.Application.UseCases.ProjectMaterials.Interfaces;
 using SalesTracking.Application.UseCases.ProjectMaterials.Results;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectMaterials.Rows;
 using System.Data;
@@ -12,11 +13,15 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectMaterials;
 public sealed class ProjectMaterialsRepository : IProjectMaterialsRepository
 {
     private readonly string _connectionString;
+    private readonly ICurrentUser _currentUser;
 
-    public ProjectMaterialsRepository(IOptions<DatabaseSettings> options)
+    public ProjectMaterialsRepository(IOptions<DatabaseSettings> options, ICurrentUser currentUser)
     {
         _connectionString = options.Value.ConnectionString;
+        _currentUser = currentUser;
     }
+
+    private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
 
     public async Task<GetProjectMaterialsSummaryResult> GetSummaryAsync(string projectExternalId)
     {
@@ -24,7 +29,7 @@ public sealed class ProjectMaterialsRepository : IProjectMaterialsRepository
 
         int projectCount = await connection.ExecuteScalarAsync<int>(
             ProjectMaterialsQueries.ProjectExists,
-            new { ProjectExternalId = projectExternalId });
+            new { ProjectExternalId = projectExternalId, CompanyId });
 
         if (projectCount == 0)
         {
@@ -37,7 +42,7 @@ public sealed class ProjectMaterialsRepository : IProjectMaterialsRepository
 
         IEnumerable<ProjectMaterialSummaryRow> rows = await connection.QueryAsync<ProjectMaterialSummaryRow>(
             ProjectMaterialsQueries.GetSummary,
-            new { ProjectExternalId = projectExternalId });
+            new { ProjectExternalId = projectExternalId, CompanyId });
 
         return new GetProjectMaterialsSummaryResult
         {

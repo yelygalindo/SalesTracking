@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.Common.ExternalIds;
 using SalesTracking.Application.UseCases.Customers.Interfaces;
 using SalesTracking.Application.UseCases.Customers.Mappers;
@@ -18,13 +19,16 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
     public class CustomerRepository : ICustomerRepository
     {
         private readonly DatabaseSettings _databaseOptions;
+        private readonly ICurrentUser _currentUser;
 
-        public CustomerRepository(IOptions<DatabaseSettings> databaseOptions)
+        public CustomerRepository(IOptions<DatabaseSettings> databaseOptions, ICurrentUser currentUser)
         {
             _databaseOptions = databaseOptions.Value ?? throw new ArgumentNullException(nameof(databaseOptions));
+            _currentUser = currentUser;
         }
 
         private IDbConnection CreateConnection() => new SqlConnection(_databaseOptions.ConnectionString);
+        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
 
         public async Task<Customer?> GetCustomerByExternalIdAsync(string externalId)
         {
@@ -36,7 +40,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
             CustomerDetailRow? customerDetailRow =
                 await conn.QueryFirstOrDefaultAsync<CustomerDetailRow>(
                     CustomerRepositoryQueries.GetCustomerByExternalId,
-                    new { ExternalId = externalId });
+                    new { ExternalId = externalId, CompanyId });
 
             if (customerDetailRow == null)
                 return null;
@@ -44,7 +48,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
             IEnumerable<CustomerNoteRow> notes =
                 await conn.QueryAsync<CustomerNoteRow>(
                     CustomerRepositoryQueries.GetCustomerNotesByCustomerId,
-                    new { CustomerId = customerDetailRow.Id });
+                    new { CustomerId = customerDetailRow.Id, CompanyId });
 
             Customer customer = customerDetailRow.ToDomain();
             customer.Notes = notes.Select(x => x.ToDomain()).ToList();
@@ -68,7 +72,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                     ? null
                     : $"%{filter.Search.Trim()}%",
                 Offset = offset,
-                PageSize = pageSize
+                PageSize = pageSize,
+                CompanyId
             };
 
             IEnumerable<CustomerSummaryRow> items =
@@ -105,7 +110,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                 {
                     sellerInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
                         CustomerRepositoryQueries.GetSellerInternalIdByExternalId,
-                        new { ExternalId = customer.RegisterByExternalId },
+                        new { ExternalId = customer.RegisterByExternalId, CompanyId },
                         transaction);
 
                     if (sellerInternalId == null)
@@ -132,7 +137,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                         SellerId = sellerInternalId,
                         customer.Address,
                         customer.Latitude,
-                        customer.Longitude
+                        customer.Longitude,
+                        CompanyId
                     },
                     transaction);
 
@@ -144,7 +150,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                         CustomerId = customerId,
                         EventType = "CustomerCreated",
                         Description = "Cliente creado.",
-                        CreatedById = customer.CreatedByUserId
+                        CreatedById = customer.CreatedByUserId,
+                        CompanyId
                     },
                     transaction);
 
@@ -177,7 +184,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
             {
                 int? customerInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
                     CustomerRepositoryQueries.GetCustomerInternalIdByExternalId,
-                    new { customer.ExternalId },
+                    new { customer.ExternalId, CompanyId },
                     transaction);
 
                 if (customerInternalId == null)
@@ -197,7 +204,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                 {
                     sellerInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
                         CustomerRepositoryQueries.GetSellerInternalIdByExternalId,
-                        new { ExternalId = customer.SellerId },
+                        new { ExternalId = customer.SellerId, CompanyId },
                         transaction);
 
                     if (sellerInternalId == null)
@@ -223,7 +230,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                         SellerId = sellerInternalId,
                         customer.Address,
                         customer.Latitude,
-                        customer.Longitude
+                        customer.Longitude,
+                        CompanyId
                     },
                     transaction);
 
@@ -235,7 +243,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                         CustomerId = customerInternalId.Value,
                         EventType = "CustomerUpdated",
                         Description = "Cliente actualizado.",
-                        CreatedById = customer.UpdatedByUserId
+                        CreatedById = customer.UpdatedByUserId,
+                        CompanyId
                     },
                     transaction);
 
@@ -268,7 +277,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
             {
                 int? customerInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
                     CustomerRepositoryQueries.GetCustomerInternalIdByExternalId,
-                    new { ExternalId = externalId },
+                    new { ExternalId = externalId, CompanyId },
                     transaction);
 
                 if (customerInternalId == null)
@@ -282,7 +291,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                     new
                     {
                         CustomerId = customerInternalId.Value,
-                        StatusId = (int)status
+                        StatusId = (int)status,
+                        CompanyId
                     },
                     transaction);
 
@@ -294,7 +304,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                         CustomerId = customerInternalId.Value,
                         EventType = "CustomerStatusChanged",
                         Description = $"Estado cambiado a '{status.ToLabel()}'.",
-                        CreatedById = changedByUserId
+                        CreatedById = changedByUserId,
+                        CompanyId
                     },
                     transaction);
 
@@ -320,7 +331,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
             {
                 int? customerInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
                     CustomerRepositoryQueries.GetCustomerInternalIdByExternalId,
-                    new { ExternalId = externalId },
+                    new { ExternalId = externalId, CompanyId },
                     transaction);
 
                 if (customerInternalId == null)
@@ -331,7 +342,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
 
                 await conn.ExecuteAsync(
                     CustomerRepositoryQueries.DeleteCustomer,
-                    new { CustomerId = customerInternalId.Value },
+                    new { CustomerId = customerInternalId.Value, CompanyId },
                     transaction);
 
                 await conn.ExecuteAsync(
@@ -342,7 +353,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                         CustomerId = customerInternalId.Value,
                         EventType = "CustomerDeleted",
                         Description = "Cliente eliminado.",
-                        CreatedById = deletedByUserId
+                        CreatedById = deletedByUserId,
+                        CompanyId
                     },
                     transaction);
 

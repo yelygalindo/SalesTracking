@@ -7,6 +7,7 @@
                                 Id
                             FROM Customers
                             WHERE ExternalId = @ExternalId
+                            AND CompanyId = @CompanyId
                             AND IsDeleted = 0;";
 
         public const string GetUserInternalIdByExternalId = @"
@@ -29,6 +30,8 @@
                                 INNER JOIN Customers c ON n.CustomerId = c.Id
                                 INNER JOIN Users u ON n.AuthorId = u.Id
                                 WHERE c.ExternalId = @CustomerExternalId
+                                AND c.CompanyId = @CompanyId
+                                AND n.CompanyId = @CompanyId
                                 AND c.IsDeleted = 0
                                 ORDER BY n.CreatedAtUtc DESC;";
 
@@ -38,6 +41,7 @@
                                     CustomerId,
                                     Text,
                                     AuthorId,
+                                    CompanyId,
                                     CreatedAtUtc
                                 )
                                 VALUES (
@@ -45,6 +49,7 @@
                                     @CustomerId,
                                     @Text,
                                     @AuthorId,
+                                    @CompanyId,
                                     SYSUTCDATETIME()
                                 );";
 
@@ -55,6 +60,7 @@
                                     EventType,
                                     Description,
                                     CreatedById,
+                                    CompanyId,
                                     CreatedAtUtc
                                 )
                                 VALUES (
@@ -63,6 +69,7 @@
                                     @EventType,
                                     @Description,
                                     @CreatedById,
+                                    @CompanyId,
                                     SYSUTCDATETIME()
                                 );";
     }

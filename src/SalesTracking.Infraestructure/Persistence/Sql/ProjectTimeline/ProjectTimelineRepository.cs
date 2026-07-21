@@ -5,6 +5,7 @@ using SalesTracking.Application.UseCases.ProjectTimeline.Comands;
 using SalesTracking.Application.UseCases.ProjectTimeline.Interfaces;
 using SalesTracking.Application.UseCases.ProjectTimeline.Models;
 using SalesTracking.Application.UseCases.ProjectTimeline.Results;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline.Mappers;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline.Rows;
@@ -15,12 +16,16 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline
     public sealed class ProjectTimelineRepository : IProjectTimelineRepository
     {
         private readonly DatabaseSettings _databaseOptions;
+        private readonly ICurrentUser _currentUser;
 
-        public ProjectTimelineRepository(IOptions<DatabaseSettings> databaseOptions)
+        public ProjectTimelineRepository(IOptions<DatabaseSettings> databaseOptions, ICurrentUser currentUser)
         {
             _databaseOptions = databaseOptions.Value
                 ?? throw new ArgumentNullException(nameof(databaseOptions));
+            _currentUser = currentUser;
         }
+
+        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
 
         private IDbConnection CreateConnection() =>
             new SqlConnection(_databaseOptions.ConnectionString);
@@ -31,7 +36,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline
 
             int? projectId = await connection.QueryFirstOrDefaultAsync<int?>(
                 ProjectTimelineQueries.GetProjectInternalIdByExternalId,
-                new { command.ProjectExternalId });
+                new { command.ProjectExternalId, CompanyId });
 
             if (projectId == null)
             {
@@ -49,7 +54,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline
                 {
                     ProjectId = projectId.Value,
                     Offset = (command.Page - 1) * command.PageSize,
-                    command.PageSize
+                    command.PageSize,
+                    CompanyId
                 })).ToList();
 
             int totalItems = rows.FirstOrDefault()?.TotalCount ?? 0;

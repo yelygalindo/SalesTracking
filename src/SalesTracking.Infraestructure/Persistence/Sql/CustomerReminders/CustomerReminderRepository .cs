@@ -1,6 +1,7 @@
 using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.Common.ExternalIds;
 using SalesTracking.Application.UseCases.CustomerReminders.Interfaces;
 using SalesTracking.Application.UseCases.CustomerReminders.Models;
@@ -16,13 +17,16 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders
     {
 
         private readonly DatabaseSettings _databaseOptions;
+        private readonly ICurrentUser _currentUser;
 
-        public CustomerReminderRepository(IOptions<DatabaseSettings> databaseOptions)
+        public CustomerReminderRepository(IOptions<DatabaseSettings> databaseOptions, ICurrentUser currentUser)
         {
             _databaseOptions = databaseOptions.Value ?? throw new ArgumentNullException(nameof(databaseOptions));
+            _currentUser = currentUser;
         }
 
         private IDbConnection CreateConnection() => new SqlConnection(_databaseOptions.ConnectionString);
+        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
 
         public async Task<IReadOnlyList<CustomerReminder>> GetRemindersAsync(string customerExternalId)
         {
@@ -31,7 +35,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders
             IEnumerable<CustomerReminderRow> reminders =
                 await conn.QueryAsync<CustomerReminderRow>(
                     CustomerReminderRepositoryQueries.GetRemindersByCustomerExternalId,
-                    new { CustomerExternalId = customerExternalId });
+                    new { CustomerExternalId = customerExternalId, CompanyId });
 
             return reminders.Select(x => x.ToDomain()).ToList();
         }
@@ -47,7 +51,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders
             {
                 int? customerInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
                     CustomerReminderRepositoryQueries.GetCustomerInternalIdByExternalId,
-                    new { ExternalId = reminder.CustomerExternalId },
+                    new { ExternalId = reminder.CustomerExternalId, CompanyId },
                     transaction);
 
                 if (customerInternalId == null)
@@ -63,7 +67,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders
 
                 int? assignedToInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
                     CustomerReminderRepositoryQueries.GetUserInternalIdByExternalId,
-                    new { ExternalId = reminder.AssignedToId },
+                    new { ExternalId = reminder.AssignedToId, CompanyId },
                     transaction);
 
                 if (assignedToInternalId == null)
@@ -84,7 +88,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders
                         CustomerId = customerInternalId.Value,
                         reminder.Text,
                         reminder.ReminderAtUtc,
-                        AssignedToId = assignedToInternalId.Value
+                        AssignedToId = assignedToInternalId.Value,
+                        CompanyId
                     },
                     transaction);
 
@@ -96,7 +101,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders
                         CustomerId = customerInternalId.Value,
                         EventType = "CustomerReminderCreated",
                         Description = "Recordatorio creado.",
-                        CreatedById = reminder.CreatedByUserId
+                        CreatedById = reminder.CreatedByUserId,
+                        CompanyId
                     },
                     transaction);
 
@@ -129,7 +135,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders
             {
                 int? customerInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
                     CustomerReminderRepositoryQueries.GetCustomerInternalIdByExternalId,
-                    new { ExternalId = customerExternalId },
+                    new { ExternalId = customerExternalId, CompanyId },
                     transaction);
 
                 if (customerInternalId == null)
@@ -143,7 +149,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders
                     new
                     {
                         CustomerExternalId = customerExternalId,
-                        ReminderExternalId = reminderExternalId
+                        ReminderExternalId = reminderExternalId,
+                        CompanyId
                     },
                     transaction);
 
@@ -161,7 +168,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders
                         CustomerId = customerInternalId.Value,
                         EventType = "CustomerReminderCompleted",
                         Description = "Recordatorio marcado como completado.",
-                        CreatedById = completedByUserId
+                        CreatedById = completedByUserId,
+                        CompanyId
                     },
                     transaction);
 

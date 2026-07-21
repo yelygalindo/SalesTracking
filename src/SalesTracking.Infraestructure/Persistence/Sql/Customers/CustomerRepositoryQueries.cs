@@ -18,6 +18,7 @@
                                             FROM Customers c
                                             LEFT JOIN Users u ON c.SellerId = u.Id
                                             WHERE c.IsDeleted = 0
+                                            AND c.CompanyId = @CompanyId
                                             AND (@StatusId IS NULL OR c.StatusId = @StatusId)
                                             AND (@SellerExternalId IS NULL OR u.ExternalId = @SellerExternalId)
                                             AND (
@@ -34,6 +35,7 @@
                                                 FROM Customers c
                                                 LEFT JOIN Users u ON c.SellerId = u.Id
                                                 WHERE c.IsDeleted = 0
+                                                AND c.CompanyId = @CompanyId
                                                 AND (@StatusId IS NULL OR c.StatusId = @StatusId)
                                                 AND (@SellerExternalId IS NULL OR u.ExternalId = @SellerExternalId)
                                                 AND (
@@ -62,6 +64,7 @@
                                                 FROM Customers c
                                                 LEFT JOIN Users u ON c.SellerId = u.Id
                                                 WHERE c.ExternalId = @ExternalId
+                                                AND c.CompanyId = @CompanyId
                                                 AND c.IsDeleted = 0;";
 
         public const string GetCustomerNotesByCustomerId = @"
@@ -76,6 +79,7 @@
                                                         FROM CustomerNotes n
                                                         INNER JOIN Users u ON n.AuthorId = u.Id
                                                         WHERE n.CustomerId = @CustomerId
+                                                        AND n.CompanyId = @CompanyId
                                                         ORDER BY n.CreatedAtUtc DESC;";
         //CREATE:
         public const string GetSellerInternalIdByExternalId = @"
@@ -85,6 +89,7 @@
                                                             INNER JOIN UserRoles ur ON u.Id = ur.UserId
                                                             INNER JOIN Roles r ON ur.RoleId = r.Id
                                                             WHERE u.ExternalId = @ExternalId
+                                                            AND u.CompanyId = @CompanyId
                                                             AND u.IsActive = 1";
 
         public const string CreateCustomer = @"
@@ -99,6 +104,7 @@
                                                     Address,
                                                     Latitude,
                                                     Longitude,
+                                                    CompanyId,
                                                     CreatedAtUtc,
                                                     IsDeleted
                                                 )
@@ -114,6 +120,7 @@
                                                     @Address,
                                                     @Latitude,
                                                     @Longitude,
+                                                    @CompanyId,
                                                     SYSUTCDATETIME(),
                                                     0
                                                 );";
@@ -125,6 +132,7 @@
                                 EventType,
                                 Description,
                                 CreatedById,
+                                CompanyId,
                                 CreatedAtUtc
                             )
                             VALUES (
@@ -133,6 +141,7 @@
                                 @EventType,
                                 @Description,
                                 @CreatedById,
+                                @CompanyId,
                                 SYSUTCDATETIME()
                             );";
 
@@ -141,6 +150,7 @@
                                         Id
                                     FROM Customers
                                     WHERE ExternalId = @ExternalId
+                                    AND CompanyId = @CompanyId
                                     AND IsDeleted = 0;";
 
         public const string UpdateCustomer = @"
@@ -156,6 +166,7 @@
                                         Longitude = @Longitude,
                                         UpdatedAtUtc = SYSUTCDATETIME()
                                     WHERE Id = @CustomerId
+                                    AND CompanyId = @CompanyId
                                     AND IsDeleted = 0;";
 
         public const string ChangeCustomerStatus = @"
@@ -164,6 +175,7 @@
                                         StatusId = @StatusId,
                                         UpdatedAtUtc = SYSUTCDATETIME()
                                     WHERE Id = @CustomerId
+                                    AND CompanyId = @CompanyId
                                     AND IsDeleted = 0;";
 
         public const string DeleteCustomer = @"
@@ -172,6 +184,7 @@
                                         IsDeleted = 1,
                                         UpdatedAtUtc = SYSUTCDATETIME()
                                     WHERE Id = @CustomerId
+                                    AND CompanyId = @CompanyId
                                     AND IsDeleted = 0;";
     }
 }

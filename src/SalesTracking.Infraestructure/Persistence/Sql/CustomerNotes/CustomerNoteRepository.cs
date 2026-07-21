@@ -1,6 +1,7 @@
 using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.Common.ExternalIds;
 using SalesTracking.Application.UseCases.CustomerNotes.Interfaces;
 using SalesTracking.Application.UseCases.CustomerNotes.Models;
@@ -15,20 +16,23 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes
     public class CustomerNoteRepository : ICustomerNoteRepository
     {
         private readonly DatabaseSettings _databaseOptions;
+        private readonly ICurrentUser _currentUser;
 
-        public CustomerNoteRepository(IOptions<DatabaseSettings> databaseOptions)
+        public CustomerNoteRepository(IOptions<DatabaseSettings> databaseOptions, ICurrentUser currentUser)
         {
             _databaseOptions = databaseOptions.Value ?? throw new ArgumentNullException(nameof(databaseOptions));
+            _currentUser = currentUser;
         }
 
         private IDbConnection CreateConnection() => new SqlConnection(_databaseOptions.ConnectionString);
+        private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
         public async Task<IReadOnlyList<CustomerNote>> GetNotesAsync(string customerExternalId)
         {
             using IDbConnection conn = CreateConnection();
 
             IEnumerable<CustomerNoteRow> notes = await conn.QueryAsync<CustomerNoteRow>(
                 CustomerNoteRepositoryQueries.GetNotesByCustomerExternalId,
-                new { CustomerExternalId = customerExternalId });
+                new { CustomerExternalId = customerExternalId, CompanyId });
 
             return notes.Select(x => x.ToDomain()).ToList();
         }
@@ -44,7 +48,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes
             {
                 int? customerInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
                     CustomerNoteRepositoryQueries.GetCustomerInternalIdByExternalId,
-                    new { ExternalId = note.CustomerExternalId },
+                    new { ExternalId = note.CustomerExternalId, CompanyId },
                     transaction);
 
                 if (customerInternalId == null)
@@ -65,7 +69,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes
                         note.ExternalId,
                         CustomerId = customerInternalId.Value,
                         note.Text,
-                        AuthorId = note.AuthorUserId
+                        AuthorId = note.AuthorUserId,
+                        CompanyId
                     },
                     transaction);
 
@@ -77,7 +82,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes
                         CustomerId = customerInternalId.Value,
                         EventType = "CustomerNoteAdded",
                         Description = "Nota agregada al cliente.",
-                        CreatedById = note.AuthorUserId
+                        CreatedById = note.AuthorUserId,
+                        CompanyId
                     },
                     transaction);
 

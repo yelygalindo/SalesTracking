@@ -5,7 +5,8 @@ internal static class CustomerTimelineQueries
     public const string GetCustomerId = @"
 SELECT TOP 1 Id
 FROM Customers
-WHERE ExternalId = @CustomerExternalId;";
+WHERE ExternalId = @CustomerExternalId
+  AND CompanyId = @CompanyId;";
 
     public const string GetTimeline = @"
 SELECT
@@ -19,6 +20,7 @@ SELECT
 FROM CustomerTimelineEvents timeline
 LEFT JOIN Users users ON users.Id = timeline.CreatedById
 WHERE timeline.CustomerId = @CustomerId
+  AND timeline.CompanyId = @CompanyId
 ORDER BY timeline.CreatedAtUtc DESC
 OFFSET @Offset ROWS
 FETCH NEXT @PageSize ROWS ONLY;";

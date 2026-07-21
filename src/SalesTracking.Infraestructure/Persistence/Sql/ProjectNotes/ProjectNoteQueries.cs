@@ -7,6 +7,7 @@ SELECT TOP 1
     Id
 FROM Projects
 WHERE ExternalId = @ExternalId
+  AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
 
         public const string GetUserInternalIdByExternalId = @"
@@ -14,6 +15,7 @@ SELECT TOP 1
     Id
 FROM Users
 WHERE ExternalId = @ExternalId
+  AND CompanyId = @CompanyId
   AND IsActive = 1;";
 
         public const string GetInternal = @"
@@ -21,6 +23,8 @@ SELECT TOP 1 pn.Id, pn.ProjectId
 FROM ProjectNotes pn
 INNER JOIN Projects p ON p.Id = pn.ProjectId
 WHERE p.ExternalId = @ProjectExternalId
+  AND p.CompanyId = @CompanyId
+  AND pn.CompanyId = @CompanyId
   AND p.IsDeleted = 0
   AND pn.ExternalId = @NoteExternalId
   AND pn.IsDeleted = 0;";
@@ -43,6 +47,8 @@ INNER JOIN Projects p ON p.Id = pn.ProjectId
 LEFT JOIN Users cu ON cu.Id = pn.CreatedByUserId
 LEFT JOIN Users uu ON uu.Id = pn.UpdatedByUserId
 WHERE p.ExternalId = @ProjectExternalId
+  AND p.CompanyId = @CompanyId
+  AND pn.CompanyId = @CompanyId
   AND p.IsDeleted = 0
   AND pn.IsDeleted = 0
 ORDER BY pn.CreatedAtUtc DESC;";
@@ -65,6 +71,8 @@ INNER JOIN Projects p ON p.Id = pn.ProjectId
 LEFT JOIN Users cu ON cu.Id = pn.CreatedByUserId
 LEFT JOIN Users uu ON uu.Id = pn.UpdatedByUserId
 WHERE p.ExternalId = @ProjectExternalId
+  AND p.CompanyId = @CompanyId
+  AND pn.CompanyId = @CompanyId
   AND p.IsDeleted = 0
   AND pn.ExternalId = @NoteExternalId
   AND pn.IsDeleted = 0;";
@@ -76,7 +84,8 @@ INSERT INTO ProjectNotes (
     Content,
     CreatedByUserId,
     CreatedAtUtc,
-    IsDeleted
+    IsDeleted,
+    CompanyId
 )
 OUTPUT INSERTED.Id
 VALUES (
@@ -85,7 +94,8 @@ VALUES (
     @Content,
     @AuthorId,
     SYSUTCDATETIME(),
-    0
+    0,
+    @CompanyId
 );";
 
         public const string UpdateNote = @"
@@ -97,6 +107,8 @@ SET
 FROM ProjectNotes pn
 INNER JOIN Projects p ON p.Id = pn.ProjectId
 WHERE p.ExternalId = @ProjectExternalId
+  AND p.CompanyId = @CompanyId
+  AND pn.CompanyId = @CompanyId
   AND p.IsDeleted = 0
   AND pn.ExternalId = @NoteExternalId
   AND pn.IsDeleted = 0;";
@@ -109,6 +121,8 @@ SET
 FROM ProjectNotes pn
 INNER JOIN Projects p ON p.Id = pn.ProjectId
 WHERE p.ExternalId = @ProjectExternalId
+  AND p.CompanyId = @CompanyId
+  AND pn.CompanyId = @CompanyId
   AND p.IsDeleted = 0
   AND pn.ExternalId = @NoteExternalId
   AND pn.IsDeleted = 0;";

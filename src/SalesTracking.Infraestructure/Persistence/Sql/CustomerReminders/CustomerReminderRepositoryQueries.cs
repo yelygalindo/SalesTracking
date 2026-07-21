@@ -7,14 +7,16 @@
                                                     Id
                                                 FROM Customers
                                                 WHERE ExternalId = @ExternalId
+                                                AND CompanyId = @CompanyId
                                                 AND IsDeleted = 0;";
 
         public const string GetUserInternalIdByExternalId = @"
                                                 SELECT TOP 1
                                                     Id
                                                 FROM Users
-                                                WHERE ExternalId = @ExternalId
-                                                AND IsActive = 1;";
+        WHERE ExternalId = @ExternalId
+          AND CompanyId = @CompanyId
+          AND IsActive = 1;";
 
         public const string GetRemindersByCustomerExternalId = @"
                                                 SELECT
@@ -30,6 +32,8 @@
                                                 INNER JOIN Customers c ON c.Id = r.CustomerId
                                                 INNER JOIN Users u ON  u.Id = r.AssignedToId
                                                 WHERE c.ExternalId = @CustomerExternalId
+                                                AND c.CompanyId = @CompanyId
+                                                AND r.CompanyId = @CompanyId
                                                 AND c.IsDeleted = 0
                                                 ORDER BY r.Completed ASC, r.ReminderAtUtc ASC;";
 
@@ -40,6 +44,7 @@
                                                     Text,
                                                     ReminderAtUtc,
                                                     AssignedToId,
+                                                    CompanyId,
                                                     Completed,
                                                     CreatedAtUtc
                                                 )
@@ -49,6 +54,7 @@
                                                     @Text,
                                                     @ReminderAtUtc,
                                                     @AssignedToId,
+                                                    @CompanyId,
                                                     0,
                                                     SYSUTCDATETIME()
                                                 );";
@@ -62,6 +68,8 @@
                                                 INNER JOIN Customers c ON r.CustomerId = c.Id
                                                 WHERE r.ExternalId = @ReminderExternalId
                                                 AND c.ExternalId = @CustomerExternalId
+                                                AND c.CompanyId = @CompanyId
+                                                AND r.CompanyId = @CompanyId
                                                 AND c.IsDeleted = 0
                                                 AND r.Completed = 0;";
 
@@ -72,6 +80,7 @@
                                                     EventType,
                                                     Description,
                                                     CreatedById,
+                                                    CompanyId,
                                                     CreatedAtUtc
                                                 )
                                                 VALUES (
@@ -80,6 +89,7 @@
                                                     @EventType,
                                                     @Description,
                                                     @CreatedById,
+                                                    @CompanyId,
                                                     SYSUTCDATETIME()
                                                 );";
     }

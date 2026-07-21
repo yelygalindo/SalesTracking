@@ -34,6 +34,10 @@ LEFT JOIN Customers c ON c.Id = p.CustomerId
 INNER JOIN Users u ON u.Id = d.SellerId
 INNER JOIN DeliveryStatus ds ON ds.DeliveryStatusId = d.StatusId
 WHERE d.IsDeleted = 0
+  AND d.CompanyId = @CompanyId
+  AND p.CompanyId = @CompanyId
+  AND c.CompanyId = @CompanyId
+  AND u.CompanyId = @CompanyId
   AND (@ProjectExternalId IS NULL OR p.ExternalId = @ProjectExternalId)
   AND (@CustomerExternalId IS NULL OR c.ExternalId = @CustomerExternalId)
   AND (@SellerExternalId IS NULL OR u.ExternalId = @SellerExternalId)
@@ -69,6 +73,9 @@ INNER JOIN Projects p ON p.Id = d.ProjectId
 INNER JOIN Users u ON u.Id = d.SellerId
 INNER JOIN DeliveryStatus ds ON ds.DeliveryStatusId = d.StatusId
 WHERE d.IsDeleted = 0
+  AND d.CompanyId = @CompanyId
+  AND p.CompanyId = @CompanyId
+  AND u.CompanyId = @CompanyId
   AND d.ExternalId = @ExternalId;";
 
         public const string GetItemsByDeliveryIds = @"
@@ -85,6 +92,9 @@ FROM DeliveryItems di
 INNER JOIN Products p ON p.Id = di.ProductId
 INNER JOIN Units u ON u.Id = di.UnitId
 WHERE di.IsDeleted = 0
+  AND di.CompanyId = @CompanyId
+  AND p.CompanyId = @CompanyId
+  AND u.CompanyId = @CompanyId
   AND di.DeliveryId IN @DeliveryIds
 ORDER BY di.Id;";
 
@@ -92,24 +102,28 @@ ORDER BY di.Id;";
 SELECT TOP 1 Id
 FROM Projects
 WHERE ExternalId = @ExternalId
+  AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
 
         public const string GetSellerInternalIdByExternalId = @"
 SELECT TOP 1 Id
 FROM Users
 WHERE ExternalId = @ExternalId
+  AND CompanyId = @CompanyId
   AND IsActive = 1;";
 
         public const string GetProductInternalIdByExternalId = @"
 SELECT TOP 1 Id
 FROM Products
 WHERE ExternalId = @ExternalId
+  AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
 
         public const string GetUnitInternalIdByExternalId = @"
 SELECT TOP 1 Id
 FROM Units
 WHERE ExternalId = @ExternalId
+  AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
 
         public const string GetDeliveryInternalByExternalId = @"
@@ -120,6 +134,7 @@ SELECT TOP 1
     StatusId
 FROM Deliveries
 WHERE ExternalId = @ExternalId
+  AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
 
         public const string StatusExists = @"
@@ -143,7 +158,8 @@ INSERT INTO Deliveries (
     DeliveredDateUtc,
     Notes,
     CreatedAtUtc,
-    IsDeleted
+    IsDeleted,
+    CompanyId
 )
 OUTPUT INSERTED.Id
 VALUES (
@@ -155,7 +171,8 @@ VALUES (
     @DeliveredDateUtc,
     @Notes,
     SYSUTCDATETIME(),
-    0
+    0,
+    @CompanyId
 );";
 
         public const string InsertItem = @"
@@ -167,7 +184,8 @@ INSERT INTO DeliveryItems (
     Quantity,
     DeliveredQuantity,
     CreatedAtUtc,
-    IsDeleted
+    IsDeleted,
+    CompanyId
 )
 VALUES (
     @ExternalId,
@@ -177,7 +195,8 @@ VALUES (
     @Quantity,
     @DeliveredQuantity,
     SYSUTCDATETIME(),
-    0
+    0,
+    @CompanyId
 );";
 
         public const string Update = @"
@@ -191,6 +210,7 @@ SET
     Notes = @Notes,
     UpdatedAtUtc = SYSUTCDATETIME()
 WHERE Id = @Id
+  AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
 
         public const string SoftDeleteItems = @"
@@ -199,6 +219,7 @@ SET
     IsDeleted = 1,
     UpdatedAtUtc = SYSUTCDATETIME()
 WHERE DeliveryId = @DeliveryId
+  AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
 
         public const string ChangeStatus = @"
@@ -208,6 +229,7 @@ SET
     DeliveredDateUtc = @DeliveredDateUtc,
     UpdatedAtUtc = SYSUTCDATETIME()
 WHERE Id = @Id
+  AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
 
         public const string DeleteDelivery = @"
@@ -216,6 +238,7 @@ SET
     IsDeleted = 1,
     UpdatedAtUtc = SYSUTCDATETIME()
 WHERE ExternalId = @ExternalId
+  AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
 
 
@@ -228,6 +251,7 @@ SELECT TOP 1
     DeliveredQuantity
 FROM DeliveryItems
 WHERE ExternalId = @ExternalId
+  AND CompanyId = @CompanyId
   AND DeliveryId = @DeliveryId
   AND IsDeleted = 0;";
 
@@ -237,6 +261,7 @@ SET
     DeliveredQuantity = @DeliveredQuantity,
     UpdatedAtUtc = SYSUTCDATETIME()
 WHERE Id = @Id
+  AND CompanyId = @CompanyId
   AND DeliveryId = @DeliveryId
   AND IsDeleted = 0;";
 
@@ -247,6 +272,7 @@ SET
     DeliveredDateUtc = @DeliveredDateUtc,
     UpdatedAtUtc = SYSUTCDATETIME()
 WHERE Id = @Id
+  AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
         public const string GetQuantitiesByDeliveryId = @"
 SELECT
@@ -254,6 +280,7 @@ SELECT
     DeliveredQuantity
 FROM DeliveryItems
 WHERE DeliveryId = @DeliveryId
+  AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
     }
 }

@@ -5,6 +5,7 @@ using SalesTracking.Application.UseCases.ProjectVisits.Comands;
 using SalesTracking.Application.UseCases.ProjectVisits.Interfaces;
 using SalesTracking.Application.UseCases.ProjectVisits.Models;
 using SalesTracking.Application.UseCases.ProjectVisits.Results;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectVisits.Rows;
@@ -16,11 +17,15 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectVisits;
 public sealed class ProjectVisitRepository : IProjectVisitRepository
 {
     private readonly string _connectionString;
+    private readonly ICurrentUser _currentUser;
 
-    public ProjectVisitRepository(IOptions<DatabaseSettings> options)
+    public ProjectVisitRepository(IOptions<DatabaseSettings> options, ICurrentUser currentUser)
     {
         _connectionString = options.Value.ConnectionString;
+        _currentUser = currentUser;
     }
+
+    private int CompanyId => _currentUser.CompanyId.GetValueOrDefault();
 
     public async Task<CreateProjectVisitResult> CreateAsync(CreateProjectVisit visit)
     {
@@ -32,7 +37,7 @@ public sealed class ProjectVisitRepository : IProjectVisitRepository
         {
             int? projectId = await connection.QueryFirstOrDefaultAsync<int?>(
                 ProjectVisitQueries.GetProjectId,
-                new { visit.ProjectExternalId },
+                new { visit.ProjectExternalId, CompanyId },
                 transaction);
 
             if (!projectId.HasValue)
@@ -82,7 +87,7 @@ public sealed class ProjectVisitRepository : IProjectVisitRepository
         using IDbConnection connection = CreateConnection();
         int? projectId = await connection.QueryFirstOrDefaultAsync<int?>(
             ProjectVisitQueries.GetProjectId,
-            new { command.ProjectExternalId });
+            new { command.ProjectExternalId, CompanyId });
 
         if (!projectId.HasValue)
             return new GetProjectVisitsResult { NotFound = true, Message = "Proyecto no encontrado." };
@@ -94,7 +99,8 @@ public sealed class ProjectVisitRepository : IProjectVisitRepository
                 ProjectId = projectId.Value,
                 command.SellerExternalId,
                 FromUtc = command.From?.UtcDateTime,
-                ToUtc = command.To?.UtcDateTime
+                ToUtc = command.To?.UtcDateTime,
+                CompanyId
             });
 
         return new GetProjectVisitsResult

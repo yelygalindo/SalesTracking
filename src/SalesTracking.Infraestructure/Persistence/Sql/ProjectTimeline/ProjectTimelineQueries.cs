@@ -15,7 +15,8 @@ INSERT INTO dbo.ProjectTimeline (
     RelatedEntityId,
     MetadataJson,
     CreatedAtUtc,
-    IsDeleted
+    IsDeleted,
+    CompanyId
 )
 VALUES (
     @ExternalId,
@@ -29,14 +30,16 @@ VALUES (
     @RelatedEntityId,
     @MetadataJson,
     SYSUTCDATETIME(),
-    0
+    0,
+    (SELECT CompanyId FROM Projects WHERE Id = @ProjectId)
 );";
 
         public const string GetProjectInternalIdByExternalId = @"
 SELECT TOP 1
     Id
 FROM Projects
-WHERE ExternalId = @ProjectExternalId;";
+WHERE ExternalId = @ProjectExternalId
+  AND CompanyId = @CompanyId;";
 
         public const string GetByProjectId = @"
 SELECT
@@ -75,6 +78,7 @@ SELECT
 FROM dbo.ProjectTimeline pt
 LEFT JOIN Users u ON u.Id = pt.CreatedByUserId
 WHERE pt.ProjectId = @ProjectId
+  AND pt.CompanyId = @CompanyId
   AND pt.IsDeleted = 0
 ORDER BY pt.OccurredAtUtc DESC
 OFFSET @Offset ROWS
