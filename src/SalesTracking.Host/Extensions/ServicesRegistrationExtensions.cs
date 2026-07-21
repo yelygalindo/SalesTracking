@@ -17,6 +17,8 @@ using SalesTracking.Application.UseCases.ProjectTimeline.Interfaces;
 using SalesTracking.Application.UseCases.ProjectTimeline.Services;
 using SalesTracking.Application.UseCases.Products.Interfaces;
 using SalesTracking.Application.UseCases.Products.Services;
+using SalesTracking.Application.UseCases.Units.Interfaces;
+using SalesTracking.Application.UseCases.Units.Services;
 using SalesTracking.Infrastructure.Persistence.Security;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.Auth;
@@ -28,6 +30,7 @@ using SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes;
 using SalesTracking.Infrastructure.Persistence.Sql.Projects;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline;
 using SalesTracking.Infrastructure.Persistence.Sql.Products;
+using SalesTracking.Infrastructure.Persistence.Sql.Units;
 
 namespace SalesTracking.Host.Extensions
 {
@@ -49,12 +52,14 @@ namespace SalesTracking.Host.Extensions
             services.AddScoped<IProjectNoteService, ProjectNoteService>();
             services.AddScoped<IProjectTimelineService, ProjectTimelineService>();
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IUnitService, UnitService>();
 
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
             services.AddScoped<IProjectNoteRepository, ProjectNoteRepository>();
             services.AddScoped<IProjectTimelineRepository, ProjectTimelineRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IUnitRepository, UnitRepository>();
             services.AddScoped<IInvitationRepository, InvitationRepository>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<ICustomerNoteRepository, CustomerNoteRepository>();
