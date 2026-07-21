@@ -1,4 +1,5 @@
 using SalesTracking.Application.UseCases.ProjectNotes.Results;
+using UrbanTrack.Api.Controllers.Responses.Common;
 using UrbanTrack.Api.Controllers.Responses.Projects;
 
 namespace UrbanTrack.Api.Controllers.Responses.Mappers
@@ -16,6 +17,15 @@ namespace UrbanTrack.Api.Controllers.Responses.Mappers
                 CreatedAtUtc = result.CreatedAtUtc,
                 UpdatedBy = result.UpdatedBy?.ToResponse(),
                 UpdatedAtUtc = result.UpdatedAtUtc
+            };
+        }
+
+        public static IdMessageResponse ToResponse(this AddProjectNoteResult result)
+        {
+            return new IdMessageResponse
+            {
+                Id = result.Id,
+                Message = result.Message
             };
         }
 

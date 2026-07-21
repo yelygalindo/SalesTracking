@@ -2,6 +2,7 @@ using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using SalesTracking.Application.UseCases.ProjectNotes.Interfaces;
+using SalesTracking.Application.UseCases.ProjectNotes.Models;
 using SalesTracking.Application.UseCases.ProjectNotes.Results;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes.Mappers;
@@ -22,6 +23,80 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
 
         private IDbConnection CreateConnection() =>
             new SqlConnection(_databaseOptions.ConnectionString);
+
+        public async Task<ResponseCreateProjectNote> AddNoteAsync(CreateProjectNote note)
+        {
+            using IDbConnection connection = CreateConnection();
+            connection.Open();
+
+            using IDbTransaction transaction = connection.BeginTransaction();
+
+            try
+            {
+                int? projectInternalId = await connection.QueryFirstOrDefaultAsync<int?>(
+                    ProjectNoteQueries.GetProjectInternalIdByExternalId,
+                    new { ExternalId = note.ProjectExternalId },
+                    transaction);
+
+                if (projectInternalId == null)
+                {
+                    transaction.Rollback();
+                    return new ResponseCreateProjectNote
+                    {
+                        Succeeded = false,
+                        NotFound = true,
+                        Message = "Proyecto no encontrado."
+                    };
+                }
+
+                int? authorInternalId = await connection.QueryFirstOrDefaultAsync<int?>(
+                    ProjectNoteQueries.GetUserInternalIdByExternalId,
+                    new { ExternalId = note.AuthorExternalId },
+                    transaction);
+
+                if (authorInternalId == null)
+                {
+                    transaction.Rollback();
+                    return new ResponseCreateProjectNote
+                    {
+                        Succeeded = false,
+                        NotFound = true,
+                        Message = "Autor no encontrado o inactivo."
+                    };
+                }
+
+                await connection.ExecuteAsync(
+                    ProjectNoteQueries.AddNote,
+                    new
+                    {
+                        note.ExternalId,
+                        ProjectId = projectInternalId.Value,
+                        note.Content,
+                        AuthorId = authorInternalId.Value
+                    },
+                    transaction);
+
+                transaction.Commit();
+                return new ResponseCreateProjectNote
+                {
+                    Succeeded = true,
+                    NotFound = false,
+                    Message = "Nota agregada correctamente.",
+                    CreateProjectNote = note
+                };
+            }
+            catch
+            {
+                transaction.Rollback();
+                return new ResponseCreateProjectNote
+                {
+                    Succeeded = false,
+                    NotFound = false,
+                    Message = "Ocurrió un error al agregar la nota.",
+                    CreateProjectNote = note
+                };
+            }
+        }
 
         public async Task<IReadOnlyList<ProjectNoteResult>> GetNotesAsync(string projectExternalId)
         {

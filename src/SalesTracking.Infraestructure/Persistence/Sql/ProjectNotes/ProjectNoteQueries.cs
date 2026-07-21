@@ -2,6 +2,20 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
 {
     internal static class ProjectNoteQueries
     {
+        public const string GetProjectInternalIdByExternalId = @"
+SELECT TOP 1
+    Id
+FROM Projects
+WHERE ExternalId = @ExternalId
+  AND IsDeleted = 0;";
+
+        public const string GetUserInternalIdByExternalId = @"
+SELECT TOP 1
+    Id
+FROM Users
+WHERE ExternalId = @ExternalId
+  AND IsActive = 1;";
+
         public const string GetByProjectExternalId = @"
 SELECT
     pn.Id,
@@ -23,5 +37,23 @@ WHERE p.ExternalId = @ProjectExternalId
   AND p.IsDeleted = 0
   AND pn.IsDeleted = 0
 ORDER BY pn.CreatedAtUtc DESC;";
+
+        public const string AddNote = @"
+INSERT INTO ProjectNotes (
+    ExternalId,
+    ProjectId,
+    Content,
+    CreatedByUserId,
+    CreatedAtUtc,
+    IsDeleted
+)
+VALUES (
+    @ExternalId,
+    @ProjectId,
+    @Content,
+    @AuthorId,
+    SYSUTCDATETIME(),
+    0
+);";
     }
 }

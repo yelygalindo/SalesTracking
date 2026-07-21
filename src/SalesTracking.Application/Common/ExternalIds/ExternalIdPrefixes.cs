@@ -9,5 +9,6 @@
         public const string User = "user";
         public const string Invitation = "inv"; 
         public const string Project = "p";
+        public const string ProjectNote = "pnote";
     }
 }
