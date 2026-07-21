@@ -1,4 +1,4 @@
-﻿namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
+namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
 {
     internal static class ProjectQueries
     {
@@ -106,6 +106,16 @@ INNER JOIN ProjectStatus ps ON ps.ProjectStatusId = p.StatusId
 WHERE p.IsDeleted = 0
   AND p.ExternalId = @ExternalId;";
 
+        public const string GetTimelineProjectByExternalId = @"
+SELECT TOP 1
+    p.Id,
+    p.SellerId,
+    p.StatusId,
+    p.ProgressPercentage
+FROM Projects p
+WHERE p.IsDeleted = 0
+  AND p.ExternalId = @ExternalId;";
+
         public const string ProjectExistsByExternalId = @"
 SELECT COUNT(1)
 FROM Projects p
@@ -128,6 +138,13 @@ SELECT COUNT(1)
 FROM Users u
 WHERE u.IsActive = 1
   AND u.ExternalId = @SellerExternalId;";
+
+        public const string GetUserInternalIdByExternalId = @"
+SELECT TOP 1
+    Id
+FROM Users
+WHERE IsActive = 1
+  AND ExternalId = @ExternalId;";
 
         public const string Update = @"
 UPDATE p

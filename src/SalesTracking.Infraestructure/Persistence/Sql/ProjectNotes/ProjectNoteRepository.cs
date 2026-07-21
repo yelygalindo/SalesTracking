@@ -7,6 +7,7 @@ using SalesTracking.Application.UseCases.ProjectNotes.Results;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes.Mappers;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes.Rows;
+using SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline;
 using System.Data;
 
 namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
@@ -65,7 +66,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                     };
                 }
 
-                await connection.ExecuteAsync(
+                int noteInternalId = await connection.QuerySingleAsync<int>(
                     ProjectNoteQueries.AddNote,
                     new
                     {
@@ -75,6 +76,20 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                         AuthorId = authorInternalId.Value
                     },
                     transaction);
+
+                await ProjectTimelineWriter.InsertAsync(
+                    connection,
+                    transaction,
+                    new ProjectTimelineEvent
+                    {
+                        ProjectId = projectInternalId.Value,
+                        EventTypeId = ProjectTimelineEventTypeIds.NoteAdded,
+                        Title = "Nota agregada",
+                        Description = "Nota agregada al proyecto.",
+                        CreatedByUserId = authorInternalId.Value,
+                        RelatedEntityType = "ProjectNote",
+                        RelatedEntityId = noteInternalId
+                    });
 
                 transaction.Commit();
                 return new ResponseCreateProjectNote

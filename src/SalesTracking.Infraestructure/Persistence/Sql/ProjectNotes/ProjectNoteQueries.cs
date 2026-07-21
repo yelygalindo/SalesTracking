@@ -69,6 +69,7 @@ INSERT INTO ProjectNotes (
     CreatedAtUtc,
     IsDeleted
 )
+OUTPUT INSERTED.Id
 VALUES (
     @ExternalId,
     @ProjectId,
