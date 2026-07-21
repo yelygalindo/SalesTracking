@@ -23,6 +23,8 @@ using SalesTracking.Application.UseCases.ProjectTimeline.Interfaces;
 using SalesTracking.Application.UseCases.ProjectTimeline.Services;
 using SalesTracking.Application.UseCases.Products.Interfaces;
 using SalesTracking.Application.UseCases.Products.Services;
+using SalesTracking.Application.UseCases.Reports.Interfaces;
+using SalesTracking.Application.UseCases.Reports.Services;
 using SalesTracking.Application.UseCases.Units.Interfaces;
 using SalesTracking.Application.UseCases.Units.Services;
 using SalesTracking.Infrastructure.Persistence.Security;
@@ -39,6 +41,7 @@ using SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes;
 using SalesTracking.Infrastructure.Persistence.Sql.Projects;
 using SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline;
 using SalesTracking.Infrastructure.Persistence.Sql.Products;
+using SalesTracking.Infrastructure.Persistence.Sql.Reports;
 using SalesTracking.Infrastructure.Persistence.Sql.Units;
 using SalesTracking.Infrastructure.Storage;
 
@@ -67,6 +70,7 @@ namespace SalesTracking.Host.Extensions
             services.AddScoped<IUnitService, UnitService>();
             services.AddScoped<IDeliveryService, DeliveryService>();
             services.AddScoped<IDashboardService, DashboardService>();
+            services.AddScoped<IReportService, ReportService>();
 
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
@@ -77,6 +81,7 @@ namespace SalesTracking.Host.Extensions
             services.AddScoped<IUnitRepository, UnitRepository>();
             services.AddScoped<IDeliveryRepository, DeliveryRepository>();
             services.AddScoped<IDashboardRepository, DashboardRepository>();
+            services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<IInvitationRepository, InvitationRepository>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<ICustomerNoteRepository, CustomerNoteRepository>();
