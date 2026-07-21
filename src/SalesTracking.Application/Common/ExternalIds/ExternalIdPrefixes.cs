@@ -1,4 +1,4 @@
-namespace SalesTracking.Application.Common.ExternalIds
+﻿namespace SalesTracking.Application.Common.ExternalIds
 {
     public static class ExternalIdPrefixes
     {
@@ -15,5 +15,6 @@ namespace SalesTracking.Application.Common.ExternalIds
         public const string Invitation = "inv"; 
         public const string Project = "p";
         public const string ProjectNote = "pnote";
+        public const string ProjectAttachment = "patt";
     }
 }

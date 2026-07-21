@@ -49,6 +49,7 @@ SELECT
         WHEN 3 THEN 'ProjectStatusChanged'
         WHEN 4 THEN 'ProjectProgressUpdated'
         WHEN 6 THEN 'NoteAdded'
+        WHEN 7 THEN 'AttachmentUploaded'
         WHEN 8 THEN 'DeliveryCreated'
         WHEN 9 THEN 'DeliveryStatusChanged'
         WHEN 10 THEN 'DeliveryReceiptConfirmed'
