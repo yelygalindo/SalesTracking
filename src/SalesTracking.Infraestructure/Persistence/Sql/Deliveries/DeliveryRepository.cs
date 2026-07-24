@@ -212,6 +212,13 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     DeliveryRepositoryQueries.GetExistingItemsForUpdate,
                     new { DeliveryId = existing.Id, CompanyId },
                     transaction)).ToList();
+                bool hasReceipts = existingItems.Any(x => x.DeliveredQuantity > 0);
+
+                if (hasReceipts && project.Id != existing.ProjectId)
+                    return RollbackUpdate(
+                        transaction,
+                        "No se puede cambiar el proyecto de una entrega que ya tiene recepciones.",
+                        false);
 
                 var preparedItems = new List<(CreateDeliveryItem Item, ProductDeliveryRow Product)>();
                 foreach (CreateDeliveryItem item in delivery.Items)
@@ -234,8 +241,22 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                 }
 
                 var requestedProductIds = preparedItems.Select(x => x.Product.Id).ToHashSet();
-                if (existingItems.Any(x => x.DeliveredQuantity > 0 && !requestedProductIds.Contains(x.ProductId)))
-                    return RollbackUpdate(transaction, "No se puede eliminar un producto que ya tiene cantidades entregadas.", false);
+                if (hasReceipts)
+                {
+                    bool itemsChanged =
+                        requestedProductIds.Count != existingItems.Count ||
+                        existingItems.Any(existingItem =>
+                            !requestedProductIds.Contains(existingItem.ProductId) ||
+                            preparedItems.Single(x => x.Product.Id == existingItem.ProductId).Item.Quantity != existingItem.Quantity);
+
+                    if (itemsChanged)
+                    {
+                        return RollbackUpdate(
+                            transaction,
+                            "No se pueden modificar los productos ni las cantidades de una entrega que ya tiene recepciones.",
+                            false);
+                    }
+                }
 
                 int statusId = ResolveStatusId(preparedItems.Select(x => new DeliveryQuantityRow
                 {
@@ -264,14 +285,17 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                 if (affectedRows == 0)
                     return RollbackUpdate(transaction, "Entrega no encontrada.", true);
 
-                await connection.ExecuteAsync(
-                    DeliveryRepositoryQueries.SoftDeleteItems,
-                    new { DeliveryId = existing.Id, CompanyId },
-                    transaction);
-
-                foreach ((CreateDeliveryItem item, ProductDeliveryRow product) in preparedItems)
+                if (!hasReceipts)
                 {
-                    await InsertItemAsync(connection, transaction, existing.Id, item, product.Id, product.UnitId);
+                    await connection.ExecuteAsync(
+                        DeliveryRepositoryQueries.SoftDeleteItems,
+                        new { DeliveryId = existing.Id, CompanyId },
+                        transaction);
+
+                    foreach ((CreateDeliveryItem item, ProductDeliveryRow product) in preparedItems)
+                    {
+                        await InsertItemAsync(connection, transaction, existing.Id, item, product.Id, product.UnitId);
+                    }
                 }
 
                 await ProjectTimelineWriter.InsertAsync(
@@ -644,18 +668,6 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                 .ToList();
         }
 
-        private async Task<int?> GetInternalIdAsync(
-            IDbConnection connection,
-            IDbTransaction transaction,
-            string query,
-            string externalId)
-        {
-            return await connection.QuerySingleOrDefaultAsync<int?>(
-                query,
-                new { ExternalId = externalId, CompanyId, SellerUserId = IsSeller ? _currentUser.UserId : (int?)null },
-                transaction);
-        }
-
         private async Task<ProductDeliveryRow?> GetProductAsync(
             IDbConnection connection,
             IDbTransaction transaction,
@@ -788,6 +800,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
         private sealed class ExistingDeliveryItemRow
         {
             public int ProductId { get; set; }
+            public decimal Quantity { get; set; }
             public decimal DeliveredQuantity { get; set; }
         }
     }

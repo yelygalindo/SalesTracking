@@ -8,21 +8,21 @@ namespace SalesTracking.Host.Development;
 public sealed class DevelopmentInvitationLinkNotifier : IInvitationLinkNotifier
 {
     private readonly ILogger<DevelopmentInvitationLinkNotifier> _logger;
-    private readonly AuthSettings _authSettings;
+    private readonly FrontendLinkSettings _linkSettings;
 
     public DevelopmentInvitationLinkNotifier(
         ILogger<DevelopmentInvitationLinkNotifier> logger,
-        IOptions<AuthSettings> authSettings)
+        IOptions<FrontendLinkSettings> linkSettings)
     {
         _logger = logger;
-        _authSettings = authSettings.Value;
+        _linkSettings = linkSettings.Value;
     }
 
     public Task NotifyAsync(CreatedInvitation invitation)
     {
-        string separator = _authSettings.InvitationUrl.Contains('?') ? "&" : "?";
+        string separator = _linkSettings.InvitationUrl.Contains('?') ? "&" : "?";
         string link =
-            $"{_authSettings.InvitationUrl}{separator}token={Uri.EscapeDataString(invitation.Token)}";
+            $"{_linkSettings.InvitationUrl}{separator}token={Uri.EscapeDataString(invitation.Token)}";
 
         _logger.LogInformation(
             "Development invitation link for {Email}, expires at {ExpiresAtUtc}: {InvitationLink}",

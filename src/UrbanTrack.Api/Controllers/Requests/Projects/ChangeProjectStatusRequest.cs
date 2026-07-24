@@ -1,4 +1,4 @@
-namespace UrbanTrack.Api.Controllers.Requests.Products
+namespace UrbanTrack.Api.Controllers.Requests.Projects
 {
     public sealed class ChangeProjectStatusRequest
     {

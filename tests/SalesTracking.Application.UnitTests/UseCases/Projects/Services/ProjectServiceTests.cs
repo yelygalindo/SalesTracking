@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Moq;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.UseCases.Projects.Comands;
 using SalesTracking.Application.UseCases.Projects.Interfaces;
 using SalesTracking.Application.UseCases.Projects.Results;
@@ -11,11 +12,14 @@ namespace SalesTracking.Application.UnitTests.UseCases.Projects.Services
     public sealed class ProjectServiceTests
     {
         private readonly Mock<IProjectRepository> _repositoryMock = new();
+        private readonly Mock<ICurrentUser> _currentUserMock = new();
         private readonly ProjectService _service;
 
         public ProjectServiceTests()
         {
-            _service = new ProjectService(_repositoryMock.Object);
+            _currentUserMock.SetupGet(x => x.UserExternalId).Returns("current-user");
+            _currentUserMock.SetupGet(x => x.Roles).Returns(Array.Empty<string>());
+            _service = new ProjectService(_repositoryMock.Object, _currentUserMock.Object);
         }
 
         [Fact]

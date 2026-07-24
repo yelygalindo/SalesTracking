@@ -65,7 +65,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
 
                 int sellerExists = await connection.ExecuteScalarAsync<int>(
                     ProjectQueries.SellerExistsByExternalId,
-                    new { SellerExternalId = IsSeller ? _currentUser.UserExternalId : project.SellerExternalId, CompanyId },
+                    new { project.SellerExternalId, CompanyId },
                     transaction);
 
                 if (sellerExists == 0)
@@ -86,7 +86,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                         project.Name,
                         project.Description,
                         CustomerExternalId = project.CustomerExternalId,
-                        SellerExternalId = IsSeller ? _currentUser.UserExternalId : project.SellerExternalId,
+                        project.SellerExternalId,
                         StatusId = (int)project.Status,
                         project.EstimatedAmount,
                         project.StartDateUtc,
@@ -269,19 +269,22 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                     };
                 }
 
-                int? sellerInternalId = await connection.QueryFirstOrDefaultAsync<int?>(
-                    ProjectQueries.GetUserInternalIdByExternalId,
-                    new { ExternalId = IsSeller ? _currentUser.UserExternalId : command.SellerExternalId, CompanyId },
-                    transaction);
-
-                if (sellerInternalId == null)
+                if (!string.IsNullOrWhiteSpace(command.SellerExternalId))
                 {
-                    transaction.Rollback();
-                    return new UpdateProjectResult
+                    int? sellerInternalId = await connection.QueryFirstOrDefaultAsync<int?>(
+                        ProjectQueries.GetUserInternalIdByExternalId,
+                        new { ExternalId = command.SellerExternalId, CompanyId },
+                        transaction);
+
+                    if (sellerInternalId == null)
                     {
-                        Succeeded = false,
-                        Message = "Vendedor no encontrado."
-                    };
+                        transaction.Rollback();
+                        return new UpdateProjectResult
+                        {
+                            Succeeded = false,
+                            Message = "Vendedor no encontrado."
+                        };
+                    }
                 }
 
                 int affectedRows = await connection.ExecuteAsync(
@@ -292,7 +295,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                         command.Name,
                         command.Description,
                         command.CustomerExternalId,
-                        SellerExternalId = IsSeller ? _currentUser.UserExternalId : command.SellerExternalId,
+                        command.SellerExternalId,
                         command.EstimatedAmount,
                         command.StartDateUtc,
                         command.ExpectedCloseDateUtc,

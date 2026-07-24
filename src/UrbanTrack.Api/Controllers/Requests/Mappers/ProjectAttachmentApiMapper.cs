@@ -27,18 +27,6 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
             };
         }
 
-        public static SetProjectAttachmentCoverCommand ToApplication(
-            this SetProjectAttachmentCoverRequest request,
-            string projectExternalId,
-            string attachmentExternalId,
-            int updatedByUserId)
-        {
-            return new SetProjectAttachmentCoverCommand(
-                projectExternalId,
-                attachmentExternalId,
-                updatedByUserId);
-        }
-
         public static ProjectAttachmentResponse ToResponse(this ProjectAttachmentResult result)
         {
             return new ProjectAttachmentResponse

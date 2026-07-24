@@ -41,25 +41,15 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Dashboard
                 CompanyId
             };
 
-            DashboardMetricsRow metrics = await connection.QuerySingleAsync<DashboardMetricsRow>(
-                DashboardQueries.GetMetrics,
+            using SqlMapper.GridReader results = await connection.QueryMultipleAsync(
+                DashboardQueries.GetDashboard,
                 parameters);
 
-            var projectLocations = await connection.QueryAsync<DashboardProjectLocationRow>(
-                DashboardQueries.GetProjectLocations,
-                parameters);
-
-            var recentActivity = await connection.QueryAsync<DashboardRecentActivityRow>(
-                DashboardQueries.GetRecentActivity,
-                parameters);
-
-            var upcomingFollowUps = await connection.QueryAsync<DashboardUpcomingFollowUpRow>(
-                DashboardQueries.GetUpcomingFollowUps,
-                parameters);
-
-            var urgentDeliveries = await connection.QueryAsync<DashboardUrgentDeliveryRow>(
-                DashboardQueries.GetUrgentDeliveries,
-                parameters);
+            DashboardMetricsRow metrics = await results.ReadSingleAsync<DashboardMetricsRow>();
+            var projectLocations = await results.ReadAsync<DashboardProjectLocationRow>();
+            var recentActivity = await results.ReadAsync<DashboardRecentActivityRow>();
+            var upcomingFollowUps = await results.ReadAsync<DashboardUpcomingFollowUpRow>();
+            var urgentDeliveries = await results.ReadAsync<DashboardUrgentDeliveryRow>();
 
             return new DashboardResult
             {

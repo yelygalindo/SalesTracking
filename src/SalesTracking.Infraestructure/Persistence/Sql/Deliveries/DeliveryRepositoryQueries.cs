@@ -106,13 +106,6 @@ WHERE ExternalId = @ExternalId
   AND (@SellerUserId IS NULL OR SellerId = @SellerUserId)
   AND IsDeleted = 0;";
 
-        public const string GetSellerInternalIdByExternalId = @"
-SELECT TOP 1 Id
-FROM Users
-WHERE ExternalId = @ExternalId
-  AND CompanyId = @CompanyId
-  AND IsActive = 1;";
-
         public const string GetProductInternalIdByExternalId = @"
 SELECT TOP 1 Id, UnitId
 FROM Products
@@ -121,16 +114,9 @@ WHERE ExternalId = @ExternalId
   AND IsDeleted = 0;";
 
         public const string GetExistingItemsForUpdate = @"
-SELECT ProductId, DeliveredQuantity
+SELECT ProductId, Quantity, DeliveredQuantity
 FROM DeliveryItems
 WHERE DeliveryId = @DeliveryId
-  AND CompanyId = @CompanyId
-  AND IsDeleted = 0;";
-
-        public const string GetUnitInternalIdByExternalId = @"
-SELECT TOP 1 Id
-FROM Units
-WHERE ExternalId = @ExternalId
   AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
 

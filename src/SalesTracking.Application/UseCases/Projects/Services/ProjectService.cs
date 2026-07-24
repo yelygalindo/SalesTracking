@@ -1,4 +1,5 @@
 using SalesTracking.Application.Common.ExternalIds;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.UseCases.Projects.Comands;
 using SalesTracking.Application.UseCases.Projects.Interfaces;
 using SalesTracking.Application.UseCases.Projects.Results;
@@ -9,10 +10,12 @@ namespace SalesTracking.Application.UseCases.Projects.Services
     public sealed class ProjectService : IProjectService
     {
         private readonly IProjectRepository _projectRepository;
+        private readonly ICurrentUser _currentUser;
 
-        public ProjectService(IProjectRepository projectRepository)
+        public ProjectService(IProjectRepository projectRepository, ICurrentUser currentUser)
         {
             _projectRepository = projectRepository;
+            _currentUser = currentUser;
         }
 
         public async Task<CreateProjectResult?> CreateAsync(CreateProjectCommand command)
@@ -44,14 +47,9 @@ namespace SalesTracking.Application.UseCases.Projects.Services
                 };
             }
 
-            if (string.IsNullOrWhiteSpace(command.SellerId))
-            {
-                return new CreateProjectResult
-                {
-                    Succeeded = false,
-                    Message = "El vendedor es requerido."
-                };
-            }
+            string sellerExternalId = IsSeller
+                ? _currentUser.UserExternalId
+                : Normalize(command.SellerId) ?? _currentUser.UserExternalId;
 
             if (command.Latitude is < -90 or > 90)
             {
@@ -87,7 +85,7 @@ namespace SalesTracking.Application.UseCases.Projects.Services
                 command.Name,
                 command.Description,
                 command.CustomerId,
-                command.SellerId,
+                sellerExternalId,
                 command.EstimatedAmount,
                 command.StartDateUtc,
                 command.ExpectedCloseDateUtc,
@@ -165,15 +163,6 @@ namespace SalesTracking.Application.UseCases.Projects.Services
                 };
             }
 
-            if (string.IsNullOrWhiteSpace(command.SellerExternalId))
-            {
-                return new UpdateProjectResult
-                {
-                    Succeeded = false,
-                    Message = "El vendedor es requerido."
-                };
-            }
-
             if (command.Latitude is < -90 or > 90)
             {
                 return new UpdateProjectResult
@@ -207,7 +196,9 @@ namespace SalesTracking.Application.UseCases.Projects.Services
                 Name = command.Name.Trim(),
                 Description = command.Description?.Trim(),
                 CustomerExternalId = command.CustomerExternalId.Trim(),
-                SellerExternalId = command.SellerExternalId.Trim(),
+                SellerExternalId = IsSeller
+                    ? _currentUser.UserExternalId
+                    : Normalize(command.SellerExternalId),
                 EstimatedAmount = command.EstimatedAmount,
                 StartDateUtc = command.StartDateUtc,
                 ExpectedCloseDateUtc = command.ExpectedCloseDateUtc,
@@ -221,6 +212,9 @@ namespace SalesTracking.Application.UseCases.Projects.Services
 
             return await _projectRepository.UpdateAsync(normalizedCommand);
         }
+
+        private bool IsSeller =>
+            _currentUser.Roles.Contains("seller", StringComparer.OrdinalIgnoreCase);
 
         public async Task<ChangeProjectStatusResult> ChangeStatusAsync(ChangeProjectStatusCommand command)
         {

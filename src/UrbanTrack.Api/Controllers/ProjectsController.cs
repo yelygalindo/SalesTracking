@@ -5,7 +5,7 @@ using SalesTracking.Application.UseCases.Projects.Comands;
 using SalesTracking.Application.UseCases.Projects.Interfaces;
 using SalesTracking.Application.UseCases.Projects.Results;
 using UrbanTrack.Api.Controllers.Requests.Mappers;
-using UrbanTrack.Api.Controllers.Requests.Products;
+using UrbanTrack.Api.Controllers.Requests.Projects;
 using UrbanTrack.Api.Controllers.Responses.Common;
 using UrbanTrack.Api.Controllers.Responses.Pagination;
 using UrbanTrack.Api.Controllers.Responses.Projects;

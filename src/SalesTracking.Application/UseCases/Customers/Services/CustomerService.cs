@@ -1,4 +1,5 @@
 ﻿using SalesTracking.Application.Common.ExternalIds;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.UseCases.Customers.Comands;
 using SalesTracking.Application.UseCases.Customers.Interfaces;
 using SalesTracking.Application.UseCases.Customers.Mappers;
@@ -13,10 +14,12 @@ namespace SalesTracking.Application.UseCases.Customers.Services
     public class CustomerService : ICustomerService
     {
         private readonly ICustomerRepository _repo;
+        private readonly ICurrentUser _currentUser;
 
-        public CustomerService(ICustomerRepository repo)
+        public CustomerService(ICustomerRepository repo, ICurrentUser currentUser)
         {
             _repo = repo;
+            _currentUser = currentUser;
         }
 
         public async Task<GetCustomersResult> GetCustomersAsync(GetCustomersCommand command)
@@ -172,7 +175,9 @@ namespace SalesTracking.Application.UseCases.Customers.Services
                 CompanyName = command.CompanyName?.Trim(),
                 Phone = command.Phone?.Trim(),
                 Email = command.Email?.Trim(),
-                RegisterByExternalId = command.RegisterByExternalId,
+                SellerExternalId = IsSeller
+                    ? _currentUser.UserExternalId
+                    : Normalize(command.SellerExternalId) ?? _currentUser.UserExternalId,
                 Address = command.Address?.Trim(),
                 Latitude = command.Latitude,
                 Longitude = command.Longitude,
@@ -267,7 +272,9 @@ namespace SalesTracking.Application.UseCases.Customers.Services
                 CompanyName = command.CompanyName?.Trim(),
                 Phone = command.Phone?.Trim(),
                 Email = command.Email?.Trim(),
-                SellerId = command.RegisterByExternalId,
+                SellerId = IsSeller
+                    ? _currentUser.UserExternalId
+                    : Normalize(command.SellerExternalId),
                 Address = command.Address?.Trim(),
                 Latitude = command.Latitude,
                 Longitude = command.Longitude,
@@ -364,5 +371,11 @@ namespace SalesTracking.Application.UseCases.Customers.Services
                 Message = "Cliente eliminado correctamente."
             };
         }
+
+        private bool IsSeller =>
+            _currentUser.Roles.Contains("seller", StringComparer.OrdinalIgnoreCase);
+
+        private static string? Normalize(string? value) =>
+            string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 }

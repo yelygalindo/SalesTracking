@@ -70,6 +70,8 @@ namespace SalesTracking.Host.Extensions
         {
             services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
             services.Configure<AuthSettings>(configuration.GetSection(AuthSettings.SectionName));
+            services.Configure<FrontendLinkSettings>(configuration.GetSection(FrontendLinkSettings.SectionName));
+            services.Configure<MicrosoftGraphSettings>(configuration.GetSection(MicrosoftGraphSettings.SectionName));
             services.Configure<DatabaseSettings>(configuration.GetSection(DatabaseSettings.SectionName));
             services.Configure<StorageSettings>(configuration.GetSection(StorageSettings.SectionName));
             

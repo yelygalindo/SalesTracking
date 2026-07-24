@@ -4,7 +4,7 @@ namespace SalesTracking.Application.UseCases.Projects.Comands
         string Name,
         string? Description,
         string CustomerId,
-        string SellerId,
+        string? SellerId,
         decimal? EstimatedAmount,
         DateTime? StartDateUtc,
         DateTime? ExpectedCloseDateUtc,

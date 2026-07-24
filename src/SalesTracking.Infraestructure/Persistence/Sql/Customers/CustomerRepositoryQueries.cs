@@ -2,6 +2,18 @@
 {
     public static class CustomerRepositoryQueries
     {
+        public const string GetCustomerDetail = @"
+DECLARE @CustomerId INT = (
+    SELECT TOP 1 Id
+    FROM Customers
+    WHERE ExternalId = @ExternalId
+      AND CompanyId = @CompanyId
+      AND IsDeleted = 0
+);
+" + GetCustomerByExternalId + GetCustomerNotesByCustomerId + GetCustomerRemindersByCustomerId;
+
+        public const string GetCustomersPage = GetCustomers + CountCustomers;
+
         public const string GetCustomers = @"
                                             SELECT
                                                 c.Id,
@@ -176,7 +188,7 @@
                                         CompanyName = @CompanyName,
                                         Phone = @Phone,
                                         Email = @Email,
-                                        SellerId = @SellerId,
+                                        SellerId = COALESCE(@SellerId, SellerId),
                                         Address = @Address,
                                         Latitude = @Latitude,
                                         Longitude = @Longitude,

@@ -10,6 +10,7 @@ using SalesTracking.Host.Development;
 using SalesTracking.Host.Extensions;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Logging;
+using SalesTracking.Infrastructure.Notifications;
 using UrbanTrack.Api.Controllers;
 using UrbanTrack.Api.Controllers.Responses.Common;
 using UrbanTrack.Api.Security;
@@ -21,6 +22,36 @@ if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<IPasswordResetLinkNotifier, DevelopmentPasswordResetLinkNotifier>();
     builder.Services.AddScoped<IInvitationLinkNotifier, DevelopmentInvitationLinkNotifier>();
+}
+else
+{
+    builder.Services
+        .AddOptions<MicrosoftGraphSettings>()
+        .Bind(builder.Configuration.GetSection(MicrosoftGraphSettings.SectionName))
+        .Validate(
+            settings =>
+                !string.IsNullOrWhiteSpace(settings.TenantId) &&
+                !string.IsNullOrWhiteSpace(settings.ClientId) &&
+                !string.IsNullOrWhiteSpace(settings.ClientSecret) &&
+                !string.IsNullOrWhiteSpace(settings.SenderEmail),
+            "MicrosoftGraph requiere TenantId, ClientId, ClientSecret y SenderEmail.")
+        .ValidateOnStart();
+
+    builder.Services
+        .AddOptions<FrontendLinkSettings>()
+        .Bind(builder.Configuration.GetSection(FrontendLinkSettings.SectionName))
+        .Validate(
+            settings =>
+                Uri.TryCreate(settings.InvitationUrl, UriKind.Absolute, out _) &&
+                Uri.TryCreate(settings.PasswordResetUrl, UriKind.Absolute, out _),
+            "FrontendLinks requiere InvitationUrl y PasswordResetUrl absolutas.")
+        .ValidateOnStart();
+
+    builder.Services.AddHttpClient<MicrosoftGraphEmailLinkNotifier>();
+    builder.Services.AddScoped<IInvitationLinkNotifier>(
+        provider => provider.GetRequiredService<MicrosoftGraphEmailLinkNotifier>());
+    builder.Services.AddScoped<IPasswordResetLinkNotifier>(
+        provider => provider.GetRequiredService<MicrosoftGraphEmailLinkNotifier>());
 }
 
 builder.Services.AddHttpContextAccessor();

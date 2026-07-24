@@ -167,7 +167,7 @@ SET
     p.Name = @Name,
     p.Description = @Description,
     p.CustomerId = c.Id,
-    p.SellerId = u.Id,
+    p.SellerId = COALESCE(u.Id, p.SellerId),
     p.EstimatedAmount = @EstimatedAmount,
     p.StartDateUtc = @StartDateUtc,
     p.ExpectedCloseDateUtc = @ExpectedCloseDateUtc,
@@ -180,7 +180,7 @@ SET
 FROM Projects p
 INNER JOIN Customers c ON c.ExternalId = @CustomerExternalId AND c.IsDeleted = 0 AND c.CompanyId = @CompanyId
     AND (@SellerUserId IS NULL OR c.SellerId = @SellerUserId)
-INNER JOIN Users u ON u.ExternalId = @SellerExternalId AND u.IsActive = 1 AND u.CompanyId = @CompanyId
+LEFT JOIN Users u ON u.ExternalId = @SellerExternalId AND u.IsActive = 1 AND u.CompanyId = @CompanyId
 WHERE p.IsDeleted = 0
   AND p.CompanyId = @CompanyId
   AND p.ExternalId = @ExternalId;";

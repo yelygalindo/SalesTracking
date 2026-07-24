@@ -66,7 +66,10 @@ namespace UrbanTrack.Api.Controllers
                 return BadRequest(new ErrorResponse { Error = result.Message });
             }
 
-            return Created(string.Empty, result.ToResponse());
+            return CreatedAtAction(
+                nameof(GetByExternalId),
+                new { deliveryExternalId = result.Id },
+                result.ToResponse());
         }
 
         [HttpPut("{deliveryExternalId}")]

@@ -7,7 +7,7 @@ namespace UrbanTrack.Api.Controllers.Requests.Customers
         public string? Phone { get; set; }
         public string? Email { get; set; }
 
-        public string? RegisterByExternalId { get; set; }
+        public string? SellerExternalId { get; set; }
 
         public string? Address { get; set; }
         public decimal? Latitude { get; set; }

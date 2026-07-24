@@ -2,6 +2,9 @@
 {
     internal static class DashboardQueries
     {
+        public const string GetDashboard =
+            GetMetrics + GetProjectLocations + GetRecentActivity + GetUpcomingFollowUps + GetUrgentDeliveries;
+
         public const string GetMetrics = @"
 SELECT
     Prospects = (

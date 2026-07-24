@@ -84,7 +84,14 @@ namespace UrbanTrack.Api.Controllers
                 return BadRequest(new ErrorResponse { Error = result.Message });
             }
 
-            return Created(string.Empty, result.ToResponse());
+            return CreatedAtAction(
+                nameof(GetContent),
+                new
+                {
+                    projectExternalId,
+                    attachmentExternalId = result.Id
+                },
+                result.ToResponse());
         }
 
         [HttpDelete("{attachmentExternalId}")]
@@ -109,17 +116,19 @@ namespace UrbanTrack.Api.Controllers
             return Ok(new MessageResponse { Message = result.Message });
         }
 
-        [HttpPatch("{attachmentExternalId}/cover")]
+        [HttpPut("{attachmentExternalId}/cover")]
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<MessageResponse>> SetCover(
             string projectExternalId,
-            string attachmentExternalId,
-            [FromBody] SetProjectAttachmentCoverRequest request)
+            string attachmentExternalId)
         {
             SetProjectAttachmentCoverResult result = await _projectAttachmentService.SetCoverAsync(
-                request.ToApplication(projectExternalId, attachmentExternalId, _currentUser.UserId));
+                new SetProjectAttachmentCoverCommand(
+                    projectExternalId,
+                    attachmentExternalId,
+                    _currentUser.UserId));
 
             if (!result.Succeeded)
             {

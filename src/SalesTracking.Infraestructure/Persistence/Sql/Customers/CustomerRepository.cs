@@ -40,26 +40,22 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
 
             using var conn = CreateConnection();
 
+            using SqlMapper.GridReader results = await conn.QueryMultipleAsync(
+                CustomerRepositoryQueries.GetCustomerDetail,
+                new { ExternalId = externalId, CompanyId });
+
             CustomerDetailRow? customerDetailRow =
-                await conn.QueryFirstOrDefaultAsync<CustomerDetailRow>(
-                    CustomerRepositoryQueries.GetCustomerByExternalId,
-                    new { ExternalId = externalId, CompanyId });
+                await results.ReadFirstOrDefaultAsync<CustomerDetailRow>();
 
             if (customerDetailRow == null)
                 return null;
 
-            IEnumerable<CustomerNoteRow> notes =
-                await conn.QueryAsync<CustomerNoteRow>(
-                    CustomerRepositoryQueries.GetCustomerNotesByCustomerId,
-                    new { CustomerId = customerDetailRow.Id, CompanyId });
+            IEnumerable<CustomerNoteRow> notes = await results.ReadAsync<CustomerNoteRow>();
 
             Customer customer = customerDetailRow.ToDomain();
             customer.Notes = notes.Select(x => x.ToDomain()).ToList();
 
-            IEnumerable<CustomerReminderRow> reminders =
-                await conn.QueryAsync<CustomerReminderRow>(
-                    CustomerRepositoryQueries.GetCustomerRemindersByCustomerId,
-                    new { CustomerId = customerDetailRow.Id, CompanyId });
+            IEnumerable<CustomerReminderRow> reminders = await results.ReadAsync<CustomerReminderRow>();
 
             customer.Reminders = reminders.Select(x => x.ToDomain()).ToList();
 
@@ -86,15 +82,12 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
                 CompanyId
             };
 
-            IEnumerable<CustomerSummaryRow> items =
-                await conn.QueryAsync<CustomerSummaryRow>(
-                    CustomerRepositoryQueries.GetCustomers,
-                    parameters);
+            using SqlMapper.GridReader results = await conn.QueryMultipleAsync(
+                CustomerRepositoryQueries.GetCustomersPage,
+                parameters);
 
-            int totalItems =
-                await conn.ExecuteScalarAsync<int>(
-                    CustomerRepositoryQueries.CountCustomers,
-                    parameters);
+            IEnumerable<CustomerSummaryRow> items = await results.ReadAsync<CustomerSummaryRow>();
+            int totalItems = await results.ReadSingleAsync<int>();
 
             return new CustomerPagedList
             {
@@ -116,7 +109,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
             {
                 int? sellerInternalId = null;
 
-                string? assignedSeller = IsSeller ? _currentUser.UserExternalId : customer.RegisterByExternalId;
+                string? assignedSeller = customer.SellerExternalId;
                 if (!string.IsNullOrWhiteSpace(assignedSeller))
                 {
                     sellerInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
@@ -211,7 +204,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
 
                 int? sellerInternalId = null;
 
-                string? assignedSeller = IsSeller ? _currentUser.UserExternalId : customer.SellerId;
+                string? assignedSeller = customer.SellerId;
                 if (!string.IsNullOrWhiteSpace(assignedSeller))
                 {
                     sellerInternalId = await conn.QueryFirstOrDefaultAsync<int?>(
