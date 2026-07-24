@@ -12,12 +12,18 @@ namespace SalesTracking.Application.UseCases.Invitations.Services
         private readonly IInvitationRepository _repo;
         private readonly IPasswordPolicy _passwordPolicy;
         private readonly ICurrentUser _currentUser;
+        private readonly IInvitationLinkNotifier? _invitationLinkNotifier;
 
-        public InvitationService(IInvitationRepository repo, IPasswordPolicy passwordPolicy, ICurrentUser currentUser)
+        public InvitationService(
+            IInvitationRepository repo,
+            IPasswordPolicy passwordPolicy,
+            ICurrentUser currentUser,
+            IInvitationLinkNotifier? invitationLinkNotifier = null)
         {
             _repo = repo;
             _passwordPolicy = passwordPolicy;
             _currentUser = currentUser;
+            _invitationLinkNotifier = invitationLinkNotifier;
         }
      
         public async Task<InvitationResult?> GetInvitationByTokenAsync(GetInvitationByTokenComand getInvitationByTokenComand)
@@ -77,7 +83,9 @@ namespace SalesTracking.Application.UseCases.Invitations.Services
                 InviterPermissions = _currentUser.Permissions
             };
 
-            Invitation? created = await _repo.CreateInvitationAsync(invitation);
+            CreatedInvitation? created = await _repo.CreateInvitationAsync(invitation);
+            if (created != null && _invitationLinkNotifier != null)
+                await _invitationLinkNotifier.NotifyAsync(created);
 
             return new CreateInvitationResult
             {

@@ -16,7 +16,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddServices(builder.Configuration);
 if (builder.Environment.IsDevelopment())
+{
     builder.Services.AddScoped<IPasswordResetLinkNotifier, DevelopmentPasswordResetLinkNotifier>();
+    builder.Services.AddScoped<IInvitationLinkNotifier, DevelopmentInvitationLinkNotifier>();
+}
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();

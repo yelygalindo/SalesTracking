@@ -11,5 +11,7 @@
         public int PasswordResetTokenExpirationHours { get; init; }
 
         public string PasswordResetUrl { get; init; } = string.Empty;
+
+        public string InvitationUrl { get; init; } = string.Empty;
     }
 }

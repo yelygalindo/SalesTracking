@@ -62,7 +62,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Invitations
             };
         }
 
-        public async Task<Invitation?> CreateInvitationAsync(CreateInvitation createInvitation)
+        public async Task<CreatedInvitation?> CreateInvitationAsync(CreateInvitation createInvitation)
         {
             if (createInvitation == null)
                 return null;
@@ -104,13 +104,10 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Invitations
                 }, transaction);
                 transaction.Commit();
 
-                return new Invitation
+                return new CreatedInvitation
                 {
                     Email = createInvitation.Email,
-                    FullName = createInvitation.FullName,
-                    RoleCode = createInvitation.RoleCode,
-                    InvitedBy = _currentUser.UserExternalId,
-                    CompanyId = _currentUser.CompanyId,
+                    Token = token,
                     ExpiresAtUtc = expiresAtUtc
                 };
             }

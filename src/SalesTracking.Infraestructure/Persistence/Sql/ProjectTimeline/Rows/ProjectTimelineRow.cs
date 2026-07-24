@@ -2,7 +2,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline.Rows
 {
     internal sealed class ProjectTimelineRow
     {
-        public string ExternalId { get; set; } = string.Empty;
+        public Guid ExternalId { get; set; }
         public int EventTypeId { get; set; }
         public string EventTypeName { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;

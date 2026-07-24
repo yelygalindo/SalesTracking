@@ -7,6 +7,6 @@ namespace SalesTracking.Application.UseCases.Invitations.Interfaces
     {        
         Task<Invitation?> GetInvitationByTokenAsync(string token);
         Task<AcceptInvitation> AcceptInvitationAsync(AcceptInvitationInput request);        
-        Task<Invitation?> CreateInvitationAsync(CreateInvitation createInvitation);
+        Task<CreatedInvitation?> CreateInvitationAsync(CreateInvitation createInvitation);
     }
 }

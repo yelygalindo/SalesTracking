@@ -9,7 +9,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline.Mappers
         {
             return new ProjectTimelineResult
             {
-                ExternalId = row.ExternalId,
+                ExternalId = row.ExternalId.ToString("D"),
                 EventTypeId = row.EventTypeId,
                 EventTypeName = row.EventTypeName,
                 Title = row.Title,
