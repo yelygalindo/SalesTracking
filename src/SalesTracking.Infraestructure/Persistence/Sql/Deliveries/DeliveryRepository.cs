@@ -185,7 +185,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     Message = "Entrega creada correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return new CreateDeliveryResult
@@ -298,7 +298,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     Message = "Entrega actualizada correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return new UpdateDeliveryResult
@@ -403,7 +403,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     Message = "Estado de entrega actualizado correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return new ChangeDeliveryStatusResult
@@ -550,7 +550,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     Message = "Recepcion de entrega registrada correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return new ConfirmDeliveryReceiptResult
@@ -611,7 +611,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     Message = "Entrega eliminada correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return new DeleteDeliveryResult

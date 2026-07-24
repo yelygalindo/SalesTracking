@@ -177,7 +177,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                     Message = "Archivo agregado correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return new UploadProjectAttachmentResult
@@ -245,7 +245,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                     Message = "Archivo eliminado correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return new DeleteProjectAttachmentResult
@@ -323,7 +323,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments
                     Message = "Portada actualizada correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return new SetProjectAttachmentCoverResult

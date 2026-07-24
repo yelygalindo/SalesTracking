@@ -120,7 +120,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders
 
                 return reminder;
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
 
@@ -184,7 +184,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders
 
                 return true;
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return false;

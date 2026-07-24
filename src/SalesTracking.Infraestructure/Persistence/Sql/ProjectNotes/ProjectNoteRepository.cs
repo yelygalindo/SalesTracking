@@ -91,7 +91,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                     CreateProjectNote = note
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return new ResponseCreateProjectNote
@@ -174,7 +174,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                     Message = "Nota actualizada correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return new ResponseUpdateProjectNote
@@ -259,7 +259,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes
                     Message = "Nota eliminada correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return new ResponseDeleteProjectNote

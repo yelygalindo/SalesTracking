@@ -75,7 +75,7 @@ public sealed class ProjectVisitRepository : IProjectVisitRepository
                 Message = "Visita registrada correctamente."
             };
         }
-        catch
+        catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
         {
             transaction.Rollback();
             return new CreateProjectVisitResult { Message = "No se pudo registrar la visita." };

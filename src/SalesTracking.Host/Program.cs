@@ -7,6 +7,7 @@ using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Host.Development;
 using SalesTracking.Host.Extensions;
 using SalesTracking.Infrastructure.Persistence.Settings;
+using SalesTracking.Infrastructure.Logging;
 using UrbanTrack.Api.Controllers;
 using UrbanTrack.Api.Controllers.Responses.Common;
 using UrbanTrack.Api.Security;
@@ -85,6 +86,32 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerConfigurations();
 
 var app = builder.Build();
+
+InfrastructureExceptionLogger.Configure(app.Services.GetRequiredService<ILoggerFactory>());
+
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception exception)
+    {
+        app.Logger.LogError(
+            exception,
+            "Unhandled HTTP error for {Method} {Path}",
+            context.Request.Method,
+            context.Request.Path);
+
+        if (context.Response.HasStarted)
+            throw;
+
+        context.Response.Clear();
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        await context.Response.WriteAsJsonAsync(
+            new MessageResponse { Message = "Ocurrió un error interno." });
+    }
+});
 
 if (app.Environment.IsDevelopment())
 {

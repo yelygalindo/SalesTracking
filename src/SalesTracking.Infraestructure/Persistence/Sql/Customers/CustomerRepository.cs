@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using SalesTracking.Application.Common.Interfaces;
@@ -173,7 +173,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
 
                 return customer;
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
 
@@ -267,7 +267,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
 
                 return customer;
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
 
@@ -325,7 +325,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
 
                 return true;
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return false;
@@ -374,7 +374,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
 
                 return true;
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return false;

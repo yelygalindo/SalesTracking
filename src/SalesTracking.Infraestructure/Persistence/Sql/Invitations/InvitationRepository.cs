@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using SalesTracking.Application.Common.ExternalIds;
@@ -114,7 +114,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Invitations
                     ExpiresAtUtc = expiresAtUtc
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return null;

@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using SalesTracking.Application.Common.ExternalIds;
 using System.Data;
 
 namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline
@@ -15,7 +14,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectTimeline
                 ProjectTimelineQueries.Insert,
                 new
                 {
-                    ExternalId = ExternalIdGenerator.New(ExternalIdPrefixes.ProjectTimelineEvent),
+                    ExternalId = Guid.NewGuid(),
                     timelineEvent.ProjectId,
                     timelineEvent.EventTypeId,
                     timelineEvent.Title,

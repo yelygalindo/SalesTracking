@@ -96,7 +96,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes
                     CreateCustomerNote = note
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return new ResponseCreateCustomerNote()

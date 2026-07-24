@@ -111,7 +111,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Products
                     Message = "Producto creado correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 return new CreateProductResult
                 {
@@ -163,7 +163,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Products
                     Message = "Producto actualizado correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 return new UpdateProductResult
                 {
@@ -199,7 +199,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Products
                     Message = "Producto eliminado correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 return new DeleteProductResult
                 {

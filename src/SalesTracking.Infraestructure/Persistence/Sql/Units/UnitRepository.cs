@@ -95,7 +95,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Units
                     Message = "Unidad creada correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 return new CreateUnitResult
                 {
@@ -131,7 +131,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Units
                     Message = "Unidad actualizada correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 return new UpdateUnitResult
                 {
@@ -167,7 +167,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Units
                     Message = "Unidad eliminada correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 return new DeleteUnitResult
                 {

@@ -352,7 +352,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                     Message = "Proyecto actualizado correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return new UpdateProjectResult
@@ -443,7 +443,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                     Message = "Estado de proyecto actualizado correctamente."
                 };
             }
-            catch
+            catch (Exception exception) when (SalesTracking.Infrastructure.Logging.InfrastructureExceptionLogger.Log(exception))
             {
                 transaction.Rollback();
                 return new ChangeProjectStatusResult
