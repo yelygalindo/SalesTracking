@@ -9,6 +9,7 @@ using UrbanTrack.Api.Controllers.Responses.AuthResponses;
 using UrbanTrack.Api.Controllers.Responses.Common;
 using UrbanTrack.Api.Controllers.Responses.Mappers;
 using SalesTracking.Application.Common.Interfaces;
+using SalesTracking.Application.Common.Authentication;
 
 namespace UrbanTrack.Api.Controllers
 {
@@ -34,6 +35,19 @@ namespace UrbanTrack.Api.Controllers
             LoginResult? resp = await _service.LoginAsync(request.ToApplication());
             if (resp == null) return StatusCode(StatusCodes.Status401Unauthorized, new MessageResponse { Message = "Credenciales inválidas." });
             return Ok(resp.ToResponse());
+        }
+
+        [AllowAnonymous]
+        [HttpGet("device-types")]
+        [ProducesResponseType(typeof(IEnumerable<DeviceTypeResponse>), StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<DeviceTypeResponse>> GetDeviceTypes()
+        {
+            return Ok(new[]
+            {
+                new DeviceTypeResponse { Value = DeviceTypes.Web, Label = "Web" },
+                new DeviceTypeResponse { Value = DeviceTypes.Android, Label = "Android" },
+                new DeviceTypeResponse { Value = DeviceTypes.Ios, Label = "iOS" }
+            });
         }
 
         [HttpPost("logout")]

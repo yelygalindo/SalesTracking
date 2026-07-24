@@ -54,7 +54,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
             return row.ToAuthUserResponse();
         }
 
-        public async Task<bool> RevokeRefreshTokenAsync(string refreshToken)
+        public async Task<bool> RevokeRefreshTokenAsync(string refreshToken, string? deviceId = null)
         {
             if (string.IsNullOrWhiteSpace(refreshToken))
                 return false;
@@ -62,7 +62,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
             using var conn = CreateConnection();
             var affectedRows = await conn.ExecuteAsync(AuthRepositoryQueries.RevokeRefreshToken, new
             {
-                TokenHash = TokenHasher.Hash(refreshToken.Trim())
+                TokenHash = TokenHasher.Hash(refreshToken.Trim()),
+                DeviceId = string.IsNullOrWhiteSpace(deviceId) ? null : deviceId.Trim()
             });
 
             return affectedRows > 0;
@@ -120,7 +121,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
             {
                 existingToken.UserId,
                 TokenHash = refreshTokenHash,
-                ExpiresAtUtc = refreshTokenExpiresAtUtc
+                ExpiresAtUtc = refreshTokenExpiresAtUtc,
+                existingToken.DeviceId
             }, transaction);
 
             transaction.Commit();
@@ -227,7 +229,10 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
             return true;
         }             
 
-        public async Task<AuthTokens?> ValidateCredentialsAsync(string email, string password)
+        public async Task<AuthTokens?> ValidateCredentialsAsync(
+            string email,
+            string password,
+            string? deviceId = null)
         {
             using var conn = CreateConnection();
             AuthUserRow? authUserRow = await conn.QueryFirstOrDefaultAsync<AuthUserRow>(AuthRepositoryQueries.SelectUserForEmail, new { Email = email });
@@ -246,7 +251,8 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
             {
                 UserId = user.Id,
                 TokenHash = TokenHasher.Hash(refreshToken),
-                ExpiresAtUtc = refreshTokenExpiresAtUtc
+                ExpiresAtUtc = refreshTokenExpiresAtUtc,
+                DeviceId = string.IsNullOrWhiteSpace(deviceId) ? null : deviceId.Trim()
             });
 
             return new AuthTokens

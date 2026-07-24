@@ -6,6 +6,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
                 UPDATE RefreshTokens
                 SET RevokedAtUtc = SYSUTCDATETIME()
                 WHERE TokenHash = @TokenHash 
+                  AND (@DeviceId IS NULL OR DeviceId = @DeviceId)
                   AND RevokedAtUtc IS NULL;";
 
         public const string SelectRefreshTokenWithUser = @"
@@ -15,6 +16,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
                     u.ExternalId,
                     rt.ExpiresAtUtc,
                     rt.RevokedAtUtc,
+                    rt.DeviceId,
                     u.Id AS AuthUserId,
                     u.Username,
                     u.FullName,
@@ -49,12 +51,14 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
                     UserId,
                     TokenHash,
                     ExpiresAtUtc,
+                    DeviceId,
                     CreatedAtUtc
                 )
                 VALUES (
                     @UserId,
                     @TokenHash,
                     @ExpiresAtUtc,
+                    @DeviceId,
                     SYSUTCDATETIME()
                 );";
 
@@ -150,12 +154,14 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
                     UserId,
                     TokenHash,
                     ExpiresAtUtc,
+                    DeviceId,
                     CreatedAtUtc
                 )
                 VALUES (
                     @UserId,
                     @TokenHash,
                     @ExpiresAtUtc,
+                    @DeviceId,
                     SYSUTCDATETIME()
                 );";
 

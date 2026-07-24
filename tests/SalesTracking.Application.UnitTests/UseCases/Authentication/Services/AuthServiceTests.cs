@@ -16,7 +16,7 @@ public sealed class AuthServiceTests
     [Fact]
     public async Task LoginAsync_WhenCredentialsAreValid_ShouldIncludeRolesAndPermissions()
     {
-        _repository.Setup(x => x.ValidateCredentialsAsync("user@example.com", "password"))
+        _repository.Setup(x => x.ValidateCredentialsAsync("user@example.com", "password", "device-1"))
             .ReturnsAsync(new AuthTokens
             {
                 User = new SalesTracking.Domain.Entities.User
@@ -35,7 +35,9 @@ public sealed class AuthServiceTests
         LoginResult? result = await service.LoginAsync(new LoginCommand
         {
             Email = "user@example.com",
-            Password = "password"
+            Password = "password",
+            DeviceType = "web",
+            DeviceId = "device-1"
         });
 
         result.Should().NotBeNull();

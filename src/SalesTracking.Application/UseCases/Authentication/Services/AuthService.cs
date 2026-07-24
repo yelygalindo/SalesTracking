@@ -2,6 +2,7 @@
 using SalesTracking.Application.UseCases.Authentication.Interfaces;
 using SalesTracking.Application.UseCases.Authentication.Results;
 using SalesTracking.Application.Common.Interfaces;
+using SalesTracking.Application.Common.Authentication;
 
 namespace SalesTracking.Application.UseCases.Authentication.Services
 {
@@ -28,8 +29,15 @@ namespace SalesTracking.Application.UseCases.Authentication.Services
         {
             if (loginCommand == null || string.IsNullOrWhiteSpace(loginCommand.Email) || string.IsNullOrWhiteSpace(loginCommand.Password))
                 return null;
+            if (!DeviceTypes.IsSupported(loginCommand.DeviceType))
+                return null;
+            if (loginCommand.DeviceId?.Trim().Length > 100)
+                return null;
 
-            var auth = await _repo.ValidateCredentialsAsync(loginCommand.Email.Trim(), loginCommand.Password);
+            var auth = await _repo.ValidateCredentialsAsync(
+                loginCommand.Email.Trim(),
+                loginCommand.Password,
+                loginCommand.DeviceId?.Trim());
             if (auth == null)
                 return null;
 
@@ -64,7 +72,9 @@ namespace SalesTracking.Application.UseCases.Authentication.Services
             if (logoutComand == null || string.IsNullOrWhiteSpace(logoutComand.RefreshToken))
                 return new LogoutResult { Message = "El refresh token es requerido." };
 
-            var ok = await _repo.RevokeRefreshTokenAsync(logoutComand.RefreshToken.Trim());
+            var ok = await _repo.RevokeRefreshTokenAsync(
+                logoutComand.RefreshToken.Trim(),
+                logoutComand.DeviceId?.Trim());
             return new LogoutResult { Message = ok ? "Sesión cerrada" : "Token no encontrado" };
         }
 

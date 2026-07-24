@@ -14,14 +14,20 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
             return new LoginCommand()
             {
                 Email = loginRequest.Email,
-                Password = loginRequest.Password
+                Password = loginRequest.Password,
+                DeviceType = loginRequest.DeviceType,
+                DeviceId = loginRequest.DeviceId
             };
         }
 
         public static LogoutComand ToApplication(this LogoutRequest logoutRequest)
         {
             if (logoutRequest == null) return null;
-            return new LogoutComand() { RefreshToken = logoutRequest.RefreshToken };
+            return new LogoutComand()
+            {
+                RefreshToken = logoutRequest.RefreshToken,
+                DeviceId = logoutRequest.DeviceId
+            };
         }
 
         public static RefreshTokenComand ToApplication(this RefreshTokenRequest refreshTokenRequest)

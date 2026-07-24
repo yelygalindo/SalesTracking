@@ -5,9 +5,9 @@ namespace SalesTracking.Application.UseCases.Authentication.Interfaces
 {
     public interface IAuthRepository
     {
-        Task<AuthTokens?> ValidateCredentialsAsync(string username, string password);
+        Task<AuthTokens?> ValidateCredentialsAsync(string username, string password, string? deviceId = null);
         Task<User?> GetUserByIdAsync(int id);
-        Task<bool> RevokeRefreshTokenAsync(string refreshToken);
+        Task<bool> RevokeRefreshTokenAsync(string refreshToken, string? deviceId = null);
         Task<AuthTokens?> RefreshTokensAsync(string lastToken);
         Task<PasswordForgot?> SendForgotPasswordAsync(string email);
         Task<bool> ResetPasswordAsync(string token, string newPassword);     

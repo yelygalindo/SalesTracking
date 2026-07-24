@@ -13,6 +13,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth.Rows
         public string CompanyName { get; set; }
         public DateTime? ExpiresAtUtc { get; set; }
         public DateTime? RevokedAtUtc { get; set; }
+        public string? DeviceId { get; set; }
 
     }
 }
