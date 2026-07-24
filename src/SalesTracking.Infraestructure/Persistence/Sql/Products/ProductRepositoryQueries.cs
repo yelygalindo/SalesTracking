@@ -9,13 +9,14 @@ SELECT
     p.Code,
     p.Name,
     p.Description,
-    p.UnitId,
+    u.ExternalId AS ExternalUnitId,
     p.Price,
     p.IsActive,
     p.CreatedAtUtc,
     p.UpdatedAtUtc,
     COUNT(1) OVER() AS TotalCount
 FROM Products p
+INNER JOIN Units u ON u.Id = p.UnitId AND u.CompanyId = p.CompanyId
 WHERE p.IsDeleted = 0
   AND p.CompanyId = @CompanyId
   AND (
@@ -35,12 +36,13 @@ SELECT TOP 1
     p.Code,
     p.Name,
     p.Description,
-    p.UnitId,
+    u.ExternalId AS ExternalUnitId,
     p.Price,
     p.IsActive,
     p.CreatedAtUtc,
     p.UpdatedAtUtc
 FROM Products p
+INNER JOIN Units u ON u.Id = p.UnitId AND u.CompanyId = p.CompanyId
 WHERE p.IsDeleted = 0
   AND p.CompanyId = @CompanyId
   AND p.ExternalId = @ExternalId;";
@@ -71,6 +73,14 @@ VALUES (
     0,
     @CompanyId
 );";
+
+        public const string GetUnitIdByExternalId = @"
+SELECT TOP 1 Id
+FROM Units
+WHERE ExternalId = @ExternalUnitId
+  AND CompanyId = @CompanyId
+  AND IsDeleted = 0
+  AND IsActive = 1;";
 
         public const string Update = @"
 UPDATE Products

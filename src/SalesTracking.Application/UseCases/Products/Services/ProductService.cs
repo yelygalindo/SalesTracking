@@ -40,7 +40,7 @@ namespace SalesTracking.Application.UseCases.Products.Services
 
         public async Task<CreateProductResult> CreateAsync(CreateProductCommand command)
         {
-            CreateProductResult? validation = Validate(command.Code, command.Name, command.UnitId, command.Price);
+            CreateProductResult? validation = Validate(command.Code, command.Name, command.ExternalUnitId, command.Price);
             if (validation != null)
                 return validation;
 
@@ -50,7 +50,7 @@ namespace SalesTracking.Application.UseCases.Products.Services
                 Code = command.Code.Trim(),
                 Name = command.Name.Trim(),
                 Description = command.Description?.Trim(),
-                UnitId = command.UnitId,
+                ExternalUnitId = command.ExternalUnitId.Trim(),
                 Price = command.Price,
                 IsActive = command.IsActive
             };
@@ -69,7 +69,7 @@ namespace SalesTracking.Application.UseCases.Products.Services
                 };
             }
 
-            CreateProductResult? validation = Validate(command.Code, command.Name, command.UnitId, command.Price);
+            CreateProductResult? validation = Validate(command.Code, command.Name, command.ExternalUnitId, command.Price);
             if (validation != null)
             {
                 return new UpdateProductResult
@@ -85,7 +85,7 @@ namespace SalesTracking.Application.UseCases.Products.Services
                 Code = command.Code.Trim(),
                 Name = command.Name.Trim(),
                 Description = command.Description?.Trim(),
-                UnitId = command.UnitId,
+                ExternalUnitId = command.ExternalUnitId.Trim(),
                 Price = command.Price,
                 IsActive = command.IsActive
             };
@@ -107,7 +107,7 @@ namespace SalesTracking.Application.UseCases.Products.Services
             return await _productRepository.DeleteAsync(command.ExternalId.Trim());
         }
 
-        private static CreateProductResult? Validate(string code, string name, int unitId, decimal price)
+        private static CreateProductResult? Validate(string code, string name, string externalUnitId, decimal price)
         {
             if (string.IsNullOrWhiteSpace(code))
             {
@@ -127,7 +127,7 @@ namespace SalesTracking.Application.UseCases.Products.Services
                 };
             }
 
-            if (unitId <= 0)
+            if (string.IsNullOrWhiteSpace(externalUnitId))
             {
                 return new CreateProductResult
                 {

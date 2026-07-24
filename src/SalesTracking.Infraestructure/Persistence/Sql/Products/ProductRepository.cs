@@ -75,9 +75,25 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Products
 
             try
             {
+                int? unitId = await connection.QuerySingleOrDefaultAsync<int?>(
+                    ProductRepositoryQueries.GetUnitIdByExternalId,
+                    new { product.ExternalUnitId, CompanyId });
+
+                if (unitId == null)
+                {
+                    return new CreateProductResult
+                    {
+                        Succeeded = false,
+                        Message = "La unidad no existe, está inactiva o no pertenece a la compañía."
+                    };
+                }
+
+                DynamicParameters parameters = TenantParameters(product);
+                parameters.Add("UnitId", unitId.Value);
+
                 string? externalId = await connection.QuerySingleOrDefaultAsync<string>(
                     ProductRepositoryQueries.Create,
-                    TenantParameters(product));
+                    parameters);
 
                 if (string.IsNullOrWhiteSpace(externalId))
                 {
@@ -111,9 +127,25 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Products
 
             try
             {
+                int? unitId = await connection.QuerySingleOrDefaultAsync<int?>(
+                    ProductRepositoryQueries.GetUnitIdByExternalId,
+                    new { command.ExternalUnitId, CompanyId });
+
+                if (unitId == null)
+                {
+                    return new UpdateProductResult
+                    {
+                        Succeeded = false,
+                        Message = "La unidad no existe, está inactiva o no pertenece a la compañía."
+                    };
+                }
+
+                DynamicParameters parameters = TenantParameters(command);
+                parameters.Add("UnitId", unitId.Value);
+
                 int affectedRows = await connection.ExecuteAsync(
                     ProductRepositoryQueries.Update,
-                    TenantParameters(command));
+                    parameters);
 
                 if (affectedRows == 0)
                 {

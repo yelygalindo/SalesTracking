@@ -1,5 +1,6 @@
 using Dapper;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SalesTracking.Application.UseCases.Projects.Comands;
 using SalesTracking.Application.UseCases.Projects.Interfaces;
@@ -19,12 +20,17 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
     {
         private readonly DatabaseSettings _databaseOptions;
         private readonly ICurrentUser _currentUser;
+        private readonly Microsoft.Extensions.Logging.ILogger<ProjectRepository> _logger;
 
-        public ProjectRepository(IOptions<DatabaseSettings> databaseOptions, ICurrentUser currentUser)
+        public ProjectRepository(
+            IOptions<DatabaseSettings> databaseOptions,
+            ICurrentUser currentUser,
+            Microsoft.Extensions.Logging.ILogger<ProjectRepository> logger)
         {
             _databaseOptions = databaseOptions.Value
                 ?? throw new ArgumentNullException(nameof(databaseOptions));
             _currentUser = currentUser;
+            _logger = logger;
         }
 
         private int CompanyId => _currentUser.CompanyId;
@@ -145,9 +151,16 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Projects
                     Project = createdProject?.ToResult()
                 };
             }
-            catch
+            catch (Exception exception)
             {
                 transaction.Rollback();
+                _logger.LogError(
+                    exception,
+                    "Error creating project for customer {CustomerExternalId}, seller {SellerExternalId}, company {CompanyId}",
+                    project.CustomerExternalId,
+                    project.SellerExternalId,
+                    CompanyId);
+
                 return new CreateProjectResult
                 {
                     Succeeded = false,

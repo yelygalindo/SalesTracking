@@ -14,7 +14,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Products.Mappers
                 Code = row.Code,
                 Name = row.Name,
                 Description = row.Description,
-                UnitId = row.UnitId,
+                ExternalUnitId = row.ExternalUnitId,
                 Price = row.Price,
                 IsActive = row.IsActive,
                 CreatedAtUtc = row.CreatedAtUtc,

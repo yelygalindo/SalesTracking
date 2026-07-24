@@ -25,7 +25,7 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 Code = request.Code,
                 Name = request.Name,
                 Description = request.Description,
-                UnitId = request.UnitId,
+                ExternalUnitId = request.ExternalUnitId,
                 Price = request.Price,
                 IsActive = request.IsActive
             };
@@ -41,7 +41,7 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 Code = request.Code,
                 Name = request.Name,
                 Description = request.Description,
-                UnitId = request.UnitId,
+                ExternalUnitId = request.ExternalUnitId,
                 Price = request.Price,
                 IsActive = request.IsActive
             };
@@ -56,7 +56,7 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 Code = result.Code,
                 Name = result.Name,
                 Description = result.Description,
-                UnitId = result.UnitId,
+                ExternalUnitId = result.ExternalUnitId,
                 Price = result.Price,
                 IsActive = result.IsActive,
                 CreatedAtUtc = result.CreatedAtUtc,
