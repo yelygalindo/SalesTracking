@@ -27,10 +27,12 @@ namespace UrbanTrack.Api.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<CustomerReminderResponse>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<CustomerReminderResponse>>> GetReminders(string customerExternalId)
+        public async Task<ActionResult<IEnumerable<CustomerReminderResponse>>> GetReminders(
+            string customerExternalId,
+            [FromQuery] bool? completed = null)
         {
             IReadOnlyList<CustomerReminderResult> reminders = await _service.GetRemindersAsync(
-                new GetCustomerRemindersCommand(customerExternalId));
+                new GetCustomerRemindersCommand(customerExternalId, completed));
 
             return Ok(reminders.Select(x => x.ToResponse()));
         }

@@ -106,10 +106,21 @@ namespace SalesTracking.Application.UseCases.Customers.Services
                 CreatedAtUtc = customer.CreatedAtUtc,
                 Notes = customer.Notes.Select(n => new CustomerNoteResult
                 {
+                    Id = n.Id,
                     ExternalId = n.ExternalId,
                     Text = n.Text,
                     Author = new AuthorNoteResult(n.Author.Id, n.Author.ExternalId, n.Author.Name),
                     CreatedAtUtc = n.CreatedAtUtc
+                }).ToList(),
+                Reminders = customer.Reminders.Select(r =>
+                    new SalesTracking.Application.UseCases.CustomerReminders.Results.CustomerReminderResult
+                    {
+                        Id = r.Id,
+                        ExternalId = r.ExternalId,
+                        Text = r.Text,
+                        Customer = r.Customer,
+                        Completed = r.Completed,
+                        ReminderAtUtc = r.ReminderAtUtc
                 }).ToList()
             };
         }

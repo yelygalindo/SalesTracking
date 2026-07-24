@@ -74,13 +74,29 @@
                                                             n.Text,
                                                             u.Id AS AuthorId,
                                                             u.ExternalId AS AuthorExternalId,
-                                                            u.Name AS AuthorNameId,
+                                                            u.FullName AS AuthorName,
                                                             n.CreatedAtUtc AS CreatedAt
                                                         FROM CustomerNotes n
                                                         INNER JOIN Users u ON n.AuthorId = u.Id
                                                         WHERE n.CustomerId = @CustomerId
                                                         AND n.CompanyId = @CompanyId
                                                         ORDER BY n.CreatedAtUtc DESC;";
+
+        public const string GetCustomerRemindersByCustomerId = @"
+                                                        SELECT
+                                                            r.Id,
+                                                            r.ExternalId,
+                                                            r.Text,
+                                                            r.ReminderAtUtc,
+                                                            u.Id AS AssignedToId,
+                                                            u.ExternalId AS AssignedToExternalId,
+                                                            u.FullName AS AssignedToName,
+                                                            r.Completed
+                                                        FROM CustomerReminders r
+                                                        INNER JOIN Users u ON u.Id = r.AssignedToId
+                                                        WHERE r.CustomerId = @CustomerId
+                                                        AND r.CompanyId = @CompanyId
+                                                        ORDER BY r.Completed ASC, r.ReminderAtUtc ASC;";
         //CREATE:
         public const string GetSellerInternalIdByExternalId = @"
                                                             SELECT TOP 1

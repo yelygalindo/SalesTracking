@@ -41,6 +41,12 @@ builder.Services
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 await context.Response.WriteAsJsonAsync(
                     new MessageResponse { Message = "Token de acceso requerido o inválido." });
+            },
+            OnForbidden = async context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await context.Response.WriteAsJsonAsync(
+                    new MessageResponse { Message = "No tienes permisos para realizar esta acción." });
             }
         };
         options.TokenValidationParameters = new TokenValidationParameters

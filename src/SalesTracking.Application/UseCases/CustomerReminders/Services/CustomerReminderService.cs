@@ -23,7 +23,8 @@ namespace SalesTracking.Application.UseCases.CustomerReminders.Services
                 return new List<CustomerReminderResult>();
 
             IEnumerable<CustomerReminder> customerReminder = await _repo.GetRemindersAsync(
-                command.CustomerExternalId.Trim());
+                command.CustomerExternalId.Trim(),
+                command.Completed);
             return customerReminder.Select(r => new CustomerReminderResult
             {
                 Id = r.Id,

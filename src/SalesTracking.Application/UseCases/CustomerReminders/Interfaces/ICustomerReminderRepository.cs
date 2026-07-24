@@ -5,7 +5,9 @@ namespace SalesTracking.Application.UseCases.CustomerReminders.Interfaces
 {
     public interface ICustomerReminderRepository
     {
-        Task<IReadOnlyList<CustomerReminder>> GetRemindersAsync(string customerExternalId);
+        Task<IReadOnlyList<CustomerReminder>> GetRemindersAsync(
+            string customerExternalId,
+            bool? completed = null);
         Task<CreateCustomerReminder> CreateReminderAsync(CreateCustomerReminder reminder);
         Task<bool> CompleteReminderAsync(
             string customerExternalId,

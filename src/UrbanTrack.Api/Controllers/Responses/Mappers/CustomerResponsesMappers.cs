@@ -18,6 +18,7 @@ namespace UrbanTrack.Api.Controllers.Responses.Mappers
                 CompanyName = customerDetailResult.CompanyName,
                 Phone = customerDetailResult.Phone,
                 Email = customerDetailResult.Email,
+                StatusId = (int)customerDetailResult.Status,
                 Status = customerDetailResult.Status.ToApiValue(),
                 Seller = new UserResponse(customerDetailResult.SellerResult?.Id, customerDetailResult.SellerResult?.ExternalId, customerDetailResult.SellerResult?.Name),               
                 Address = customerDetailResult.Address,
@@ -25,6 +26,7 @@ namespace UrbanTrack.Api.Controllers.Responses.Mappers
                 Longitude = customerDetailResult.Longitude,
                 CreatedAt = customerDetailResult.CreatedAtUtc,
                 Notes = customerDetailResult.Notes.Select(x=>x.ToResponse()),
+                Reminders = customerDetailResult.Reminders.Select(x => x.ToResponse())
             };
         }
         
@@ -42,6 +44,7 @@ namespace UrbanTrack.Api.Controllers.Responses.Mappers
             if (customerNoteResult == null) return null;
             return new CustomerNoteResponse()
             {                
+                Id = customerNoteResult.Id,
                 ExternalId = customerNoteResult.ExternalId,
                 Text = customerNoteResult.Text,
                 Author = new UserResponse(customerNoteResult.Author.Id, customerNoteResult.Author.ExternalId, customerNoteResult.Author.Name),

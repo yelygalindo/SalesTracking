@@ -35,6 +35,7 @@
                                                 AND c.CompanyId = @CompanyId
                                                 AND r.CompanyId = @CompanyId
                                                 AND c.IsDeleted = 0
+                                                AND (@Completed IS NULL OR r.Completed = @Completed)
                                                 ORDER BY r.Completed ASC, r.ReminderAtUtc ASC;";
 
         public const string CreateReminder = @"

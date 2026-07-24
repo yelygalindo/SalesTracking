@@ -17,5 +17,6 @@ namespace SalesTracking.Application.UseCases.Customers.Results
         public DateTime CreatedAtUtc { get; set; }
         public SellerResult SellerResult { get; set; }
         public List<CustomerNoteResult> Notes { get; set; } = new();
+        public List<SalesTracking.Application.UseCases.CustomerReminders.Results.CustomerReminderResult> Reminders { get; set; } = new();
     }
 }

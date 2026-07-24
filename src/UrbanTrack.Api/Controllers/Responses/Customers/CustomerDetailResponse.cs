@@ -11,12 +11,15 @@ namespace UrbanTrack.Api.Controllers.Responses.Customers
         public string CompanyName { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
-        public string Status { get; set; }        
+        public int StatusId { get; set; }
+        public string Status { get; set; }
         public string Address { get; set; }
         public decimal? Latitude { get; set; }
         public decimal? Longitude { get; set; }
         public DateTime CreatedAt { get; set; }
         public UserResponse Seller { get; set; }
         public IEnumerable<CustomerNoteResponse> Notes { get; set; } = new List<CustomerNoteResponse>();
+        public IEnumerable<UrbanTrack.Api.Controllers.Responses.CustomerReminders.CustomerReminderResponse> Reminders { get; set; }
+            = new List<UrbanTrack.Api.Controllers.Responses.CustomerReminders.CustomerReminderResponse>();
     }
 }

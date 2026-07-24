@@ -28,14 +28,21 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders
         private IDbConnection CreateConnection() => new SqlConnection(_databaseOptions.ConnectionString);
         private int CompanyId => _currentUser.CompanyId;
 
-        public async Task<IReadOnlyList<CustomerReminder>> GetRemindersAsync(string customerExternalId)
+        public async Task<IReadOnlyList<CustomerReminder>> GetRemindersAsync(
+            string customerExternalId,
+            bool? completed = null)
         {
             using IDbConnection conn = CreateConnection();
 
             IEnumerable<CustomerReminderRow> reminders =
                 await conn.QueryAsync<CustomerReminderRow>(
                     CustomerReminderRepositoryQueries.GetRemindersByCustomerExternalId,
-                    new { CustomerExternalId = customerExternalId, CompanyId });
+                    new
+                    {
+                        CustomerExternalId = customerExternalId,
+                        CompanyId,
+                        Completed = completed
+                    });
 
             return reminders.Select(x => x.ToDomain()).ToList();
         }

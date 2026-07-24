@@ -12,6 +12,8 @@ using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes.Rows;
 using SalesTracking.Infrastructure.Persistence.Sql.Customers.Mappers;
 using SalesTracking.Infrastructure.Persistence.Sql.Customers.Rows;
+using SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders.Mappers;
+using SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders.Rows;
 using System.Data;
 
 namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
@@ -53,6 +55,13 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Customers
 
             Customer customer = customerDetailRow.ToDomain();
             customer.Notes = notes.Select(x => x.ToDomain()).ToList();
+
+            IEnumerable<CustomerReminderRow> reminders =
+                await conn.QueryAsync<CustomerReminderRow>(
+                    CustomerRepositoryQueries.GetCustomerRemindersByCustomerId,
+                    new { CustomerId = customerDetailRow.Id, CompanyId });
+
+            customer.Reminders = reminders.Select(x => x.ToDomain()).ToList();
 
             return customer;        
         }
