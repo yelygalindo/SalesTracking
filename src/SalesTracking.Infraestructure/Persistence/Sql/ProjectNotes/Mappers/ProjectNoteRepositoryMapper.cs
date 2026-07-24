@@ -10,7 +10,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectNotes.Mappers
             return new ProjectNoteResult
             {
                 Id = row.Id,
-                ExternalId = row.ExternalId,
+                ExternalId = row.ExternalId.ToString("D"),
                 Content = row.Content,
                 CreatedBy = ToUserResult(
                     row.CreatedByUserId,

@@ -1,4 +1,3 @@
-using SalesTracking.Application.Common.ExternalIds;
 using SalesTracking.Application.UseCases.ProjectNotes.Comands;
 using SalesTracking.Application.UseCases.ProjectNotes.Interfaces;
 using SalesTracking.Application.UseCases.ProjectNotes.Models;
@@ -55,7 +54,7 @@ namespace SalesTracking.Application.UseCases.ProjectNotes.Services
 
             CreateProjectNote note = new CreateProjectNote
             {
-                ExternalId = ExternalIdGenerator.New(ExternalIdPrefixes.ProjectNote),
+                ExternalId = Guid.NewGuid().ToString("D"),
                 ProjectExternalId = command.ProjectExternalId.Trim(),
                 Content = command.Content.Trim(),
                 AuthorUserId = command.AuthorUserId

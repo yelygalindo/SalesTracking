@@ -2,7 +2,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Reports.Rows
 {
     internal sealed class CommercialActivityReportRow
     {
-        public string TimelineExternalId { get; set; } = string.Empty;
+        public Guid TimelineExternalId { get; set; }
         public string ProjectExternalId { get; set; } = string.Empty;
         public string ProjectName { get; set; } = string.Empty;
         public int ProjectStatusId { get; set; }

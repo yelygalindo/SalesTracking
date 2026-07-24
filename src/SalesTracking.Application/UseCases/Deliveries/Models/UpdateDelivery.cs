@@ -4,7 +4,6 @@ namespace SalesTracking.Application.UseCases.Deliveries.Models
     {
         public string ExternalId { get; set; } = string.Empty;
         public string ProjectExternalId { get; set; } = string.Empty;
-        public string SellerExternalId { get; set; } = string.Empty;
         public int StatusId { get; set; }
         public DateTime CommittedDateUtc { get; set; }
         public DateTime? DeliveredDateUtc { get; set; }

@@ -106,31 +106,26 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
 
             try
             {
-                int? projectId = await GetInternalIdAsync(
-                    connection,
-                    transaction,
+                ProjectDeliveryRow? project = await connection.QuerySingleOrDefaultAsync<ProjectDeliveryRow>(
                     DeliveryRepositoryQueries.GetProjectInternalIdByExternalId,
-                    delivery.ProjectExternalId);
+                    new
+                    {
+                        ExternalId = delivery.ProjectExternalId,
+                        CompanyId,
+                        SellerUserId = IsSeller ? _currentUser.UserId : (int?)null
+                    },
+                    transaction);
 
-                if (projectId == null)
+                if (project == null)
                     return RollbackCreate(transaction, "Proyecto no encontrado.", true);
-
-                int? sellerId = await GetInternalIdAsync(
-                    connection,
-                    transaction,
-                    DeliveryRepositoryQueries.GetSellerInternalIdByExternalId,
-                    IsSeller ? _currentUser.UserExternalId : delivery.SellerExternalId);
-
-                if (sellerId == null)
-                    return RollbackCreate(transaction, "Vendedor no encontrado.", true);
 
                 int deliveryId = await connection.QuerySingleAsync<int>(
                     DeliveryRepositoryQueries.Insert,
                     new
                     {
                         delivery.ExternalId,
-                        ProjectId = projectId.Value,
-                        SellerId = sellerId.Value,
+                        ProjectId = project.Id,
+                        SellerId = project.SellerId,
                         delivery.StatusId,
                         delivery.CommittedDateUtc,
                         delivery.DeliveredDateUtc,
@@ -141,25 +136,13 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
 
                 foreach (CreateDeliveryItem item in delivery.Items)
                 {
-                    int? productId = await GetInternalIdAsync(
-                        connection,
-                        transaction,
-                        DeliveryRepositoryQueries.GetProductInternalIdByExternalId,
-                        item.ProductExternalId);
+                    ProductDeliveryRow? product = await GetProductAsync(
+                        connection, transaction, item.ProductExternalId);
 
-                    if (productId == null)
+                    if (product == null)
                         return RollbackCreate(transaction, "Producto no encontrado.", true);
 
-                    int? unitId = await GetInternalIdAsync(
-                        connection,
-                        transaction,
-                        DeliveryRepositoryQueries.GetUnitInternalIdByExternalId,
-                        item.UnitExternalId);
-
-                    if (unitId == null)
-                        return RollbackCreate(transaction, "Unidad no encontrada.", true);
-
-                    await InsertItemAsync(connection, transaction, deliveryId, item, productId.Value, unitId.Value);
+                    await InsertItemAsync(connection, transaction, deliveryId, item, product.Id, product.UnitId);
                 }
 
                 await ProjectTimelineWriter.InsertAsync(
@@ -167,7 +150,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     transaction,
                     new ProjectTimelineEvent
                     {
-                        ProjectId = projectId.Value,
+                        ProjectId = project.Id,
                         EventTypeId = ProjectTimelineEventTypeIds.DeliveryCreated,
                         Title = "Entrega creada",
                         Description = "Se creo una entrega para el proyecto.",
@@ -212,34 +195,67 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                 if (existing == null)
                     return RollbackUpdate(transaction, "Entrega no encontrada.", true);
 
-                int? projectId = await GetInternalIdAsync(
-                    connection,
-                    transaction,
+                ProjectDeliveryRow? project = await connection.QuerySingleOrDefaultAsync<ProjectDeliveryRow>(
                     DeliveryRepositoryQueries.GetProjectInternalIdByExternalId,
-                    delivery.ProjectExternalId);
+                    new
+                    {
+                        ExternalId = delivery.ProjectExternalId,
+                        CompanyId,
+                        SellerUserId = IsSeller ? _currentUser.UserId : (int?)null
+                    },
+                    transaction);
 
-                if (projectId == null)
+                if (project == null)
                     return RollbackUpdate(transaction, "Proyecto no encontrado.", true);
 
-                int? sellerId = await GetInternalIdAsync(
-                    connection,
-                    transaction,
-                    DeliveryRepositoryQueries.GetSellerInternalIdByExternalId,
-                    IsSeller ? _currentUser.UserExternalId : delivery.SellerExternalId);
+                var existingItems = (await connection.QueryAsync<ExistingDeliveryItemRow>(
+                    DeliveryRepositoryQueries.GetExistingItemsForUpdate,
+                    new { DeliveryId = existing.Id, CompanyId },
+                    transaction)).ToList();
 
-                if (sellerId == null)
-                    return RollbackUpdate(transaction, "Vendedor no encontrado.", true);
+                var preparedItems = new List<(CreateDeliveryItem Item, ProductDeliveryRow Product)>();
+                foreach (CreateDeliveryItem item in delivery.Items)
+                {
+                    ProductDeliveryRow? product = await GetProductAsync(
+                        connection, transaction, item.ProductExternalId);
+
+                    if (product == null)
+                        return RollbackUpdate(transaction, "Producto no encontrado.", true);
+
+                    decimal deliveredQuantity = existingItems
+                        .Where(x => x.ProductId == product.Id)
+                        .Sum(x => x.DeliveredQuantity);
+
+                    if (item.Quantity < deliveredQuantity)
+                        return RollbackUpdate(transaction, "La cantidad no puede ser menor que la cantidad ya entregada.", false);
+
+                    item.DeliveredQuantity = deliveredQuantity;
+                    preparedItems.Add((item, product));
+                }
+
+                var requestedProductIds = preparedItems.Select(x => x.Product.Id).ToHashSet();
+                if (existingItems.Any(x => x.DeliveredQuantity > 0 && !requestedProductIds.Contains(x.ProductId)))
+                    return RollbackUpdate(transaction, "No se puede eliminar un producto que ya tiene cantidades entregadas.", false);
+
+                int statusId = ResolveStatusId(preparedItems.Select(x => new DeliveryQuantityRow
+                {
+                    Quantity = x.Item.Quantity,
+                    DeliveredQuantity = x.Item.DeliveredQuantity
+                }).ToList());
+                DateTime? deliveredDateUtc = statusId == DeliveredStatusId
+                    ? existing.DeliveredDateUtc ?? DateTime.UtcNow
+                    : null;
 
                 int affectedRows = await connection.ExecuteAsync(
                     DeliveryRepositoryQueries.Update,
                     new
                     {
                         existing.Id,
-                        ProjectId = projectId.Value,
-                        SellerId = sellerId.Value,
-                        delivery.StatusId,
+                        ProjectId = project.Id,
+                        SellerId = project.SellerId,
+                        StatusId = statusId,
                         delivery.CommittedDateUtc,
-                        delivery.DeliveredDateUtc,
+                        DeliveredDateUtc = deliveredDateUtc,
                         delivery.Notes,
                         CompanyId
                     },
@@ -253,27 +269,9 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     new { DeliveryId = existing.Id, CompanyId },
                     transaction);
 
-                foreach (CreateDeliveryItem item in delivery.Items)
+                foreach ((CreateDeliveryItem item, ProductDeliveryRow product) in preparedItems)
                 {
-                    int? productId = await GetInternalIdAsync(
-                        connection,
-                        transaction,
-                        DeliveryRepositoryQueries.GetProductInternalIdByExternalId,
-                        item.ProductExternalId);
-
-                    if (productId == null)
-                        return RollbackUpdate(transaction, "Producto no encontrado.", true);
-
-                    int? unitId = await GetInternalIdAsync(
-                        connection,
-                        transaction,
-                        DeliveryRepositoryQueries.GetUnitInternalIdByExternalId,
-                        item.UnitExternalId);
-
-                    if (unitId == null)
-                        return RollbackUpdate(transaction, "Unidad no encontrada.", true);
-
-                    await InsertItemAsync(connection, transaction, existing.Id, item, productId.Value, unitId.Value);
+                    await InsertItemAsync(connection, transaction, existing.Id, item, product.Id, product.UnitId);
                 }
 
                 await ProjectTimelineWriter.InsertAsync(
@@ -281,7 +279,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                     transaction,
                     new ProjectTimelineEvent
                     {
-                        ProjectId = projectId.Value,
+                        ProjectId = project.Id,
                         EventTypeId = ProjectTimelineEventTypeIds.DeliveryUpdated,
                         Title = "Entrega actualizada",
                         Description = "Entrega del proyecto actualizada.",
@@ -658,6 +656,17 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
                 transaction);
         }
 
+        private async Task<ProductDeliveryRow?> GetProductAsync(
+            IDbConnection connection,
+            IDbTransaction transaction,
+            string externalId)
+        {
+            return await connection.QuerySingleOrDefaultAsync<ProductDeliveryRow>(
+                DeliveryRepositoryQueries.GetProductInternalIdByExternalId,
+                new { ExternalId = externalId, CompanyId },
+                transaction);
+        }
+
         private async Task InsertItemAsync(
             IDbConnection connection,
             IDbTransaction transaction,
@@ -761,6 +770,24 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Deliveries
         private sealed class DeliveryQuantityRow
         {
             public decimal Quantity { get; set; }
+            public decimal DeliveredQuantity { get; set; }
+        }
+
+        private sealed class ProjectDeliveryRow
+        {
+            public int Id { get; set; }
+            public int SellerId { get; set; }
+        }
+
+        private sealed class ProductDeliveryRow
+        {
+            public int Id { get; set; }
+            public int UnitId { get; set; }
+        }
+
+        private sealed class ExistingDeliveryItemRow
+        {
+            public int ProductId { get; set; }
             public decimal DeliveredQuantity { get; set; }
         }
     }

@@ -29,17 +29,13 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
             return new CreateDeliveryCommand
             {
                 ProjectExternalId = request.ProjectExternalId,
-                SellerExternalId = request.SellerExternalId,
                 CommittedDateUtc = request.CommittedDateUtc,
-                DeliveredDateUtc = request.DeliveredDateUtc,
                 Notes = request.Notes,
                 CreatedByUserId = createdByUserId,
                 Items = request.Items.Select(x => new CreateDeliveryItemCommand
                 {
                     ProductExternalId = x.ProductExternalId,
-                    UnitExternalId = x.UnitExternalId,
-                    Quantity = x.Quantity,
-                    DeliveredQuantity = x.DeliveredQuantity
+                    Quantity = x.Quantity
                 }).ToList()
             };
         }
@@ -53,17 +49,13 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
             {
                 ExternalId = externalId,
                 ProjectExternalId = request.ProjectExternalId,
-                SellerExternalId = request.SellerExternalId,
                 CommittedDateUtc = request.CommittedDateUtc,
-                DeliveredDateUtc = request.DeliveredDateUtc,
                 Notes = request.Notes,
                 UpdatedByUserId = updatedByUserId,
                 Items = request.Items.Select(x => new UpdateDeliveryItemCommand
                 {
                     ProductExternalId = x.ProductExternalId,
-                    UnitExternalId = x.UnitExternalId,
-                    Quantity = x.Quantity,
-                    DeliveredQuantity = x.DeliveredQuantity
+                    Quantity = x.Quantity
                 }).ToList()
             };
         }

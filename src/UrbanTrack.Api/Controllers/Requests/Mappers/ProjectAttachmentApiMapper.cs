@@ -20,9 +20,9 @@ namespace UrbanTrack.Api.Controllers.Requests.Mappers
                 ContentType = request.File?.ContentType ?? string.Empty,
                 SizeBytes = request.File?.Length ?? 0,
                 Content = request.File?.OpenReadStream() ?? Stream.Null,
-                AttachmentType = request.AttachmentType,
+                AttachmentType = request.AttachmentType ?? string.Empty,
                 Caption = request.Caption,
-                IsCover = request.IsCover,
+                IsCover = request.IsCover ?? false,
                 UploadedByUserId = uploadedByUserId
             };
         }

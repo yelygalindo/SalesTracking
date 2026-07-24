@@ -1,4 +1,3 @@
-using SalesTracking.Application.Common.ExternalIds;
 using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.Common.Models;
 using SalesTracking.Application.UseCases.ProjectAttachments.Comands;
@@ -99,7 +98,7 @@ namespace SalesTracking.Application.UseCases.ProjectAttachments.Services
 
             string extension = Path.GetExtension(command.FileName).ToLowerInvariant();
             string storageKey = $"projects/{command.ProjectExternalId.Trim()}/{Guid.NewGuid():N}{extension}";
-            string externalId = ExternalIdGenerator.New(ExternalIdPrefixes.ProjectAttachment);
+            string externalId = Guid.NewGuid().ToString("D");
 
             await _fileStorage.SaveAsync(storageKey, command.Content);
 

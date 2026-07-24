@@ -26,7 +26,7 @@ WHERE p.ExternalId = @ProjectExternalId
   AND p.CompanyId = @CompanyId
   AND pn.CompanyId = @CompanyId
   AND p.IsDeleted = 0
-  AND pn.ExternalId = @NoteExternalId
+  AND pn.ExternalId = TRY_CONVERT(uniqueidentifier, @NoteExternalId)
   AND pn.IsDeleted = 0;";
 
         public const string GetByProjectExternalId = @"
@@ -74,7 +74,7 @@ WHERE p.ExternalId = @ProjectExternalId
   AND p.CompanyId = @CompanyId
   AND pn.CompanyId = @CompanyId
   AND p.IsDeleted = 0
-  AND pn.ExternalId = @NoteExternalId
+  AND pn.ExternalId = TRY_CONVERT(uniqueidentifier, @NoteExternalId)
   AND pn.IsDeleted = 0;";
 
         public const string AddNote = @"
@@ -110,7 +110,7 @@ WHERE p.ExternalId = @ProjectExternalId
   AND p.CompanyId = @CompanyId
   AND pn.CompanyId = @CompanyId
   AND p.IsDeleted = 0
-  AND pn.ExternalId = @NoteExternalId
+  AND pn.ExternalId = TRY_CONVERT(uniqueidentifier, @NoteExternalId)
   AND pn.IsDeleted = 0;";
 
         public const string DeleteNote = @"
@@ -124,7 +124,7 @@ WHERE p.ExternalId = @ProjectExternalId
   AND p.CompanyId = @CompanyId
   AND pn.CompanyId = @CompanyId
   AND p.IsDeleted = 0
-  AND pn.ExternalId = @NoteExternalId
+  AND pn.ExternalId = TRY_CONVERT(uniqueidentifier, @NoteExternalId)
   AND pn.IsDeleted = 0;";
     }
 }

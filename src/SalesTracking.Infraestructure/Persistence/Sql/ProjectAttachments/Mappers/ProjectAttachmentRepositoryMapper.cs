@@ -10,7 +10,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.ProjectAttachments.Mapper
             return new ProjectAttachmentResult
             {
                 Id = row.Id,
-                ExternalId = row.ExternalId,
+                ExternalId = row.ExternalId.ToString("D"),
                 FileName = row.FileName,
                 ContentType = row.ContentType,
                 SizeBytes = row.SizeBytes,

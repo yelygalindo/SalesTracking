@@ -59,7 +59,7 @@ WHERE p.ExternalId = @ProjectExternalId
   AND p.CompanyId = @CompanyId
   AND pa.CompanyId = @CompanyId
   AND p.IsDeleted = 0
-  AND pa.ExternalId = @AttachmentExternalId
+  AND pa.ExternalId = TRY_CONVERT(uniqueidentifier, @AttachmentExternalId)
   AND pa.IsDeleted = 0;";
 
         public const string Insert = @"
@@ -123,7 +123,7 @@ WHERE p.ExternalId = @ProjectExternalId
   AND p.CompanyId = @CompanyId
   AND pa.CompanyId = @CompanyId
   AND p.IsDeleted = 0
-  AND pa.ExternalId = @AttachmentExternalId
+  AND pa.ExternalId = TRY_CONVERT(uniqueidentifier, @AttachmentExternalId)
   AND pa.IsDeleted = 0;";
 
         public const string GetAttachmentInternal = @"
@@ -136,7 +136,7 @@ WHERE p.ExternalId = @ProjectExternalId
   AND p.CompanyId = @CompanyId
   AND pa.CompanyId = @CompanyId
   AND p.IsDeleted = 0
-  AND pa.ExternalId = @AttachmentExternalId
+  AND pa.ExternalId = TRY_CONVERT(uniqueidentifier, @AttachmentExternalId)
   AND pa.IsDeleted = 0;";
 
         public const string SetCover = @"

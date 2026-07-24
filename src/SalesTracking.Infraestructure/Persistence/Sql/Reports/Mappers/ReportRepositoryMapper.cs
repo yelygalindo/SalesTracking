@@ -78,7 +78,7 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Reports.Mappers
         {
             return new CommercialActivityReportResult
             {
-                TimelineExternalId = row.TimelineExternalId,
+                TimelineExternalId = row.TimelineExternalId.ToString("D"),
                 ProjectExternalId = row.ProjectExternalId,
                 ProjectName = row.ProjectName,
                 ProjectStatusId = row.ProjectStatusId,

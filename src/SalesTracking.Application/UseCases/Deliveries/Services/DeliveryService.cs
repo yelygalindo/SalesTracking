@@ -57,24 +57,21 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
             if (validation != null)
                 return validation;
 
-            int statusId = ResolveStatusId(command.Items);
             CreateDelivery delivery = new CreateDelivery
             {
                 ExternalId = ExternalIdGenerator.New(ExternalIdPrefixes.Delivery),
                 ProjectExternalId = command.ProjectExternalId.Trim(),
-                SellerExternalId = command.SellerExternalId.Trim(),
-                StatusId = statusId,
+                StatusId = PendingStatusId,
                 CommittedDateUtc = command.CommittedDateUtc,
-                DeliveredDateUtc = NormalizeDeliveredDate(statusId, command.DeliveredDateUtc),
+                DeliveredDateUtc = null,
                 Notes = command.Notes?.Trim(),
                 CreatedByUserId = command.CreatedByUserId,
                 Items = command.Items.Select(x => new CreateDeliveryItem
                 {
                     ExternalId = ExternalIdGenerator.New(ExternalIdPrefixes.DeliveryItem),
                     ProductExternalId = x.ProductExternalId.Trim(),
-                    UnitExternalId = x.UnitExternalId.Trim(),
                     Quantity = x.Quantity,
-                    DeliveredQuantity = x.DeliveredQuantity
+                    DeliveredQuantity = 0
                 }).ToList()
             };
 
@@ -102,24 +99,19 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
                 };
             }
 
-            int statusId = ResolveStatusId(command.Items);
             UpdateDelivery delivery = new UpdateDelivery
             {
                 ExternalId = command.ExternalId.Trim(),
                 ProjectExternalId = command.ProjectExternalId.Trim(),
-                SellerExternalId = command.SellerExternalId.Trim(),
-                StatusId = statusId,
                 CommittedDateUtc = command.CommittedDateUtc,
-                DeliveredDateUtc = NormalizeDeliveredDate(statusId, command.DeliveredDateUtc),
                 Notes = command.Notes?.Trim(),
                 UpdatedByUserId = command.UpdatedByUserId,
                 Items = command.Items.Select(x => new CreateDeliveryItem
                 {
                     ExternalId = ExternalIdGenerator.New(ExternalIdPrefixes.DeliveryItem),
                     ProductExternalId = x.ProductExternalId.Trim(),
-                    UnitExternalId = x.UnitExternalId.Trim(),
                     Quantity = x.Quantity,
-                    DeliveredQuantity = x.DeliveredQuantity
+                    DeliveredQuantity = 0
                 }).ToList()
             };
 
@@ -246,17 +238,16 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
                 };
             }
 
-            return Validate(command.ProjectExternalId, command.SellerExternalId, command.Items);
+            return Validate(command.ProjectExternalId, command.Items);
         }
 
         private static CreateDeliveryResult? Validate(UpdateDeliveryCommand command)
         {
-            return Validate(command.ProjectExternalId, command.SellerExternalId, command.Items);
+            return Validate(command.ProjectExternalId, command.Items);
         }
 
         private static CreateDeliveryResult? Validate(
             string projectExternalId,
-            string sellerExternalId,
             IEnumerable<CreateDeliveryItemCommand> items)
         {
             if (string.IsNullOrWhiteSpace(projectExternalId))
@@ -265,15 +256,6 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
                 {
                     Succeeded = false,
                     Message = "El proyecto es requerido."
-                };
-            }
-
-            if (string.IsNullOrWhiteSpace(sellerExternalId))
-            {
-                return new CreateDeliveryResult
-                {
-                    Succeeded = false,
-                    Message = "El vendedor es requerido."
                 };
             }
 
@@ -291,9 +273,7 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
             {
                 CreateDeliveryResult? itemValidation = ValidateItem(
                     item.ProductExternalId,
-                    item.UnitExternalId,
-                    item.Quantity,
-                    item.DeliveredQuantity);
+                    item.Quantity);
 
                 if (itemValidation != null)
                     return itemValidation;
@@ -304,27 +284,22 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
 
         private static CreateDeliveryResult? Validate(
             string projectExternalId,
-            string sellerExternalId,
             IEnumerable<UpdateDeliveryItemCommand> items)
         {
             IReadOnlyList<CreateDeliveryItemCommand> mappedItems = (items ?? new List<UpdateDeliveryItemCommand>())
                 .Select(x => new CreateDeliveryItemCommand
                 {
                     ProductExternalId = x.ProductExternalId,
-                    UnitExternalId = x.UnitExternalId,
-                    Quantity = x.Quantity,
-                    DeliveredQuantity = x.DeliveredQuantity
+                    Quantity = x.Quantity
                 })
                 .ToList();
 
-            return Validate(projectExternalId, sellerExternalId, mappedItems);
+            return Validate(projectExternalId, mappedItems);
         }
 
         private static CreateDeliveryResult? ValidateItem(
             string productExternalId,
-            string unitExternalId,
-            decimal quantity,
-            decimal deliveredQuantity)
+            decimal quantity)
         {
             if (string.IsNullOrWhiteSpace(productExternalId))
             {
@@ -332,15 +307,6 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
                 {
                     Succeeded = false,
                     Message = "El producto del item es requerido."
-                };
-            }
-
-            if (string.IsNullOrWhiteSpace(unitExternalId))
-            {
-                return new CreateDeliveryResult
-                {
-                    Succeeded = false,
-                    Message = "La unidad del item es requerida."
                 };
             }
 
@@ -353,38 +319,7 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
                 };
             }
 
-            if (deliveredQuantity < 0 || deliveredQuantity > quantity)
-            {
-                return new CreateDeliveryResult
-                {
-                    Succeeded = false,
-                    Message = "La cantidad entregada no es valida."
-                };
-            }
-
             return null;
-        }
-
-        private static int ResolveStatusId(IEnumerable<CreateDeliveryItemCommand> items)
-        {
-            IReadOnlyList<CreateDeliveryItemCommand> itemList = items.ToList();
-
-            if (itemList.All(x => x.DeliveredQuantity == 0))
-                return PendingStatusId;
-
-            if (itemList.All(x => x.DeliveredQuantity == x.Quantity))
-                return DeliveredStatusId;
-
-            return PartialStatusId;
-        }
-
-        private static int ResolveStatusId(IEnumerable<UpdateDeliveryItemCommand> items)
-        {
-            return ResolveStatusId(items.Select(x => new CreateDeliveryItemCommand
-            {
-                Quantity = x.Quantity,
-                DeliveredQuantity = x.DeliveredQuantity
-            }));
         }
 
         private static DateTime? NormalizeDeliveredDate(int statusId, DateTime? deliveredDateUtc)

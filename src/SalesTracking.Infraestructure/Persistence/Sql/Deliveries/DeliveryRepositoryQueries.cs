@@ -99,7 +99,7 @@ WHERE di.IsDeleted = 0
 ORDER BY di.Id;";
 
         public const string GetProjectInternalIdByExternalId = @"
-SELECT TOP 1 Id
+SELECT TOP 1 Id, SellerId
 FROM Projects
 WHERE ExternalId = @ExternalId
   AND CompanyId = @CompanyId
@@ -114,9 +114,16 @@ WHERE ExternalId = @ExternalId
   AND IsActive = 1;";
 
         public const string GetProductInternalIdByExternalId = @"
-SELECT TOP 1 Id
+SELECT TOP 1 Id, UnitId
 FROM Products
 WHERE ExternalId = @ExternalId
+  AND CompanyId = @CompanyId
+  AND IsDeleted = 0;";
+
+        public const string GetExistingItemsForUpdate = @"
+SELECT ProductId, DeliveredQuantity
+FROM DeliveryItems
+WHERE DeliveryId = @DeliveryId
   AND CompanyId = @CompanyId
   AND IsDeleted = 0;";
 
@@ -132,7 +139,8 @@ SELECT TOP 1
     Id,
     ProjectId,
     SellerId,
-    StatusId
+    StatusId,
+    DeliveredDateUtc
 FROM Deliveries
 WHERE ExternalId = @ExternalId
   AND CompanyId = @CompanyId

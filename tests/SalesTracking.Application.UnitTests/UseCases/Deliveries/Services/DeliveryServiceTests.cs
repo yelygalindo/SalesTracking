@@ -55,7 +55,7 @@ public sealed class DeliveryServiceTests
 
         CreateDeliveryResult result = await service.CreateAsync(new CreateDeliveryCommand
         {
-            ProjectExternalId = "project-1", SellerExternalId = "seller-1", Items = []
+            ProjectExternalId = "project-1", Items = []
         });
 
         result.Succeeded.Should().BeFalse();
