@@ -269,6 +269,18 @@ namespace SalesTracking.Application.UseCases.Deliveries.Services
                 };
             }
 
+            if (itemList
+                .Where(x => !string.IsNullOrWhiteSpace(x.ProductExternalId))
+                .GroupBy(x => x.ProductExternalId.Trim(), StringComparer.OrdinalIgnoreCase)
+                .Any(x => x.Count() > 1))
+            {
+                return new CreateDeliveryResult
+                {
+                    Succeeded = false,
+                    Message = "No se puede repetir el mismo producto en una entrega."
+                };
+            }
+
             foreach (CreateDeliveryItemCommand item in itemList)
             {
                 CreateDeliveryResult? itemValidation = ValidateItem(
