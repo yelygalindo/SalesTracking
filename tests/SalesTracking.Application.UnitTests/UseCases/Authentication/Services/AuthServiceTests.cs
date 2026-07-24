@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Moq;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.UseCases.Authentication.Comands;
 using SalesTracking.Application.UseCases.Authentication.Interfaces;
 using SalesTracking.Application.UseCases.Authentication.Models;
@@ -11,6 +12,36 @@ namespace SalesTracking.Application.UnitTests.UseCases.Authentication.Services;
 public sealed class AuthServiceTests
 {
     private readonly Mock<IAuthRepository> _repository = new();
+
+    [Fact]
+    public async Task LoginAsync_WhenCredentialsAreValid_ShouldIncludeRolesAndPermissions()
+    {
+        _repository.Setup(x => x.ValidateCredentialsAsync("user@example.com", "password"))
+            .ReturnsAsync(new AuthTokens
+            {
+                User = new SalesTracking.Domain.Entities.User
+                {
+                    Id = 1,
+                    Email = "user@example.com",
+                    Company = new SalesTracking.Domain.Entities.Company(1, "company-1", "Company")
+                },
+                AccessToken = "access-token",
+                RefreshToken = "refresh-token",
+                Roles = ["admin"],
+                Permissions = ["users.read", "users.create"]
+            });
+        AuthService service = new(_repository.Object);
+
+        LoginResult? result = await service.LoginAsync(new LoginCommand
+        {
+            Email = "user@example.com",
+            Password = "password"
+        });
+
+        result.Should().NotBeNull();
+        result!.User.Roles.Should().Equal("admin");
+        result.User.Permissions.Should().Equal("users.read", "users.create");
+    }
 
     [Fact]
     public async Task RefreshTokenAsync_WhenTokenIsBlank_ShouldNotCallRepository()
@@ -57,6 +88,27 @@ public sealed class AuthServiceTests
 
         result.Message.Should().Be("Si el correo está registrado, recibirás instrucciones para restablecer tu contraseña.");
         result.Message.Should().NotContain("secret-token");
+    }
+
+    [Fact]
+    public async Task ForgotPasswordAsync_WhenNotifierExists_ShouldNotifyWithGeneratedToken()
+    {
+        PasswordForgot passwordForgot = new()
+        {
+            Email = "user@example.com",
+            Token = "secret-token"
+        };
+        Mock<IPasswordResetLinkNotifier> notifier = new();
+        _repository.Setup(x => x.SendForgotPasswordAsync("user@example.com"))
+            .ReturnsAsync(passwordForgot);
+        AuthService service = new(
+            _repository.Object,
+            passwordResetLinkNotifier: notifier.Object);
+
+        await service.ForgotPasswordAsync(
+            new ForgotPasswordComand { Email = "user@example.com" });
+
+        notifier.Verify(x => x.NotifyAsync(passwordForgot), Times.Once);
     }
 
     [Fact]

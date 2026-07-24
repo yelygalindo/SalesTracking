@@ -9,5 +9,7 @@
         public int RefreshTokenExpirationDays { get; init; }
 
         public int PasswordResetTokenExpirationHours { get; init; }
+
+        public string PasswordResetUrl { get; init; } = string.Empty;
     }
 }

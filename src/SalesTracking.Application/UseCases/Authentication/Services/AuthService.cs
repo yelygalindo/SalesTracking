@@ -10,12 +10,18 @@ namespace SalesTracking.Application.UseCases.Authentication.Services
         private readonly IAuthRepository _repo;
         private readonly IPasswordPolicy _passwordPolicy;
         private readonly IUserAuthorizationRepository? _authorizationRepository;
+        private readonly IPasswordResetLinkNotifier? _passwordResetLinkNotifier;
 
-        public AuthService(IAuthRepository repo, IPasswordPolicy? passwordPolicy = null, IUserAuthorizationRepository? authorizationRepository = null)
+        public AuthService(
+            IAuthRepository repo,
+            IPasswordPolicy? passwordPolicy = null,
+            IUserAuthorizationRepository? authorizationRepository = null,
+            IPasswordResetLinkNotifier? passwordResetLinkNotifier = null)
         {
             _repo = repo;
             _passwordPolicy = passwordPolicy ?? new SalesTracking.Application.Common.Validation.PasswordPolicy();
             _authorizationRepository = authorizationRepository;
+            _passwordResetLinkNotifier = passwordResetLinkNotifier;
         }
 
         public async Task<LoginResult?> LoginAsync(LoginCommand loginCommand)
@@ -34,6 +40,8 @@ namespace SalesTracking.Application.UseCases.Authentication.Services
                 ExternalId = auth.User.ExternalId,
                 Username = auth.User.Username,
                 Email = auth.User.Email,
+                Roles = auth.Roles,
+                Permissions = auth.Permissions,
                 Company = new CompanyResult
                 {
                     Id = auth.User.Company.Id,
@@ -101,7 +109,10 @@ namespace SalesTracking.Application.UseCases.Authentication.Services
             if (forgotPasswordComand == null || string.IsNullOrWhiteSpace(forgotPasswordComand.Email))
                 return new ForgotPasswordResult { Message = message };
 
-            await _repo.SendForgotPasswordAsync(forgotPasswordComand.Email.Trim());
+            var passwordForgot = await _repo.SendForgotPasswordAsync(forgotPasswordComand.Email.Trim());
+            if (passwordForgot != null && _passwordResetLinkNotifier != null)
+                await _passwordResetLinkNotifier.NotifyAsync(passwordForgot);
+
             return new ForgotPasswordResult { Message = message };
         }
 
@@ -113,7 +124,9 @@ namespace SalesTracking.Application.UseCases.Authentication.Services
             var authorization = await _authorizationRepository.GetByUserIdAsync(userId);
             return new AuthMeResult
             {
+                Id = user.Id,
                 ExternalId = user.ExternalId,
+                Username = user.Username,
                 FullName = user.FullName,
                 Email = user.Email,
                 CompanyId = user.Company.Id,

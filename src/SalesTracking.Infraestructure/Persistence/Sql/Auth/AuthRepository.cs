@@ -254,7 +254,9 @@ namespace SalesTracking.Infrastructure.Persistence.Sql.Auth
                 User = user,
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
-                ExpiresAtUtc = accessTokenExpiresAtUtc
+                ExpiresAtUtc = accessTokenExpiresAtUtc,
+                Roles = authorization.Roles,
+                Permissions = authorization.Permissions
             };
         }      
     }

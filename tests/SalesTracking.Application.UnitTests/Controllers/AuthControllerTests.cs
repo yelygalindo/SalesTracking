@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.UseCases.Authentication.Comands;
 using SalesTracking.Application.UseCases.Authentication.Interfaces;
 using SalesTracking.Application.UseCases.Authentication.Results;
@@ -24,6 +25,35 @@ public sealed class AuthControllerTests
 
         ObjectResult response = result.Should().BeOfType<ObjectResult>().Subject;
         response.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
+    }
+
+    [Fact]
+    public async Task Me_WhenAuthenticated_ShouldReturnUserId()
+    {
+        Mock<ICurrentUser> currentUser = new();
+        currentUser.SetupGet(x => x.IsAuthenticated).Returns(true);
+        currentUser.SetupGet(x => x.UserId).Returns(42);
+        _service.Setup(x => x.GetMeAsync(42)).ReturnsAsync(new AuthMeResult
+        {
+            Id = 42,
+            ExternalId = "usr-42",
+            Username = "user",
+            FullName = "User",
+            Email = "user@example.com",
+            CompanyId = 1,
+            CompanyExternalId = "company-1",
+            CompanyName = "Company"
+        });
+        AuthController controller = new(_service.Object, currentUser.Object);
+
+        ActionResult<UrbanTrack.Api.Controllers.Responses.AuthResponses.UserCompleteResponse> result =
+            await controller.Me();
+
+        OkObjectResult response = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+        var body = response.Value.Should()
+            .BeOfType<UrbanTrack.Api.Controllers.Responses.AuthResponses.UserCompleteResponse>().Subject;
+        body.Id.Should().Be(42);
+        body.Username.Should().Be("user");
     }
 
     [Fact]

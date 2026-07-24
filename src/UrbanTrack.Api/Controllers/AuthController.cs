@@ -49,12 +49,20 @@ namespace UrbanTrack.Api.Controllers
         [ProducesResponseType(typeof(UserCompleteResponse), StatusCodes.Status200OK)]
         public async Task<ActionResult<UserCompleteResponse>> Me()
         {
-            if (_currentUser == null || !_currentUser.IsAuthenticated) return Unauthorized();
+            if (_currentUser == null || !_currentUser.IsAuthenticated)
+                return StatusCode(
+                    StatusCodes.Status401Unauthorized,
+                    new MessageResponse { Message = "Token de acceso requerido." });
+
             AuthMeResult? result = await _service.GetMeAsync(_currentUser.UserId);
-            if (result == null) return NotFound();
+            if (result == null)
+                return NotFound(new MessageResponse { Message = "Usuario no encontrado." });
+
             return Ok(new UserCompleteResponse
             {
+                Id = result.Id,
                 ExternalId = result.ExternalId,
+                Username = result.Username,
                 FullName = result.FullName,
                 Email = result.Email,
                 Company = new CompanyResponse

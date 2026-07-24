@@ -4,14 +4,19 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using SalesTracking.Application.Common.Interfaces;
+using SalesTracking.Host.Development;
 using SalesTracking.Host.Extensions;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using UrbanTrack.Api.Controllers;
+using UrbanTrack.Api.Controllers.Responses.Common;
 using UrbanTrack.Api.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddServices(builder.Configuration);
+if (builder.Environment.IsDevelopment())
+    builder.Services.AddScoped<IPasswordResetLinkNotifier, DevelopmentPasswordResetLinkNotifier>();
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
@@ -28,6 +33,16 @@ builder.Services
     .AddJwtBearer(options =>
     {
         options.MapInboundClaims = false;
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = async context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.WriteAsJsonAsync(
+                    new MessageResponse { Message = "Token de acceso requerido o inválido." });
+            }
+        };
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,

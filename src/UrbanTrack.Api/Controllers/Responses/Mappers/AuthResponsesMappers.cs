@@ -29,7 +29,9 @@ namespace UrbanTrack.Api.Controllers.Responses.Mappers
                 Username = userResult.Username,
                 FullName = userResult.FullName,
                 Company = userResult.Company.ToResponse(),
-                Email = userResult.Email
+                Email = userResult.Email,
+                Roles = userResult.Roles,
+                Permissions = userResult.Permissions
             };
         }
 
