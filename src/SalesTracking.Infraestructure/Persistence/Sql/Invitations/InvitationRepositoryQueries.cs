@@ -22,7 +22,6 @@ WHERE i.TokenHash = @TokenHash
 SELECT TOP 1 r.Id
 FROM Roles r
 WHERE r.Code = @RoleCode
-  AND r.IsActive = 1
   AND NOT EXISTS (
       SELECT 1
       FROM RolePermissions rp

@@ -1,6 +1,8 @@
 ﻿using SalesTracking.Application.Common.Interfaces;
 using SalesTracking.Application.UseCases.Authentication.Interfaces;
 using SalesTracking.Application.UseCases.Authentication.Services;
+using SalesTracking.Application.UseCases.Companies.Interfaces;
+using SalesTracking.Application.UseCases.Companies.Services;
 using SalesTracking.Application.UseCases.CustomerNotes.Interfaces;
 using SalesTracking.Application.UseCases.CustomerNotes.Services;
 using SalesTracking.Application.UseCases.CustomerReminders.Interfaces;
@@ -38,6 +40,7 @@ using SalesTracking.Application.UseCases.Sellers.Services;
 using SalesTracking.Infrastructure.Persistence.Security;
 using SalesTracking.Infrastructure.Persistence.Settings;
 using SalesTracking.Infrastructure.Persistence.Sql.Auth;
+using SalesTracking.Infrastructure.Persistence.Sql.Companies;
 using SalesTracking.Infrastructure.Persistence.Sql.CustomerNotes;
 using SalesTracking.Infrastructure.Persistence.Sql.CustomerReminders;
 using SalesTracking.Infrastructure.Persistence.Sql.Customers;
@@ -71,6 +74,7 @@ namespace SalesTracking.Host.Extensions
             services.Configure<StorageSettings>(configuration.GetSection(StorageSettings.SectionName));
             
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IProjectService, ProjectService>();
             
             services.AddScoped<IInvitationService, InvitationService>();
@@ -91,6 +95,7 @@ namespace SalesTracking.Host.Extensions
             services.AddScoped<ISellerService, SellerService>();
 
             services.AddScoped<IAuthRepository, AuthRepository>();
+            services.AddScoped<ICompanyRepository, CompanyRepository>();
             services.AddScoped<IUserAuthorizationRepository, UserAuthorizationRepository>();
             services.AddScoped<IResourceOwnershipRepository, ResourceOwnershipRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();

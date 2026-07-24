@@ -3,6 +3,7 @@
     public static class ExternalIdPrefixes
     {
         public const string Customer = "cust";
+        public const string Company = "company";
         public const string CustomerNote = "note";
         public const string CustomerReminder = "rmd";
         public const string CustomerTimelineEvent = "tle";
